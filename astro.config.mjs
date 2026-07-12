@@ -3,13 +3,13 @@ import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
-
-// Update this to your production domain — used for canonical URLs, sitemap, RSS & OG tags.
-const SITE_URL = 'https://saintrabor.dev';
+import { SITE } from './src/config.ts';
 
 // https://astro.build/config
 export default defineConfig({
-  site: SITE_URL,
+  // SITE.url is the single source of truth (src/config.ts) — drives canonical
+  // URLs, sitemap, RSS & OG tags. Update it there, not here.
+  site: SITE.url,
 
   // `static` today (fast, cheap, SEO-friendly). When you add a real backend/API,
   // flip to `output: 'server'` (or `hybrid`) and add an adapter — see ARCHITECTURE.md.

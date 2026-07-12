@@ -13,7 +13,7 @@ export const SITE = {
   title: 'Saint Rabor — Fullstack Developer',
   description:
     'Fullstack developer with 2+ years shipping production web apps. React/Next.js & TypeScript on the front, Rust, Django & Node.js on the back. Microfrontend architecture, clean code, and performance.',
-  url: 'https://saintrabor.dev',
+  url: 'https://st.saintstraborrr.workers.dev',
   locale: 'en-US',
   location: 'Cagayan de Oro City, Philippines',
   email: 'saintstraborrr@gmail.com',
