@@ -3,7 +3,7 @@ import type { ExperienceItem } from '@lib/api/types';
 export const EXPERIENCE: ExperienceItem[] = [
   {
     role: 'UI/UX Developer / Frontend Developer',
-    company: 'CyTech International — embedded under NSP',
+    company: 'CyTech International — Outsourced to NEC Software Philippines (NSP)',
     period: 'May 2026 – Present',
     current: true,
     highlights: [
