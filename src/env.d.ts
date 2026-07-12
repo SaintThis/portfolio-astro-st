@@ -5,6 +5,8 @@ interface ImportMetaEnv {
   readonly PUBLIC_API_BASE_URL: string;
   readonly CONTACT_FORM_ENDPOINT?: string;
   readonly API_SECRET_KEY?: string;
+  readonly PUBLIC_GA_MEASUREMENT_ID?: string;
+  readonly PUBLIC_CF_BEACON_TOKEN?: string;
 }
 
 interface ImportMeta {

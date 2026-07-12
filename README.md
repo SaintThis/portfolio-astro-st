@@ -101,6 +101,15 @@ The app reads all dynamic data through **repositories** in `src/lib/api/reposito
 
 For SSR/dynamic pages, flip `output: 'server'` in `astro.config.mjs`, add an adapter (`@astrojs/node`, `@astrojs/vercel`, …), and set `export const prerender = false` on the routes that need per-request data. See [`ARCHITECTURE.md`](./ARCHITECTURE.md#going-ssr).
 
+## 📊 Analytics
+
+Handled by [`src/components/seo/Analytics.astro`](./src/components/seo/Analytics.astro) — Google Analytics 4 and/or Cloudflare Web Analytics, both optional and independent. Neither loads until you set its env var, and neither ever loads in dev (production builds only, so localhost traffic is never tracked).
+
+1. Copy `.env.example` → `.env`.
+2. **GA4:** create a property at [analytics.google.com](https://analytics.google.com), copy its Measurement ID (`G-XXXXXXXXXX`) into `PUBLIC_GA_MEASUREMENT_ID`.
+3. **Cloudflare Web Analytics** (free, no cookies, no consent banner needed): Cloudflare dashboard → *Analytics & Logs → Web Analytics → Add site* → copy the beacon token into `PUBLIC_CF_BEACON_TOKEN`.
+4. Set whichever env vars you want in your host's dashboard too (Vercel/Netlify/Cloudflare Pages project settings → Environment Variables) so they apply to the deployed build.
+
 ## ♿ Accessibility & Performance
 
 - All motion respects `prefers-reduced-motion`.

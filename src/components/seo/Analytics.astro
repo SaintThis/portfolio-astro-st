@@ -1,0 +1,60 @@
+---
+/**
+ * Analytics — Google Analytics 4 and/or Cloudflare Web Analytics.
+ *
+ * Both are optional and independent: each only renders if its env var is set
+ * (see .env.example), so the site works with neither, either, or both. Scripts
+ * only load in production builds — dev/localhost traffic is never tracked.
+ *
+ * GA4's automatic "enhanced measurement" page_view can miss Astro's client-side
+ * View Transition navigations, so we explicitly re-fire page_view on
+ * `astro:page-load` for every navigation after the first (the initial `config`
+ * call below already sends the first one).
+ */
+const gaId = import.meta.env.PUBLIC_GA_MEASUREMENT_ID;
+const cfToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
+const enabled = import.meta.env.PROD;
+---
+
+{
+  enabled && gaId && (
+    <>
+      <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} />
+      <script define:vars={{ gaId }} is:inline>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+        gtag('config', gaId);
+        window.gtag = gtag;
+      </script>
+      <script is:inline>
+        // Re-send page_view on client-side navigations (View Transitions don't
+        // trigger a fresh page load, so GA's automatic tracking can miss them).
+        let gaFirstLoad = true;
+        document.addEventListener('astro:page-load', () => {
+          if (gaFirstLoad) {
+            gaFirstLoad = false;
+            return;
+          }
+          window.gtag?.('event', 'page_view', {
+            page_path: location.pathname + location.search,
+            page_title: document.title,
+            page_location: location.href,
+          });
+        });
+      </script>
+    </>
+  )
+}
+
+{
+  enabled && cfToken && (
+    <script
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon={`{"token": "${cfToken}"}`}
+    />
+  )
+}
