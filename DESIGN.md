@@ -21,7 +21,7 @@ Four themes, each a re-binding of the same semantic tokens (see `src/styles/them
 | `synthwave`  | Sunset purple + orange        | Pink `#ff6ac1` → Orange   |
 | `paper`      | Light, high-contrast day mode | Magenta `#d6006e` (AA)    |
 
-**Theme switching** is a dropdown in the header (`ThemeSwitcher.tsx`). The choice persists in `localStorage` and applies before paint (no flash). Because everything reads CSS variables, switching is instant and global.
+**Theme switching** is a dropdown in the header (`ThemeSwitcher.tsx`), built on Base UI's `Select` for full keyboard navigation and correct ARIA — not a hand-rolled listbox. The choice persists in `localStorage` and applies before paint (no flash). Because everything reads CSS variables, switching is instant and global.
 
 > **Add a theme:** copy a block in `themes.css`, change the id + values, then register `{ id, label, hint }` in `config.ts → THEMES`. Done — the switcher and swatches pick it up automatically.
 
@@ -73,30 +73,45 @@ Then remove the `<link>` tags. This drops a render-blocking third-party request.
 
 ## Motion language
 
-| Element        | Animation                                             | Tech                    |
-| -------------- | ----------------------------------------------------- | ----------------------- |
-| Intro loader   | Boot log stagger + progress bar, then wipe            | GSAP timeline           |
-| Page nav       | Cover → swap → boot, via View Transitions             | Astro + loader          |
-| Custom cursor  | Dot tracks 1:1; ring eases (lerp 0.18); hover scales  | rAF (no lib)            |
-| Scroll reveal  | Fade + 24px rise, `once`, `power3.out`                | GSAP ScrollTrigger      |
-| Hero headline  | Rotating role words                                   | GSAP                    |
-| Skill bars     | Width 0 → target on scroll-in                         | GSAP ScrollTrigger      |
-| Buttons/cards  | Translate + glow on hover                             | CSS transitions         |
+| Element        | Animation                                                     | Tech                       |
+| -------------- | --------------------------------------------------------------- | --------------------------- |
+| Intro loader   | Boot log stagger + progress % + decrypt-in brand name, then wipe | GSAP timeline + `scrambleText` |
+| Page nav       | Cover → swap → boot, via View Transitions                     | Astro + loader              |
+| Custom cursor  | Dot tracks 1:1; ring spring-follows and **magnetically snaps** to the center of hovered buttons/cards/links | Motion (`useMotionValue` + `useSpring`) |
+| Sidebar nav    | Slide-in-from-left drawer, tablet + mobile (`< lg:`)           | Base UI `Dialog` (a11y) + Motion (`motion.div` slide) |
+| Scroll reveal  | Fade + 24px rise, `once`, `power3.out`                         | GSAP ScrollTrigger          |
+| Hero headline  | Rotating role words, hacker-style scramble/decrypt reveal      | GSAP + `scrambleText`       |
+| Skill bars     | Width 0 → target on scroll-in                                  | GSAP ScrollTrigger          |
+| Buttons/cards  | Translate + glow on hover                                      | CSS transitions             |
 
 **Easing:** default to `--ease-out-expo` / GSAP `power2–3.out`. Keep durations 200–700ms. Nothing should feel sluggish.
 
 ### The custom cursor
 
-- Two elements: a solid **dot** (instant) and an eased **ring** (spring-like via lerp).
-- Reacts to any element with `data-cursor="hover"` (scale) or `data-cursor="text"` (I-beam). Add `data-cursor-label="View"` to show a label (used on project/blog cards).
-- **Disabled** on coarse (touch) pointers — the OS cursor is restored (`html[data-cursor='custom']` toggles `cursor: none`). Hydrated with `client:load` so it appears immediately.
-- Under **reduced-motion** the cursor still shows, but the trailing animation is dropped: the ring's lerp factor becomes `1`, so it snaps to the pointer instead of easing (pointer tracking is user-driven, not autoplaying motion).
+- Two elements: a solid **dot** (direct DOM write, 1:1 tracking, zero lag) and an eased **ring** (`useMotionValue` + `useSpring` from `motion/react`).
+- **Magnetic hover:** while hovering any `[data-cursor="hover"]` element (buttons, project cards, nav links), the ring's spring target becomes that element's bounding-box center instead of the raw pointer position — it visibly "snaps" and holds there until you move away. Add `data-cursor-label="View"` to also show a label. `data-cursor="text"` collapses the ring into a thin caret (no magnetic pull) for text inputs.
+- Motion springs stop scheduling frames once at rest — unlike a naive `requestAnimationFrame` loop, this doesn't starve `requestIdleCallback`, which matters because other islands (`ThemeSwitcher`, `Sidebar`) hydrate with `client:idle` and were previously measured to hang indefinitely behind a never-idle rAF loop.
+- **Disabled** on coarse (touch) pointers — the OS cursor is restored (`html[data-cursor-active]` toggles `cursor: none`; deliberately a *different* attribute than the per-element `data-cursor="hover"/"text"` variant tag, since sharing one name let `closest('[data-cursor]')` fall through to `<html>` itself). Hydrated with `client:load` so it appears immediately.
+- Under **reduced-motion** the cursor still shows, but the spring is tuned near-instant (`stiffness: 1000, damping: 100`) instead of disabled — pointer tracking is user-driven, not autoplaying motion.
+
+### Sidebar nav (tablet + mobile)
+
+- Shown below `lg:` (1024px) — desktop keeps the persistent top nav in `Header.astro`; tablets (both orientations) and phones get the drawer, not a cramped horizontal nav.
+- **Base UI `Dialog`** owns the accessibility: focus trap, `Escape` to close, backdrop click-to-close, `aria-modal`, background inert, and body scroll-lock — all built in, none hand-rolled.
+- **Motion** owns the pixels: the panel is a `motion.div` composed onto `Dialog.Popup` via Base UI's `render` prop (`<Dialog.Popup render={<motion.div animate={{x: open ? 0 : '-100%'}} .../>}>`), driven by the *same* `open` boolean that controls `Dialog.Root` — no fighting Base UI's own mount/unmount timing. `Portal keepMounted` keeps the DOM around so there's something to animate on close.
+- Active-link highlighting reads `window.location.pathname` directly (resynced on `astro:page-load`), not a prop — the parent `Header` is `transition:persist`'d, so nested islands never receive fresh props on client-side navigation.
+
+### Decrypt / scramble text
+
+- `src/lib/utils/scramble.ts` exports `scrambleText(el, finalText, opts)` — a hacker/terminal-style reveal where characters cycle through random glyphs and settle left-to-right into the final text. Pure GSAP, framework-agnostic (works from any inline `<script>`, no React needed).
+- Used for the hero headline's rotating role words and the boot loader's brand-name reveal. Callers check `prefers-reduced-motion` themselves (same pattern as the rest of the motion system) — the function always animates when called.
 
 ## Layout & spacing
 
 - Content max-width: `max-w-6xl` (72rem), padded `px-5`.
 - Sections: generous vertical rhythm (`py-16`–`py-24`).
-- **Bento grid** on the home page: a responsive mosaic (`grid-cols-2 md:grid-cols-4`) mixing a big intro cell, stat cells, and status cells.
+- **Bento grid** on the home page: a responsive mosaic (`grid-cols-2 lg:grid-cols-4`) mixing a big intro cell, stat cells, and status cells. The 4-col jump is deliberately at `lg:` (1024px) rather than `md:` (768px) — at tablet width, 4 narrow columns cramped the stat numbers; 2-col stays comfortable through the full tablet range.
+- **Breakpoint convention:** multi-column splits that hold real content (stat numbers, code blocks, form + sidebar) target `lg:` (1024px), not `md:` (768px) — tablets get the single-column layout, only true desktop widths get the split. Simpler layouts (nav link lists, footer columns) can still use `sm:`/`md:` where narrower columns are harmless.
 
 ## Accessibility checklist
 

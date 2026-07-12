@@ -22,7 +22,7 @@ Always run `npm run build` (or at least `npm run check`) after edits. The build 
 1. **Never hardcode colors.** Use semantic Tailwind utilities (`bg-surface`, `text-accent`, `border-border`). Colors live in `src/styles/themes.css`. This is what keeps theming working.
 2. **Never fetch data in a page/component directly.** Go through `src/lib/api` (repositories). If you add a data type, add it to `src/lib/api/types.ts` first, then a repository, then consume it.
 3. **Site constants live in `src/config.ts`** — name, nav, socials, themes, feature flags. Don't scatter these strings.
-4. **Prefer zero-JS.** Only make something a React island (`components/react`) if it genuinely needs client interactivity. Use the laziest hydration directive that works (`client:idle` / `client:visible`), not `client:load`.
+4. **Prefer zero-JS.** Only make something a React island (`components/react`) if it genuinely needs client interactivity. Use the laziest hydration directive that works (`client:idle` / `client:visible`), not `client:load` — `Cursor.tsx` is the one deliberate exception (must appear immediately; see its file comment) and a real bug once (a naive `requestAnimationFrame` loop that never stopped starved `requestIdleCallback`, hanging other islands' `client:idle` hydration indefinitely — Motion springs fixed this because they stop scheduling frames at rest).
 5. **Respect motion prefs.** Any new animation must no-op under `prefers-reduced-motion: reduce`.
 6. **Re-init on navigation.** Client scripts that touch the DOM must run inside a `document.addEventListener('astro:page-load', …)` handler, because View Transitions swap the DOM without a full reload. Guard against double-binding (`if (el.dataset.bound) return`).
 
@@ -53,7 +53,8 @@ Always run `npm run build` (or at least `npm run check`) after edits. The build 
 - **Literal `{`/`}` in Astro markup** are parsed as JSX expressions — escape as `&#123;`/`&#125;` (see the terminal block in `about.astro`).
 - The **boot loader** and **scroll-reveal** are intentionally Astro + inline scripts (not islands) so they survive View Transitions. Don't convert them to React.
 - `output` is `'static'`. Middleware runs at build time until you switch to SSR (see `ARCHITECTURE.md → Going SSR`).
-- The custom cursor sets `cursor: none` only for fine pointers via `html[data-cursor='custom']`.
+- The custom cursor sets `cursor: none` only for fine pointers via `html[data-cursor-active]` — a deliberately different attribute from the per-element `data-cursor="hover"|"text"` variant tag (sharing one name let `closest('[data-cursor]')` fall through to `<html>` itself and silently corrupt the read).
+- Multi-column splits with real content (stat numbers, code blocks, form + sidebar) should target `lg:` (1024px), not `md:` (768px) — tablets get cramped at 768px with narrow columns. Simple layouts (nav lists, footer columns) can stay at `sm:`/`md:`.
 
 ## Definition of done
 

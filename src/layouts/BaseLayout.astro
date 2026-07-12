@@ -93,6 +93,24 @@ const { backdrop = true, ...seo } = Astro.props;
 
     <Header />
 
+    <!--
+      Base UI's Select/Dialog (ThemeSwitcher, Sidebar) portal their popup
+      content onto <body> by default, appended dynamically by JS on hydration
+      — that node is invisible to Astro's View Transitions and gets destroyed
+      on the very first client-side navigation, even though the React
+      component instances survive (nested inside the `transition:persist`'d
+      Header). Giving Base UI an explicit `container` that itself persists
+      fixes it.
+
+      Deliberately a *sibling* of Header, not nested inside it: Header has
+      `backdrop-blur-md`, and `backdrop-filter` acts as a containing block for
+      `position: fixed` descendants in real browser engines (stricter than
+      the spec's literal text for `filter` alone) — nesting the portal here
+      once constrained the sidebar's `fixed inset-y-0` to Header's own ~112px
+      height instead of the viewport.
+    -->
+    <div id="base-ui-portal-root" transition:persist aria-hidden="true"></div>
+
     <main id="main" class="mx-auto w-full max-w-6xl px-5">
       <slot />
     </main>

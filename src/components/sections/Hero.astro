@@ -12,13 +12,20 @@ const stack = ['React', 'Next.js', 'TypeScript', 'Rust', 'Django', 'Node.js'];
     {AUTHOR.availableForWork ? 'Open to opportunities' : 'Currently heads-down'} · {SITE.location}
   </p>
 
-  <h1 class="max-w-4xl text-4xl font-extrabold leading-[1.05] sm:text-6xl md:text-7xl" data-reveal>
+  <h1
+    class="max-w-4xl text-4xl font-extrabold leading-[1.05] sm:text-6xl md:text-7xl xl:text-8xl"
+    data-reveal
+  >
     <span class="block">Building</span>
     <span class="block text-gradient text-glow" id="hero-role">fullstack systems</span>
     <span class="block">that ship &amp; scale.</span>
   </h1>
 
-  <p class="mt-7 max-w-xl text-base text-fg-muted sm:text-lg" data-reveal data-delay="0.1">
+  <p
+    class="mt-7 max-w-xl text-base text-fg-muted sm:text-lg lg:max-w-2xl lg:text-xl"
+    data-reveal
+    data-delay="0.1"
+  >
     I'm <span class="font-semibold text-fg">{SITE.name}</span> — a {SITE.role.toLowerCase()} with
     2+ years turning messy requirements into fast, maintainable products. Frontend craft, backend
     depth, clean architecture.
@@ -36,8 +43,8 @@ const stack = ['React', 'Next.js', 'TypeScript', 'Rust', 'Django', 'Node.js'];
 </section>
 
 <script>
-  // Rotating role words in the hero headline — a light, catchy touch.
-  import { gsap } from 'gsap';
+  // Rotating role words in the hero headline, decrypt/hacker-style reveal.
+  import { scrambleText } from '@lib/utils/scramble';
 
   function initHeroRotator() {
     const el = document.getElementById('hero-role');
@@ -49,18 +56,14 @@ const stack = ['React', 'Next.js', 'TypeScript', 'Rust', 'Django', 'Node.js'];
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) return;
 
+    // Welcoming first-impression decrypt, timed just after the h1's own
+    // scroll-reveal fade so the two don't visually compete.
+    window.setTimeout(() => scrambleText(el, words[0], { duration: 1 }), 350);
+
     setInterval(() => {
       i = (i + 1) % words.length;
-      gsap
-        .timeline()
-        .to(el, { yPercent: -100, opacity: 0, duration: 0.3, ease: 'power2.in' })
-        .add(() => (el.textContent = words[i]))
-        .fromTo(
-          el,
-          { yPercent: 100, opacity: 0 },
-          { yPercent: 0, opacity: 1, duration: 0.4, ease: 'power2.out' }
-        );
-    }, 2600);
+      scrambleText(el, words[i], { duration: 0.6 });
+    }, 3200);
   }
 
   document.addEventListener('astro:page-load', initHeroRotator);

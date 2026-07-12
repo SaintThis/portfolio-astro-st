@@ -1,7 +1,7 @@
 ---
 import { NAV_LINKS, SITE } from '@/config';
 import ThemeSwitcher from '@components/react/ThemeSwitcher.tsx';
-import MobileNav from '@components/react/MobileNav.tsx';
+import Sidebar from '@components/react/Sidebar.tsx';
 
 const pathname = Astro.url.pathname;
 const isActive = (href: string) =>
@@ -22,7 +22,7 @@ const isActive = (href: string) =>
 
     <!-- Desktop nav (zero JS for rendering; a tiny script keeps the active state
          in sync because the header is persisted across View Transitions). -->
-    <nav class="hidden items-center gap-1 md:flex" aria-label="Primary">
+    <nav class="hidden items-center gap-1 lg:flex" aria-label="Primary">
       {
         NAV_LINKS.map((link) => (
           <a
@@ -45,7 +45,7 @@ const isActive = (href: string) =>
 
     <div class="flex items-center gap-3">
       <ThemeSwitcher client:idle />
-      <MobileNav client:idle pathname={pathname} />
+      <Sidebar client:idle />
     </div>
   </div>
 </header>

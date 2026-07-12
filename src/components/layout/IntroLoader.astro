@@ -18,11 +18,16 @@ import { SITE } from '@/config';
   <div class="boot__inner scanlines">
     <pre class="boot__log font-mono"><span data-line>▓ initializing kernel...</span>
 <span data-line>▓ mounting /{SITE.handle}</span>
+<span data-line>▓ syncing content collections...</span>
 <span data-line>▓ decrypting theme buffers...</span>
+<span data-line>▓ waking cursor daemon...</span>
 <span data-line>▓ establishing secure uplink ✓</span></pre>
-    <div class="boot__bar"><i></i></div>
+    <div class="boot__bar-row">
+      <div class="boot__bar"><i></i></div>
+      <span class="boot__pct font-mono" data-pct>0%</span>
+    </div>
     <div class="boot__brand font-mono">
-      <span class="text-gradient">{SITE.name}</span><span class="boot__caret">_</span>
+      <span class="text-gradient" data-brand>{SITE.name}</span><span class="boot__caret">_</span>
     </div>
   </div>
 </div>
@@ -58,9 +63,14 @@ import { SITE } from '@/config';
     display: block;
     opacity: 0;
   }
+  .boot__bar-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
   .boot__bar {
     height: 3px;
-    width: 100%;
+    flex: 1;
     background: var(--color-surface-2);
     border-radius: 2px;
     overflow: hidden;
@@ -71,6 +81,13 @@ import { SITE } from '@/config';
     width: 0%;
     background: linear-gradient(90deg, var(--color-accent), var(--color-accent-2));
     box-shadow: var(--glow) var(--color-accent);
+  }
+  .boot__pct {
+    font-size: 0.7rem;
+    color: var(--color-fg-faint);
+    min-width: 2.5em;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
   }
   .boot__brand {
     margin-top: 1.25rem;
@@ -89,6 +106,7 @@ import { SITE } from '@/config';
 
 <script>
   import { gsap } from 'gsap';
+  import { scrambleText } from '@lib/utils/scramble';
 
   const MIN_BOOT = 1000; // ms — long enough to feel intentional, short enough not to annoy
   let firstLoad = true;
@@ -100,7 +118,7 @@ import { SITE } from '@/config';
 
     // Failsafe: never let the overlay trap the user if rAF/GSAP stalls.
     window.clearTimeout(failsafe);
-    failsafe = window.setTimeout(hideBoot, 2200);
+    failsafe = window.setTimeout(hideBoot, 2600);
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     boot.dataset.state = 'boot';
@@ -109,15 +127,38 @@ import { SITE } from '@/config';
 
     const lines = boot.querySelectorAll('[data-line]');
     const bar = boot.querySelector<HTMLElement>('.boot__bar > i');
+    const pct = boot.querySelector<HTMLElement>('[data-pct]');
+    const brand = boot.querySelector<HTMLElement>('[data-brand]');
+    const brandText = brand?.textContent ?? '';
 
     if (reduced) {
       gsap.set([...lines], { opacity: 1 });
+      if (pct) pct.textContent = '100%';
       window.setTimeout(hideBoot, 180);
       return;
     }
 
-    const tl = gsap.timeline({ onComplete: () => window.setTimeout(hideBoot, 120) });
-    tl.to(bar, { width: '100%', duration: MIN_BOOT / 1000, ease: 'power2.out' }, 0);
+    const tl = gsap.timeline({
+      onComplete: () => {
+        if (brand) {
+          scrambleText(brand, brandText, { duration: 0.45, onComplete: () => window.setTimeout(hideBoot, 150) });
+        } else {
+          window.setTimeout(hideBoot, 120);
+        }
+      },
+    });
+    tl.to(
+      bar,
+      {
+        width: '100%',
+        duration: MIN_BOOT / 1000,
+        ease: 'power2.out',
+        onUpdate: function () {
+          if (pct) pct.textContent = `${Math.round(this.progress() * 100)}%`;
+        },
+      },
+      0
+    );
     tl.to([...lines], { opacity: 1, stagger: MIN_BOOT / 1000 / lines.length, duration: 0.08 }, 0);
   }
 

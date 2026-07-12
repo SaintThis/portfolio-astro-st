@@ -11,8 +11,11 @@ Personal site for **Saint Rabor** — Fullstack Developer (React/Next · TypeScr
 
 - **Astro islands** — ships near-zero JS; interactivity is opt-in per component.
 - **Multi-theme engine** — 4 themes (`cyberpunk`, `matrix`, `synthwave`, `paper`) via CSS variables + a no-flash loader. Add a theme in two files.
-- **Dynamic custom cursor** — lerp-follow ring + dot, magnetic hover, respects `prefers-reduced-motion` and coarse pointers.
-- **Intro boot loader** — a terminal-style boot sequence on first load **and** every route change (hooked into Astro View Transitions).
+- **Magnetic custom cursor** — Motion-spring ring that snaps to the center of buttons/cards/links on hover, dot tracks 1:1. Respects `prefers-reduced-motion` and coarse pointers.
+- **Collapsible sidebar nav** — slide-in drawer for tablet + mobile (below `lg:`), Base UI `Dialog` for focus-trap/Escape/backdrop a11y, Motion for the slide animation.
+- **Accessible dropdowns** — theme switcher built on Base UI's `Select` (full keyboard nav, proper ARIA) instead of a hand-rolled listbox.
+- **Decrypt/scramble text** — hacker-style character-cycling reveal (hero headline word rotation, boot loader brand name), pure GSAP, no extra dependency.
+- **Intro boot loader** — a terminal-style boot sequence (log lines, progress %, decrypt-in brand) on first load **and** every route change (hooked into Astro View Transitions).
 - **API-ready data layer** — a repository pattern means swapping example data for a live backend is a *one-file* change. Components never change.
 - **SEO out of the box** — canonical URLs, Open Graph/Twitter, JSON-LD, sitemap, RSS, `robots.txt`.
 - **Type-safe content** — blog posts are Content Collections with a validated schema.
@@ -24,9 +27,10 @@ Personal site for **Saint Rabor** — Fullstack Developer (React/Next · TypeScr
 | --------------- | ----------------------------------- | ------------------------------------------------------------------- |
 | Framework       | **Astro 7**                         | HTML-first, islands, Rust compiler (fast builds), SSR when needed   |
 | UI islands      | **React 19**                        | Interactivity only where it's needed (cursor, theme, forms, nav)    |
+| Headless UI     | **Base UI**                         | Accessible Select/Dialog primitives (keyboard nav, focus trap) — unstyled, so it takes our semantic Tailwind tokens directly |
 | Styling         | **Tailwind CSS v4**                 | Utility-first, CSS-native config, theme tokens via CSS variables    |
-| Timeline anim   | **GSAP + ScrollTrigger**            | Robust scroll reveals, boot loader, skill bars                      |
-| Component anim  | **Motion** (Framer Motion)          | Spring/gesture animation inside React islands                       |
+| Timeline anim   | **GSAP + ScrollTrigger**            | Scroll reveals, boot loader, skill bars, decrypt/scramble text      |
+| Component anim  | **Motion** (Framer Motion)          | Spring cursor + magnetic hover, sidebar slide transition            |
 | Global state    | **Zustand**                         | Tiny, unopinionated store for theme/cursor/UI (client-only)         |
 | Content         | **Astro Content Collections**       | Type-safe local markdown, ready for a remote loader later           |
 
@@ -58,9 +62,9 @@ npm run dev               # http://localhost:4321
 src/
 ├── components/
 │   ├── layout/     # Header, Footer, IntroLoader, ScrollReveal engine
-│   ├── react/      # Interactive islands (Cursor, ThemeSwitcher, MobileNav, ContactForm)
+│   ├── react/      # Interactive islands (Cursor, ThemeSwitcher, Sidebar, ContactForm)
 │   ├── sections/   # Page sections (Hero, BentoAbout, FeaturedWork, ContactCTA)
-│   ├── seo/        # <SEO /> head component
+│   ├── seo/        # <SEO />, <Analytics /> head components
 │   └── ui/         # Presentational primitives (Button, Tag, Card, TerminalWindow…)
 ├── content/        # Blog posts (markdown) — validated by content.config.ts
 ├── data/           # EXAMPLE data (projects, skills, experience) — swap for API
@@ -68,7 +72,7 @@ src/
 ├── lib/
 │   ├── api/        # Data layer: types, http client, repositories (the API seam)
 │   ├── stores/     # Zustand stores (theme, cursor, ui)
-│   └── utils/      # cn(), formatting helpers
+│   └── utils/      # cn(), formatting helpers, scrambleText() decrypt effect
 ├── pages/          # File-based routes (+ rss.xml, robots.txt)
 ├── styles/         # global.css + themes.css
 ├── config.ts       # Single source of truth: site meta, nav, socials, themes
@@ -112,8 +116,9 @@ Handled by [`src/components/seo/Analytics.astro`](./src/components/seo/Analytics
 
 ## ♿ Accessibility & Performance
 
-- All motion respects `prefers-reduced-motion`.
-- Custom cursor disabled on touch (OS cursor restored); under reduced-motion it stays but the trailing animation is removed (ring snaps to the pointer).
+- All motion respects `prefers-reduced-motion` (including the magnetic cursor and decrypt-text effects).
+- Custom cursor disabled on touch (OS cursor restored); under reduced-motion it stays but the spring is tuned near-instant (no trail, no magnetic pull lag).
+- Sidebar nav and theme switcher use Base UI primitives — full keyboard navigation, focus trap, `Escape` to close, for free.
 - Semantic landmarks, focus-visible rings, `aria-current` on nav.
 - Fonts use `display=swap`; consider self-hosting via `@fontsource` (see [`DESIGN.md`](./DESIGN.md#fonts)).
 

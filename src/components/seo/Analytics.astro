@@ -19,7 +19,7 @@ const enabled = import.meta.env.PROD;
 {
   enabled && gaId && (
     <>
-      <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} />
+      <script async is:inline src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} />
       <script define:vars={{ gaId }} is:inline>
         window.dataLayer = window.dataLayer || [];
         function gtag() {
@@ -53,6 +53,7 @@ const enabled = import.meta.env.PROD;
   enabled && cfToken && (
     <script
       defer
+      is:inline
       src="https://static.cloudflareinsights.com/beacon.min.js"
       data-cf-beacon={`{"token": "${cfToken}"}`}
     />

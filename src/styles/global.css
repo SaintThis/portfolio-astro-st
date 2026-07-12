@@ -57,7 +57,7 @@
     /* Hide the OS cursor only when the custom cursor is active + fine pointer. */
   }
 
-  html[data-cursor='custom'] {
+  html[data-cursor-active] {
     @media (pointer: fine) {
       cursor: none;
     }
