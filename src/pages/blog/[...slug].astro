@@ -12,6 +12,21 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await render(post);
 const mins = readingTime(post.body ?? '');
+
+// Related posts: prefer shared tags, fall back to latest so the section is
+// never empty — readers always leave with a next thing to read.
+const otherPosts = (
+  await getCollection('blog', ({ data, id }) =>
+    id !== post.id && (import.meta.env.PROD ? !data.draft : true)
+  )
+).sort((a, b) => +b.data.date - +a.data.date);
+
+const tagOverlap = (candidate: (typeof otherPosts)[number]) =>
+  candidate.data.tags.filter((t) => post.data.tags.includes(t)).length;
+
+const related = [...otherPosts]
+  .sort((a, b) => tagOverlap(b) - tagOverlap(a) || +b.data.date - +a.data.date)
+  .slice(0, 3);
 ---
 
 <BaseLayout
@@ -43,6 +58,37 @@ const mins = readingTime(post.body ?? '');
     <div class="prose-cyber mt-10 max-w-3xl">
       <Content />
     </div>
+
+    {
+      related.length > 0 && (
+        <footer class="mt-20 max-w-3xl border-t border-border pt-10">
+          <p class="kicker mb-6">
+            <span class="text-accent-2">//</span> Read next
+          </p>
+          <ul class="space-y-5">
+            {related.map((r) => (
+              <li>
+                <a
+                  href={`/blog/${r.id}`}
+                  data-cursor="hover"
+                  data-cursor-label="Read"
+                  class="group block"
+                >
+                  <div class="flex flex-wrap items-center gap-3 font-mono text-xs text-fg-faint">
+                    <time datetime={isoDate(r.data.date)}>{formatDate(r.data.date)}</time>
+                    {tagOverlap(r) > 0 && <span class="text-accent">related</span>}
+                  </div>
+                  <h3 class="mt-1 text-lg font-bold transition-colors group-hover:text-accent">
+                    {r.data.title}
+                  </h3>
+                  <p class="mt-1 text-sm text-fg-muted">{r.data.description}</p>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </footer>
+      )
+    }
   </article>
 </BaseLayout>
 
