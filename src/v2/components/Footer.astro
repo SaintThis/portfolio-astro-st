@@ -1,0 +1,29 @@
+---
+import { SITE, SOCIALS } from '@/config';
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t-4 border-v2-cream bg-v2-black">
+  <div
+    class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-8 font-mono text-xs uppercase tracking-[0.1em] text-v2-cream sm:flex-row"
+  >
+    <span>© {year} {SITE.name} — Broadcast Edition</span>
+
+    <nav aria-label="Social" class="flex items-center gap-4">
+      {
+        SOCIALS.map((s) => (
+          <a
+            href={s.href}
+            target={s.href.startsWith('http') ? '_blank' : undefined}
+            rel={s.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+            class="hover:text-v2-yellow"
+          >
+            {s.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <a href="/" class="text-v2-red hover:text-v2-yellow">← Classic mode</a>
+  </div>
+</footer>

@@ -1,0 +1,136 @@
+---
+/**
+ * Panel — the core v2 building block. A thick-bordered, flat box with one
+ * corner clipped and a protruding tab label, standing in for v1's
+ * TerminalWindow/card treatment. Flat print-poster framing at rest (no
+ * ambient glow) — but on hover/focus it picks up a tight, cursor-following
+ * spotlight + a sharp-edged border glow, echoing the soft backlit accent
+ * behind the burst icon in the ZZZ card reference. Kept restrained (small
+ * radius, no blur haze) so it doesn't drift into v1's neon-cyberpunk look.
+ */
+interface Props {
+  /** Tab label text, e.g. "COPY NINJA" in the reference, or a section tag. */
+  label?: string;
+  corner?: 'tl' | 'tr' | 'bl' | 'br';
+  /** Swap the flat border/text color — default cream-on-black, 'red' for emphasis. */
+  accent?: 'cream' | 'red' | 'yellow';
+  class?: string;
+}
+
+const { label, corner = 'tr', accent = 'cream', class: className } = Astro.props;
+
+const accentVar = {
+  cream: 'var(--color-v2-cream)',
+  red: 'var(--color-v2-red)',
+  yellow: 'var(--color-v2-yellow)',
+}[accent];
+---
+
+<div
+  class:list={['panel', `panel--corner-${corner}`, className]}
+  style={{ '--panel-accent': accentVar }}
+>
+  {label && <span class="panel__tab font-mono">{label}</span>}
+  <div class="panel__spotlight" aria-hidden="true"></div>
+  <div class="panel__body"><slot /></div>
+</div>
+
+<style>
+  .panel {
+    position: relative;
+    border: 3px solid var(--panel-accent, var(--color-v2-cream));
+    background: var(--color-v2-ink);
+    --spotlight-x: 50%;
+    --spotlight-y: 50%;
+    transition:
+      box-shadow 0.25s,
+      border-color 0.25s;
+  }
+
+  .panel:hover,
+  .panel:focus-within {
+    box-shadow:
+      0 0 0 1px var(--panel-accent, var(--color-v2-cream)),
+      0 0 22px -4px var(--panel-accent, var(--color-v2-cream));
+  }
+
+  /* Tight, cursor-following spotlight — a restrained echo of the backlit
+     glow behind the burst icon in the reference card, not v1's ambient
+     neon haze. Position driven by --spotlight-x/y, set in the script below. */
+  .panel__spotlight {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    background: radial-gradient(
+      circle 200px at var(--spotlight-x) var(--spotlight-y),
+      color-mix(in srgb, var(--panel-accent, var(--color-v2-cream)) 18%, transparent),
+      transparent 70%
+    );
+  }
+  .panel:hover .panel__spotlight {
+    opacity: 1;
+  }
+
+  .panel--corner-tr {
+    clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
+  }
+  .panel--corner-tl {
+    clip-path: polygon(28px 0, 100% 0, 100% 100%, 0 100%, 0 28px);
+  }
+  .panel--corner-br {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 28px), calc(100% - 28px) 100%, 0 100%);
+  }
+  .panel--corner-bl {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 28px 100%, 0 calc(100% - 28px));
+  }
+
+  .panel__tab {
+    position: absolute;
+    top: -1px;
+    left: 20px;
+    transform: translateY(-100%);
+    background: var(--color-v2-black);
+    color: var(--panel-accent, var(--color-v2-cream));
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border: 3px solid var(--panel-accent, var(--color-v2-cream));
+    border-bottom: none;
+    white-space: nowrap;
+  }
+
+  .panel__body {
+    padding: 2rem;
+  }
+</style>
+
+<script>
+  // Cursor-tracking spotlight. Reduced-motion users still get the static
+  // border-glow (a state toggle, not motion) via CSS :hover alone — the
+  // cursor-follow effect specifically is skipped since it's motion-driven.
+  function initPanelSpotlights() {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return;
+
+    document.querySelectorAll<HTMLElement>('.panel').forEach((panel) => {
+      if (panel.dataset.spotlightBound) return;
+      panel.dataset.spotlightBound = 'true';
+
+      panel.addEventListener(
+        'pointermove',
+        (e) => {
+          const r = panel.getBoundingClientRect();
+          panel.style.setProperty('--spotlight-x', `${e.clientX - r.left}px`);
+          panel.style.setProperty('--spotlight-y', `${e.clientY - r.top}px`);
+        },
+        { passive: true }
+      );
+    });
+  }
+
+  initPanelSpotlights();
+</script>

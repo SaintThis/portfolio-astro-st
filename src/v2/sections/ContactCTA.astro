@@ -1,0 +1,30 @@
+---
+import { SITE } from '@/config';
+import Panel from '@/v2/components/Panel.astro';
+---
+
+<section class="py-16">
+  <Panel label="Transmission" corner="bl" accent="yellow" class="text-center">
+    <p class="font-mono text-xs uppercase tracking-[0.25em] text-v2-yellow">// Let's Build</p>
+    <h2 class="mt-4 font-display text-3xl uppercase text-v2-cream sm:text-5xl">
+      Have A Project <span class="text-v2-red">In Mind?</span>
+    </h2>
+    <p class="mx-auto mt-4 max-w-md font-mono text-sm text-v2-cream/80">
+      Open to fullstack roles, freelance builds, and interesting collaborations.
+    </p>
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <a
+        href="/contact"
+        class="bg-v2-red px-6 py-3 font-mono text-xs uppercase tracking-[0.15em] text-v2-black transition-colors hover:bg-v2-yellow"
+      >
+        Start A Conversation
+      </a>
+      <a
+        href={`mailto:${SITE.email}`}
+        class="border-2 border-v2-cream px-6 py-3 font-mono text-xs uppercase tracking-[0.15em] text-v2-cream transition-colors hover:border-v2-yellow hover:text-v2-yellow"
+      >
+        {SITE.email}
+      </a>
+    </div>
+  </Panel>
+</section>

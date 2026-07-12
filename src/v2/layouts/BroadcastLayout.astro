@@ -1,0 +1,53 @@
+---
+/**
+ * BroadcastLayout — v2's own <html> shell, independent of BaseLayout.astro.
+ * v2 is a genuinely different visual system (see plan notes / DESIGN.md),
+ * so it does not share v1's fonts, global.css, cursor, or intro loader.
+ *
+ * noindex by default: v2 is an experimental alt-presentation of the same
+ * content as v1 — avoid duplicate-content SEO signals until it's the
+ * primary site (or content genuinely diverges from v1).
+ */
+import '@/v2/styles/broadcast.css';
+import { SITE } from '@/config';
+import Header from '@/v2/components/Header.astro';
+import Footer from '@/v2/components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+}
+
+const { title, description = SITE.description, noindex = true } = Astro.props;
+const pageTitle = title ? `${title} — ${SITE.name} · v2` : `${SITE.name} · v2 [Broadcast]`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111110" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Fonts scoped to v2 only — never loaded on v1 pages. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <Header />
+    <main class="mx-auto w-full max-w-6xl px-5 py-12">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

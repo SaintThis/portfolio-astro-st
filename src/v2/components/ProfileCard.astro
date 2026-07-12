@@ -1,0 +1,336 @@
+---
+/**
+ * ProfileCard — a faithful structural match to the Haron reference card:
+ * a two-layer construction (cream outer frame + black inner panel), a
+ * diagonal notch cut into the top edge, a photo well with a vertical
+ * rotated name running beside it, a circular glowing icon accent, a quote
+ * block, a bottom-right badge/stamp, a top pill label bar, and a bottom
+ * watermark strip with registration-mark dots.
+ *
+ * This is deliberately its own component rather than a Panel variant —
+ * Panel stays simple (project cards, CTAs); this is the one place in v2
+ * that needs the full reference composition.
+ */
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+interface Props {
+  name: string;
+  tag: string;
+  quote: string;
+  statLabel: string;
+  statValue: string;
+  version: string;
+}
+
+const { name, tag, quote, statLabel, statValue, version } = Astro.props;
+
+const PORTRAIT_PATH = '/v2/portrait.png';
+const hasPortrait = existsSync(
+  fileURLToPath(new URL(`../../../public${PORTRAIT_PATH}`, import.meta.url))
+);
+const [firstName, ...rest] = name.split(' ');
+const lastName = rest.join(' ') || firstName;
+---
+
+<div class="profile-card">
+  <div class="profile-card__topbar font-mono">
+    <span class="profile-card__pill">{tag}</span>
+    <span class="profile-card__stamp">
+      NEW<br />PRACTICE
+    </span>
+  </div>
+
+  <div class="profile-card__outer">
+    <div class="profile-card__inner">
+      <div class="profile-card__photo">
+        {
+          hasPortrait ? (
+            <img src={PORTRAIT_PATH} alt={name} />
+          ) : (
+            <div class="profile-card__no-signal font-mono">
+              NO
+              <br />
+              SIGNAL
+            </div>
+          )
+        }
+      </div>
+
+      <span class="profile-card__name font-display">{lastName}</span>
+
+      <div class="profile-card__quote-wrap">
+        <div class="profile-card__glow" aria-hidden="true">
+          <span class="profile-card__spark">✦</span>
+        </div>
+        <p class="profile-card__quote font-mono">{quote}</p>
+        <span class="profile-card__bar" aria-hidden="true"></span>
+      </div>
+    </div>
+
+    <span class="reg-dot reg-dot--1" aria-hidden="true"></span>
+    <span class="reg-dot reg-dot--2" aria-hidden="true"></span>
+    <span class="reg-dot reg-dot--3" aria-hidden="true"></span>
+    <span class="reg-dot reg-dot--4" aria-hidden="true"></span>
+
+    <div class="profile-card__badge font-mono">
+      <span class="profile-card__badge-label">{statLabel}</span>
+      <span class="profile-card__badge-value">{statValue}</span>
+    </div>
+  </div>
+
+  <div class="profile-card__footer font-mono">
+    <span>ZERO LATENCY PORTFOLIO</span>
+    <span>V.{version}</span>
+  </div>
+</div>
+
+<style>
+  .profile-card {
+    position: relative;
+    color: var(--color-v2-black);
+  }
+
+  /* ---------- top bar ---------- */
+  .profile-card__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.5rem 0.6rem;
+  }
+  .profile-card__pill {
+    border: 2px solid var(--color-v2-cream);
+    border-radius: 999px;
+    padding: 0.35rem 1rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-v2-cream);
+  }
+  .profile-card__stamp {
+    font-size: 0.6rem;
+    line-height: 1.2;
+    letter-spacing: 0.1em;
+    text-align: right;
+    color: color-mix(in srgb, var(--color-v2-cream) 55%, transparent);
+  }
+
+  /* ---------- outer (cream) frame ---------- */
+  .profile-card__outer {
+    position: relative;
+    background: var(--color-v2-cream);
+    padding: 1.1rem;
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - 40px),
+      calc(100% - 40px) 100%,
+      0 100%
+    );
+  }
+
+  /* ---------- inner (black) panel ---------- */
+  .profile-card__inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(120px, 0.9fr) auto 1.3fr;
+    gap: 0;
+    background: var(--color-v2-ink);
+    min-height: 320px;
+    clip-path: polygon(
+      0 0,
+      40% 0,
+      46% 22px,
+      58% 22px,
+      64% 0,
+      100% 0,
+      100% 100%,
+      0 100%
+    );
+  }
+
+  .profile-card__photo {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-v2-black);
+  }
+  .profile-card__photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    filter: contrast(1.05) saturate(1.05);
+  }
+  .profile-card__no-signal {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    min-width: 110px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: color-mix(in srgb, var(--color-v2-cream) 35%, transparent);
+    background: repeating-linear-gradient(
+      45deg,
+      transparent 0 8px,
+      color-mix(in srgb, var(--color-v2-cream) 4%, transparent) 8px 16px
+    );
+  }
+
+  .profile-card__name {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0.6rem;
+    font-size: 1.4rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-v2-red);
+    border-left: 3px solid var(--color-v2-cream);
+    border-right: 3px solid var(--color-v2-cream);
+  }
+
+  /* Owns the glow icon + quote + bar as one unit, so the glow's position is
+     always relative to the quote text itself — not the outer grid — and
+     can't drift out of alignment when the grid reflows on narrow screens. */
+  .profile-card__quote-wrap {
+    position: relative;
+    grid-column: 3;
+    align-self: center;
+    padding: 1.5rem;
+  }
+
+  .profile-card__glow {
+    position: absolute;
+    top: 0;
+    right: 1.5rem;
+    display: grid;
+    height: 3.5rem;
+    width: 3.5rem;
+    place-items: center;
+    border-radius: 999px;
+    background: radial-gradient(
+      circle,
+      var(--color-v2-red) 0%,
+      color-mix(in srgb, var(--color-v2-red) 60%, transparent) 55%,
+      transparent 75%
+    );
+  }
+  .profile-card__spark {
+    font-size: 1.4rem;
+    color: var(--color-v2-cream);
+  }
+
+  .profile-card__quote {
+    padding-top: 3rem;
+    font-size: 0.78rem;
+    line-height: 1.9;
+    letter-spacing: 0.04em;
+    color: var(--color-v2-cream);
+  }
+
+  .profile-card__bar {
+    display: block;
+    margin-top: 1.5rem;
+    height: 4px;
+    background: var(--color-v2-red);
+  }
+
+  /* ---------- registration dots ---------- */
+  .reg-dot {
+    position: absolute;
+    height: 6px;
+    width: 6px;
+    background: var(--color-v2-black);
+  }
+  .reg-dot--1 { top: 0.5rem; left: 0.5rem; }
+  .reg-dot--2 { top: 0.5rem; right: 0.5rem; }
+  .reg-dot--3 { bottom: 0.5rem; left: 0.5rem; }
+  .reg-dot--4 { bottom: 3.2rem; right: 3.5rem; }
+
+  /* ---------- bottom-right badge ---------- */
+  .profile-card__badge {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--color-v2-red) 0 8px,
+      var(--color-v2-black) 8px 16px
+    );
+    padding: 0.6rem 1.6rem 0.5rem 0.9rem;
+    clip-path: polygon(20px 0, 100% 0, 100% 100%, 0 100%);
+  }
+  .profile-card__badge-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    color: var(--color-v2-cream);
+    text-transform: uppercase;
+  }
+  .profile-card__badge-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--color-v2-cream);
+  }
+
+  /* ---------- bottom watermark strip ---------- */
+  .profile-card__footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.6rem 0.5rem 0;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-v2-cream) 40%, transparent);
+  }
+
+  /* Below 640px the 3-column layout compresses the photo/name/quote too far
+     to stay legible — stack into rows instead: photo, a horizontal name
+     bar, then the quote. The glow stays correctly placed automatically
+     since it's positioned relative to .profile-card__quote-wrap, not the
+     overall grid. */
+  @media (max-width: 640px) {
+    .profile-card__inner {
+      grid-template-columns: 1fr;
+      grid-template-rows: 200px auto auto;
+    }
+    .profile-card__photo {
+      grid-column: 1;
+      grid-row: 1;
+    }
+    .profile-card__name {
+      grid-column: 1;
+      grid-row: 2;
+      writing-mode: horizontal-tb;
+      transform: none;
+      border-left: none;
+      border-right: none;
+      border-top: 3px solid var(--color-v2-cream);
+      border-bottom: 3px solid var(--color-v2-cream);
+      padding: 0.6rem;
+      text-align: center;
+      font-size: 1.25rem;
+    }
+    .profile-card__quote-wrap {
+      grid-column: 1;
+      grid-row: 3;
+    }
+    .profile-card__glow {
+      height: 2.5rem;
+      width: 2.5rem;
+      right: 0;
+    }
+    .profile-card__quote {
+      padding-top: 2.75rem;
+      font-size: 0.72rem;
+    }
+  }
+</style>

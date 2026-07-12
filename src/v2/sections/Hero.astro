@@ -1,0 +1,60 @@
+---
+import { SITE, AUTHOR } from '@/config';
+import ProfileCard from '@/v2/components/ProfileCard.astro';
+
+const stack = ['React', 'Next.js', 'TypeScript', 'Rust', 'Django', 'Node.js'];
+---
+
+<section class="py-12">
+  <p class="mb-4 font-mono text-xs uppercase tracking-[0.25em] text-v2-red">
+    New Eridu Broadcasting — {SITE.location}
+  </p>
+  <h1 class="mb-10 font-display text-5xl uppercase leading-[0.95] text-v2-cream sm:text-6xl lg:text-7xl">
+    Full<span class="text-v2-red">stack</span> Systems On <span class="text-v2-yellow">Air</span>.
+  </h1>
+
+  <ProfileCard
+    name={SITE.name}
+    tag={`${SITE.role.toUpperCase()} · ${SITE.name.split(' ')[0].toUpperCase()} · REMOTE`}
+    quote={`I will ship the true solution behind every messy requirement, and make the codebase better than I found it. If the roadmap guiding me to production demands trade-offs, I am willing to reason through every one of them.`}
+    statLabel="Experience"
+    statValue="2+ / YRS"
+    version="20260713"
+  />
+
+  <div class="mt-6 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex flex-wrap gap-2">
+      {
+        stack.map((s) => (
+          <span class="border-2 border-v2-cream px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-v2-cream">
+            {s}
+          </span>
+        ))
+      }
+    </div>
+
+    {
+      AUTHOR.availableForWork && (
+        <p class="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-v2-yellow">
+          <i class="broadcast-live-dot inline-block h-1.5 w-1.5 rounded-full bg-v2-yellow" />
+          Currently open to opportunities
+        </p>
+      )
+    }
+  </div>
+
+  <div class="mt-6 flex flex-wrap gap-3">
+    <a
+      href="/projects"
+      class="bg-v2-red px-5 py-2.5 font-mono text-xs uppercase tracking-[0.15em] text-v2-black transition-colors hover:bg-v2-yellow"
+    >
+      View Work →
+    </a>
+    <a
+      href="/contact"
+      class="border-2 border-v2-cream px-5 py-2.5 font-mono text-xs uppercase tracking-[0.15em] text-v2-cream transition-colors hover:border-v2-yellow hover:text-v2-yellow"
+    >
+      Get In Touch
+    </a>
+  </div>
+</section>

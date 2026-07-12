@@ -1,0 +1,66 @@
+---
+import { getFeaturedProjects } from '@lib/api';
+import ChannelHeader from '@/v2/components/ChannelHeader.astro';
+import Panel from '@/v2/components/Panel.astro';
+
+const projects = await getFeaturedProjects(3);
+const corners = ['tr', 'tl', 'br'] as const;
+---
+
+<section class="py-12">
+  <ChannelHeader index="01" title="Selected Work" live />
+
+  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      projects.map((p, i) => (
+        <a href={p.links.caseStudy ?? `/projects/${p.slug}`} class="block h-full">
+          <Panel label={p.category} corner={corners[i % corners.length]} class="h-full">
+            <span class="font-mono text-[10px] uppercase tracking-wider text-v2-yellow">
+              {p.status}
+            </span>
+            <h3 class="mt-2 font-display text-xl uppercase text-v2-cream" data-decrypt-title>
+              {p.title}
+            </h3>
+            <p class="mt-2 font-mono text-xs leading-relaxed text-v2-cream/80">{p.summary}</p>
+            <div class="mt-4 flex flex-wrap gap-1.5">
+              {p.tags.slice(0, 3).map((t) => (
+                <span class="border border-v2-cream/40 px-1.5 py-0.5 font-mono text-[9px] uppercase text-v2-cream/70">
+                  {t}
+                </span>
+              ))}
+            </div>
+          </Panel>
+        </a>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  import { scrambleText } from '@lib/utils/scramble';
+
+  function initDecryptTitles() {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return;
+
+    document.querySelectorAll<HTMLElement>('[data-decrypt-title]').forEach((el) => {
+      if (el.dataset.decryptBound) return;
+      el.dataset.decryptBound = 'true';
+
+      const original = el.textContent?.trim() ?? '';
+      const card = el.closest('a');
+      let animating = false;
+
+      card?.addEventListener('mouseenter', () => {
+        if (animating) return;
+        animating = true;
+        scrambleText(el, original, {
+          duration: 0.45,
+          onComplete: () => (animating = false),
+        });
+      });
+    });
+  }
+
+  initDecryptTitles();
+</script>
