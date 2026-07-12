@@ -1,0 +1,25 @@
+---
+/** Section header with a mono kicker + optional index number. */
+interface Props {
+  kicker?: string;
+  title: string;
+  index?: string;
+  align?: 'left' | 'center';
+}
+const { kicker, title, index, align = 'left' } = Astro.props;
+---
+
+<header class={align === 'center' ? 'text-center' : ''}>
+  {
+    kicker && (
+      <p class="kicker mb-3 flex items-center gap-2" class:list={{ 'justify-center': align === 'center' }}>
+        {index && <span class="text-fg-faint">{index}</span>}
+        <span class="text-accent-2">//</span> {kicker}
+      </p>
+    )
+  }
+  <h2 class="text-3xl font-bold sm:text-4xl md:text-5xl">
+    <slot name="title">{title}</slot>
+  </h2>
+  <slot />
+</header>

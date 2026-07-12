@@ -1,0 +1,91 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import SectionHeading from '@components/ui/SectionHeading.astro';
+import ProjectCard from '@components/ui/ProjectCard.astro';
+import Reveal from '@components/ui/Reveal.astro';
+import { getProjects, getProjectCategories } from '@lib/api';
+
+const projects = await getProjects();
+const categories = await getProjectCategories();
+---
+
+<BaseLayout
+  title="Projects"
+  description="A selection of fullstack projects — microfrontends, backend services, tooling, and experiments."
+>
+  <section class="py-16">
+    <SectionHeading kicker="portfolio" title="Projects" index="//" />
+    <p class="mt-4 max-w-xl text-fg-muted">
+      Things I've architected, built, and shipped. Filter by category — data is loaded through a
+      repository layer, ready to swap for a live API.
+    </p>
+
+    <!-- Filter bar (progressive enhancement: works without JS by showing all) -->
+    <div class="mt-8 flex flex-wrap gap-2" role="tablist" aria-label="Filter projects">
+      <button
+        class="filter-btn is-active"
+        data-filter="all"
+        data-cursor="hover"
+        type="button">all</button
+      >
+      {
+        categories.map((c) => (
+          <button class="filter-btn" data-filter={c} data-cursor="hover" type="button">
+            {c}
+          </button>
+        ))
+      }
+    </div>
+
+    <div id="project-grid" class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        projects.map((p, i) => (
+          <Reveal delay={(i % 3) * 0.06} class="project-item h-full" data-category={p.category}>
+            <ProjectCard project={p} />
+          </Reveal>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .filter-btn {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    padding: 0.35rem 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-box);
+    color: var(--color-fg-muted);
+    transition: all 0.2s;
+  }
+  .filter-btn:hover {
+    color: var(--color-fg);
+    border-color: var(--color-accent);
+  }
+  .filter-btn.is-active {
+    background: var(--color-accent);
+    color: var(--color-accent-contrast);
+    border-color: var(--color-accent);
+  }
+</style>
+
+<script>
+  function initFilters() {
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
+    const items = document.querySelectorAll<HTMLElement>('.project-item');
+    if (!buttons.length) return;
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const filter = btn.dataset.filter;
+        buttons.forEach((b) => b.classList.toggle('is-active', b === btn));
+        items.forEach((item) => {
+          const show = filter === 'all' || item.dataset.category === filter;
+          item.style.display = show ? '' : 'none';
+        });
+      });
+    });
+  }
+  document.addEventListener('astro:page-load', initFilters);
+</script>

@@ -1,0 +1,152 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import SectionHeading from '@components/ui/SectionHeading.astro';
+import Reveal from '@components/ui/Reveal.astro';
+import Tag from '@components/ui/Tag.astro';
+import TerminalWindow from '@components/ui/TerminalWindow.astro';
+import Button from '@components/ui/Button.astro';
+import { getSkills, getExperience } from '@lib/api';
+import { AUTHOR, SITE } from '@/config';
+
+const skills = await getSkills();
+const experience = await getExperience();
+
+const groups = ['frontend', 'backend', 'architecture', 'devops'] as const;
+const groupLabels: Record<(typeof groups)[number], string> = {
+  frontend: 'Frontend',
+  backend: 'Backend',
+  architecture: 'Architecture',
+  devops: 'Tools & DevOps',
+};
+---
+
+<BaseLayout title="About" description={AUTHOR.summary}>
+  <!-- Intro -->
+  <section class="py-16">
+    <SectionHeading kicker="whoami" title="About me" index="00" />
+    <div class="mt-8 grid gap-10 md:grid-cols-[1.4fr_1fr]">
+      <Reveal class="space-y-4 text-lg leading-relaxed text-fg-muted">
+        <p>{AUTHOR.summary}</p>
+        <p>
+          I've worked inside enterprise client teams, led a
+          <span class="text-fg">Microfrontend</span> effort for a core product, and shipped tooling used
+          by 50+ people. I care about <span class="text-accent">SOLID principles</span>, clean code,
+          and shipping things that don't rot.
+        </p>
+        <div class="flex flex-wrap gap-2 pt-2">
+          <Tag accent>Cross-cultural teams</Tag>
+          <Tag accent>Mentoring</Tag>
+          <Tag accent>Ownership</Tag>
+          <Tag accent>B2 English</Tag>
+        </div>
+      </Reveal>
+
+      <Reveal delay={0.1}>
+        <TerminalWindow title="saint@dev ~ %">
+          <pre class="whitespace-pre-wrap font-mono text-xs leading-relaxed text-fg-muted"><span class="text-accent-2">$</span> cat profile.json
+&#123;
+  <span class="text-accent">"name"</span>: <span class="text-success">"Saint Rabor"</span>,
+  <span class="text-accent">"role"</span>: <span class="text-success">"Fullstack Developer"</span>,
+  <span class="text-accent">"location"</span>: <span class="text-success">"{SITE.location}"</span>,
+  <span class="text-accent">"years"</span>: <span class="text-warning">2</span>,
+  <span class="text-accent">"focus"</span>: [<span class="text-success">"web"</span>, <span class="text-success">"backend"</span>, <span class="text-success">"architecture"</span>]
+&#125;
+<span class="text-accent-2">$</span> <span class="animate-[blink_1s_step-end_infinite]">_</span></pre>
+        </TerminalWindow>
+      </Reveal>
+    </div>
+  </section>
+
+  <!-- Skills -->
+  <section class="py-16">
+    <SectionHeading kicker="stack" title="Skills" index="01" />
+    <div class="mt-8 grid gap-8 sm:grid-cols-2">
+      {
+        groups.map((g) => (
+          <Reveal>
+            <div>
+              <h3 class="mb-4 font-mono text-sm text-accent-2">{groupLabels[g]}</h3>
+              <ul class="space-y-3">
+                {skills
+                  .filter((s) => s.category === g)
+                  .map((s) => (
+                    <li>
+                      <div class="mb-1 flex justify-between text-sm">
+                        <span>{s.name}</span>
+                        <span class="font-mono text-xs text-fg-faint">{s.level}%</span>
+                      </div>
+                      <div class="h-1.5 overflow-hidden rounded-full bg-surface-2">
+                        <div
+                          class="skill-bar h-full rounded-full"
+                          style={`width:0%;--target:${s.level}%;background:linear-gradient(90deg,var(--color-accent),var(--color-accent-2))`}
+                          data-skill
+                        />
+                      </div>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          </Reveal>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Experience -->
+  <section class="py-16">
+    <SectionHeading kicker="history" title="Experience" index="02" />
+    <div class="mt-10 space-y-3 border-l border-border pl-6">
+      {
+        experience.map((job, i) => (
+          <Reveal delay={i * 0.05}>
+            <div class="relative rounded-[var(--radius-box)] border border-border bg-surface p-5">
+              <span
+                class:list={[
+                  'absolute -left-[31px] top-6 h-3 w-3 rounded-full border-2 border-bg',
+                  job.current ? 'bg-accent box-glow' : 'bg-fg-faint',
+                ]}
+              />
+              <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 class="text-lg font-bold">{job.role}</h3>
+                <span class="font-mono text-xs text-accent-2">{job.period}</span>
+              </div>
+              <p class="mt-0.5 text-sm text-fg-muted">{job.company}</p>
+              <ul class="mt-3 space-y-1.5 text-sm text-fg-muted">
+                {job.highlights.map((h) => (
+                  <li class="flex gap-2">
+                    <span class="text-accent">▹</span>
+                    {h}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Reveal>
+        ))
+      }
+    </div>
+
+    <div class="mt-12 text-center">
+      <Button href="/contact" variant="outline">Let's work together →</Button>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // Animate skill bars to their target width when scrolled into view.
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+
+  function initSkillBars() {
+    document.querySelectorAll<HTMLElement>('[data-skill]').forEach((bar) => {
+      const target = getComputedStyle(bar).getPropertyValue('--target').trim();
+      gsap.to(bar, {
+        width: target,
+        duration: 1,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: bar, start: 'top 92%', once: true },
+      });
+    });
+  }
+  document.addEventListener('astro:page-load', initSkillBars);
+</script>

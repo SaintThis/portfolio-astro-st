@@ -1,0 +1,30 @@
+---
+/**
+ * Scroll-reveal wrapper powered by GSAP ScrollTrigger.
+ * Wrap any block: <Reveal><Card/></Reveal>. Respects reduced-motion.
+ *
+ * `y` = travel distance, `delay` = stagger seconds. Uses a data-attribute the
+ * shared script (below) queries, so many Reveals share one ScrollTrigger setup.
+ */
+interface Props {
+  y?: number;
+  delay?: number;
+  class?: string;
+}
+const { y = 24, delay = 0, class: className } = Astro.props;
+---
+
+<div class:list={['reveal', className]} data-reveal data-y={y} data-delay={delay}>
+  <slot />
+</div>
+
+<style>
+  .reveal {
+    opacity: 0;
+  }
+  /* If JS/GSAP is unavailable, never leave content hidden. */
+  :global(html.no-js) .reveal,
+  .reveal.is-visible {
+    opacity: 1;
+  }
+</style>

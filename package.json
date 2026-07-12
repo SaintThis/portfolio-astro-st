@@ -1,0 +1,46 @@
+{
+  "name": "portfolio-astro-st",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Cyberpunk / coder-themed personal portfolio built with Astro — fast, SEO-friendly, API-ready.",
+  "author": "Saint Rabor <saintstraborrr@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check",
+    "format": "prettier --write \"src/**/*.{astro,ts,tsx,css,md,json}\"",
+    "lint": "eslint . --ext .js,.ts,.astro,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.2.0",
+    "@astrojs/rss": "^4.0.11",
+    "@astrojs/sitemap": "^3.2.1",
+    "astro": "^5.4.0",
+    "clsx": "^2.1.1",
+    "gsap": "^3.12.7",
+    "motion": "^12.4.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.0.1",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@tailwindcss/vite": "^4.0.6",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "prettier": "^3.5.0",
+    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "tailwindcss": "^4.0.6",
+    "typescript": "^5.7.3"
+  }
+}

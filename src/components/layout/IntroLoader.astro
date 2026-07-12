@@ -1,0 +1,161 @@
+---
+/**
+ * Intro / boot loader.
+ *
+ * Shows a short terminal "boot sequence" on first paint AND on every client-side
+ * navigation (Astro View Transitions). Implemented as an Astro component with a
+ * vanilla + GSAP client script rather than a React island, because the swap
+ * lifecycle (astro:before-preparation → astro:after-swap → astro:page-load) is
+ * far easier to hook reliably from a persistent script than from a re-mounting
+ * island.
+ *
+ * Persisted across navigations via `transition:persist` so it never unmounts.
+ */
+import { SITE } from '@/config';
+---
+
+<div id="boot" class="boot" data-state="boot" transition:persist aria-hidden="true">
+  <div class="boot__inner scanlines">
+    <pre class="boot__log font-mono"><span data-line>▓ initializing kernel...</span>
+<span data-line>▓ mounting /{SITE.handle}</span>
+<span data-line>▓ decrypting theme buffers...</span>
+<span data-line>▓ establishing secure uplink ✓</span></pre>
+    <div class="boot__bar"><i></i></div>
+    <div class="boot__brand font-mono">
+      <span class="text-gradient">{SITE.name}</span><span class="boot__caret">_</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .boot {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    display: grid;
+    place-items: center;
+    background: var(--color-bg);
+    background-image:
+      radial-gradient(60% 60% at 50% 40%, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent);
+  }
+  .boot[data-state='done'] {
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+  }
+  .boot__inner {
+    position: relative;
+    width: min(90vw, 520px);
+    padding: 1.5rem;
+  }
+  .boot__log {
+    font-size: 0.8rem;
+    line-height: 1.7;
+    color: var(--color-fg-muted);
+    margin: 0 0 1rem;
+  }
+  .boot__log [data-line] {
+    display: block;
+    opacity: 0;
+  }
+  .boot__bar {
+    height: 3px;
+    width: 100%;
+    background: var(--color-surface-2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .boot__bar > i {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-2));
+    box-shadow: var(--glow) var(--color-accent);
+  }
+  .boot__brand {
+    margin-top: 1.25rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .boot__caret {
+    animation: blink 1s step-end infinite;
+    color: var(--color-accent-2);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .boot { transition: none; }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+
+  const MIN_BOOT = 1000; // ms — long enough to feel intentional, short enough not to annoy
+  let firstLoad = true;
+  let failsafe = 0;
+
+  function runBoot() {
+    const boot = document.getElementById('boot');
+    if (!boot) return;
+
+    // Failsafe: never let the overlay trap the user if rAF/GSAP stalls.
+    window.clearTimeout(failsafe);
+    failsafe = window.setTimeout(hideBoot, 2200);
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    boot.dataset.state = 'boot';
+    boot.style.opacity = '1';
+    boot.style.visibility = 'visible';
+
+    const lines = boot.querySelectorAll('[data-line]');
+    const bar = boot.querySelector<HTMLElement>('.boot__bar > i');
+
+    if (reduced) {
+      gsap.set([...lines], { opacity: 1 });
+      window.setTimeout(hideBoot, 180);
+      return;
+    }
+
+    const tl = gsap.timeline({ onComplete: () => window.setTimeout(hideBoot, 120) });
+    tl.to(bar, { width: '100%', duration: MIN_BOOT / 1000, ease: 'power2.out' }, 0);
+    tl.to([...lines], { opacity: 1, stagger: MIN_BOOT / 1000 / lines.length, duration: 0.08 }, 0);
+  }
+
+  function hideBoot() {
+    const boot = document.getElementById('boot');
+    if (!boot || boot.dataset.state === 'done') return;
+    window.clearTimeout(failsafe);
+    gsap.to(boot, {
+      opacity: 0,
+      duration: 0.45,
+      ease: 'power2.inOut',
+      onComplete: () => {
+        boot.dataset.state = 'done';
+        document.dispatchEvent(new CustomEvent('boot:done'));
+      },
+    });
+  }
+
+  function showInstant() {
+    const boot = document.getElementById('boot');
+    if (!boot) return;
+    gsap.killTweensOf(boot);
+    boot.dataset.state = 'boot';
+    boot.style.visibility = 'visible';
+    gsap.set(boot, { opacity: 1 });
+  }
+
+  // First page load.
+  document.addEventListener('astro:page-load', () => {
+    if (firstLoad) {
+      firstLoad = false;
+      runBoot();
+    } else {
+      // Arrived on a new page via view transition — finish the quick boot.
+      runBoot();
+    }
+  });
+
+  // Navigation started — cover the screen immediately for a seamless transition.
+  document.addEventListener('astro:before-preparation', showInstant);
+</script>

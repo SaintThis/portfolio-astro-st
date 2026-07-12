@@ -1,0 +1,49 @@
+---
+// No markup — just the shared reveal engine. Included once in BaseLayout.
+---
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  function initReveals() {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const els = gsap.utils.toArray<HTMLElement>('[data-reveal]:not(.is-visible)');
+
+    els.forEach((el) => {
+      const y = Number(el.dataset.y ?? 24);
+      const delay = Number(el.dataset.delay ?? 0);
+
+      if (reduced) {
+        el.classList.add('is-visible');
+        return;
+      }
+
+      gsap.fromTo(
+        el,
+        { opacity: 0, y },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.7,
+          delay,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+          onStart: () => el.classList.add('is-visible'),
+        }
+      );
+    });
+  }
+
+  // Run on each navigation. Kill stale triggers first to avoid duplicates.
+  document.addEventListener('astro:page-load', () => {
+    ScrollTrigger.getAll().forEach((t) => t.kill());
+    initReveals();
+    ScrollTrigger.refresh();
+  });
+
+  // Recompute after the boot loader clears (layout may shift).
+  document.addEventListener('boot:done', () => ScrollTrigger.refresh());
+</script>

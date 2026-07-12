@@ -1,0 +1,76 @@
+---
+import { NAV_LINKS, SITE } from '@/config';
+import ThemeSwitcher from '@components/react/ThemeSwitcher.tsx';
+import MobileNav from '@components/react/MobileNav.tsx';
+
+const pathname = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === '/' ? pathname === '/' : pathname.startsWith(href);
+---
+
+<header
+  class="fixed inset-x-0 top-0 z-40 border-b border-border/60 bg-bg/70 backdrop-blur-md"
+  transition:persist
+>
+  <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
+    <!-- Wordmark -->
+    <a href="/" class="group flex items-center gap-2 font-mono font-bold" data-cursor="hover">
+      <span class="text-accent-2">&gt;</span>
+      <span class="tracking-tight">{SITE.name.split(' ')[0]}</span>
+      <span class="text-accent animate-[blink_1.2s_step-end_infinite]">_</span>
+    </a>
+
+    <!-- Desktop nav (zero JS for rendering; a tiny script keeps the active state
+         in sync because the header is persisted across View Transitions). -->
+    <nav class="hidden items-center gap-1 md:flex" aria-label="Primary">
+      {
+        NAV_LINKS.map((link) => (
+          <a
+            href={link.href}
+            data-cursor="hover"
+            data-nav-link
+            aria-current={isActive(link.href) ? 'page' : undefined}
+            class:list={[
+              'nav-link rounded-[var(--radius-box)] px-3 py-1.5 font-mono text-sm transition-colors',
+              isActive(link.href)
+                ? 'is-active text-accent'
+                : 'text-fg-muted hover:bg-surface hover:text-fg',
+            ]}
+          >
+            <span class="text-fg-faint">/</span>{link.label.toLowerCase()}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <ThemeSwitcher client:idle />
+      <MobileNav client:idle pathname={pathname} />
+    </div>
+  </div>
+</header>
+<!-- Spacer for the fixed header -->
+<div class="h-16" aria-hidden="true"></div>
+
+<script>
+  // The header persists across View Transitions, so its server-rendered active
+  // state would go stale. Recompute it on every navigation.
+  function syncActiveNav() {
+    const path = window.location.pathname;
+    document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]').forEach((link) => {
+      const href = new URL(link.href).pathname;
+      const active = href === '/' ? path === '/' : path.startsWith(href);
+
+      link.classList.toggle('is-active', active);
+      link.classList.toggle('text-accent', active);
+      link.classList.toggle('text-fg-muted', !active);
+      link.classList.toggle('hover:bg-surface', !active);
+      link.classList.toggle('hover:text-fg', !active);
+
+      if (active) link.setAttribute('aria-current', 'page');
+      else link.removeAttribute('aria-current');
+    });
+  }
+
+  document.addEventListener('astro:page-load', syncActiveNav);
+</script>

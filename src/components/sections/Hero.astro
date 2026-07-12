@@ -1,0 +1,67 @@
+---
+import { SITE, AUTHOR } from '@/config';
+import Button from '@components/ui/Button.astro';
+import Tag from '@components/ui/Tag.astro';
+
+const stack = ['React', 'Next.js', 'TypeScript', 'Rust', 'Django', 'Node.js'];
+---
+
+<section class="relative flex min-h-[calc(100dvh-4rem)] flex-col justify-center py-16">
+  <p class="kicker mb-5 flex items-center gap-2" data-reveal data-y="12">
+    <span class="inline-block h-1.5 w-1.5 rounded-full bg-success animate-pulse"></span>
+    {AUTHOR.availableForWork ? 'Open to opportunities' : 'Currently heads-down'} · {SITE.location}
+  </p>
+
+  <h1 class="max-w-4xl text-4xl font-extrabold leading-[1.05] sm:text-6xl md:text-7xl" data-reveal>
+    <span class="block">Building</span>
+    <span class="block text-gradient text-glow" id="hero-role">fullstack systems</span>
+    <span class="block">that ship &amp; scale.</span>
+  </h1>
+
+  <p class="mt-7 max-w-xl text-base text-fg-muted sm:text-lg" data-reveal data-delay="0.1">
+    I'm <span class="font-semibold text-fg">{SITE.name}</span> — a {SITE.role.toLowerCase()} with
+    2+ years turning messy requirements into fast, maintainable products. Frontend craft, backend
+    depth, clean architecture.
+  </p>
+
+  <div class="mt-8 flex flex-wrap gap-3" data-reveal data-delay="0.2">
+    <Button href="/projects" variant="primary">View Work <span aria-hidden="true">→</span></Button>
+    <Button href="/contact" variant="outline">Get in touch</Button>
+  </div>
+
+  <div class="mt-10 flex flex-wrap items-center gap-2" data-reveal data-delay="0.3">
+    <span class="font-mono text-xs text-fg-faint">stack:</span>
+    {stack.map((s) => <Tag>{s}</Tag>)}
+  </div>
+</section>
+
+<script>
+  // Rotating role words in the hero headline — a light, catchy touch.
+  import { gsap } from 'gsap';
+
+  function initHeroRotator() {
+    const el = document.getElementById('hero-role');
+    if (!el || el.dataset.bound) return;
+    el.dataset.bound = 'true';
+
+    const words = ['fullstack systems', 'microfrontends', 'Rust services', 'clean interfaces'];
+    let i = 0;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) return;
+
+    setInterval(() => {
+      i = (i + 1) % words.length;
+      gsap
+        .timeline()
+        .to(el, { yPercent: -100, opacity: 0, duration: 0.3, ease: 'power2.in' })
+        .add(() => (el.textContent = words[i]))
+        .fromTo(
+          el,
+          { yPercent: 100, opacity: 0 },
+          { yPercent: 0, opacity: 1, duration: 0.4, ease: 'power2.out' }
+        );
+    }, 2600);
+  }
+
+  document.addEventListener('astro:page-load', initHeroRotator);
+</script>

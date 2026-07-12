@@ -1,0 +1,115 @@
+/**
+ * Theme definitions.
+ *
+ * Each `[data-theme='…']` block re-binds the same set of semantic CSS variables.
+ * Components never reference a raw color — only these tokens (via Tailwind's
+ * `bg-bg`, `text-fg`, `text-accent`, … which are mapped in global.css).
+ *
+ * To add a theme: copy a block, change the id + values, and register it in
+ * src/config.ts → THEMES. No component changes required.
+ */
+
+:root,
+[data-theme='cyberpunk'] {
+  color-scheme: dark;
+
+  --color-bg: #08080c;
+  --color-bg-soft: #0e0e16;
+  --color-surface: #12121c;
+  --color-surface-2: #191926;
+  --color-border: #262636;
+
+  --color-fg: #e8e8f0;
+  --color-fg-muted: #9a9ab0;
+  --color-fg-faint: #5a5a70;
+
+  --color-accent: #ff2e88; /* hot magenta */
+  --color-accent-2: #00f0ff; /* electric cyan */
+  --color-accent-3: #b026ff; /* violet */
+  --color-accent-contrast: #08080c;
+
+  --color-success: #2effa5;
+  --color-warning: #ffd02e;
+  --color-danger: #ff3b5c;
+
+  --glow: 0 0 24px;
+  --grid-line: rgba(255, 46, 136, 0.06);
+}
+
+[data-theme='matrix'] {
+  color-scheme: dark;
+
+  --color-bg: #020604;
+  --color-bg-soft: #04120a;
+  --color-surface: #06180d;
+  --color-surface-2: #0a2213;
+  --color-border: #123d22;
+
+  --color-fg: #c8ffd8;
+  --color-fg-muted: #5fbf7f;
+  --color-fg-faint: #2f6f45;
+
+  --color-accent: #00ff66;
+  --color-accent-2: #7dff9e;
+  --color-accent-3: #00cc52;
+  --color-accent-contrast: #020604;
+
+  --color-success: #00ff66;
+  --color-warning: #d4ff00;
+  --color-danger: #ff5252;
+
+  --glow: 0 0 22px;
+  --grid-line: rgba(0, 255, 102, 0.07);
+}
+
+[data-theme='synthwave'] {
+  color-scheme: dark;
+
+  --color-bg: #150a24;
+  --color-bg-soft: #1d0f30;
+  --color-surface: #241238;
+  --color-surface-2: #2e1745;
+  --color-border: #3d2059;
+
+  --color-fg: #ffe9f5;
+  --color-fg-muted: #c79ad6;
+  --color-fg-faint: #7d5a94;
+
+  --color-accent: #ff6ac1; /* pink */
+  --color-accent-2: #ffb457; /* sunset orange */
+  --color-accent-3: #7a5cff; /* indigo */
+  --color-accent-contrast: #150a24;
+
+  --color-success: #4dffd2;
+  --color-warning: #ffd166;
+  --color-danger: #ff5d73;
+
+  --glow: 0 0 26px;
+  --grid-line: rgba(255, 106, 193, 0.08);
+}
+
+[data-theme='paper'] {
+  color-scheme: light;
+
+  --color-bg: #f5f4ef;
+  --color-bg-soft: #eeede6;
+  --color-surface: #ffffff;
+  --color-surface-2: #f0efe8;
+  --color-border: #d9d7cc;
+
+  --color-fg: #16161a;
+  --color-fg-muted: #55555f;
+  --color-fg-faint: #8a8a94;
+
+  --color-accent: #d6006e; /* strong magenta, AA on white */
+  --color-accent-2: #0068a8; /* deep cyan/blue */
+  --color-accent-3: #6a1bd1;
+  --color-accent-contrast: #ffffff;
+
+  --color-success: #077d55;
+  --color-warning: #9a6a00;
+  --color-danger: #c1121f;
+
+  --glow: 0 0 0; /* no glow in day mode */
+  --grid-line: rgba(20, 20, 26, 0.05);
+}

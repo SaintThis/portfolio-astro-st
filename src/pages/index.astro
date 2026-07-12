@@ -1,0 +1,17 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Hero from '@components/sections/Hero.astro';
+import BentoAbout from '@components/sections/BentoAbout.astro';
+import FeaturedWork from '@components/sections/FeaturedWork.astro';
+import ContactCTA from '@components/sections/ContactCTA.astro';
+---
+
+<BaseLayout
+  title={undefined}
+  description="Fullstack developer — React/Next.js & TypeScript on the front, Rust, Django & Node.js on the back. Building fast, maintainable products."
+>
+  <Hero />
+  <BentoAbout />
+  <FeaturedWork />
+  <ContactCTA />
+</BaseLayout>

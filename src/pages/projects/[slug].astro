@@ -1,0 +1,70 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Tag from '@components/ui/Tag.astro';
+import Button from '@components/ui/Button.astro';
+import { getProjects, getProject } from '@lib/api';
+import { formatDate } from '@lib/utils';
+
+// Pre-render one page per project (static). When on a live API + SSR, switch to
+// `export const prerender = false` and fetch in the frontmatter instead.
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((p) => ({ params: { slug: p.slug } }));
+}
+
+const { slug } = Astro.params;
+const project = await getProject(slug!);
+if (!project) return Astro.redirect('/404');
+---
+
+<BaseLayout title={project.title} description={project.summary} type="article">
+  <article class="py-16">
+    <a href="/projects" class="font-mono text-sm text-fg-muted hover:text-accent" data-cursor="hover"
+      >← all projects</a
+    >
+
+    <header class="mt-6">
+      <div class="flex flex-wrap items-center gap-3 font-mono text-xs text-fg-faint">
+        <span class="text-accent-2">{project.category.toUpperCase()}</span>
+        <span>·</span>
+        <span>{formatDate(project.date)}</span>
+        <span>·</span>
+        <span class="uppercase">{project.status}</span>
+      </div>
+      <h1 class="mt-4 text-4xl font-extrabold sm:text-6xl text-gradient">{project.title}</h1>
+      <p class="mt-4 max-w-2xl text-lg text-fg-muted">{project.summary}</p>
+    </header>
+
+    {
+      project.metrics && (
+        <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {project.metrics.map((m) => (
+            <div class="rounded-[var(--radius-box)] border border-border bg-surface p-4">
+              <div class="font-mono text-2xl font-bold text-accent-2">{m.value}</div>
+              <div class="text-xs text-fg-muted">{m.label}</div>
+            </div>
+          ))}
+        </div>
+      )
+    }
+
+    <div class="mt-10 max-w-2xl space-y-4 text-fg-muted leading-relaxed">
+      <p>{project.description}</p>
+    </div>
+
+    <div class="mt-8 flex flex-wrap gap-1.5">
+      {project.tags.map((t) => <Tag accent>{t}</Tag>)}
+    </div>
+
+    <div class="mt-10 flex flex-wrap gap-3">
+      {project.links.live && <Button href={project.links.live}>Visit live →</Button>}
+      {
+        project.links.repo && (
+          <Button href={project.links.repo} variant="outline">
+            Source
+          </Button>
+        )
+      }
+    </div>
+  </article>
+</BaseLayout>

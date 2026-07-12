@@ -1,0 +1,23 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import Button from '@components/ui/Button.astro';
+---
+
+<BaseLayout title="404 — Not Found" noindex backdrop={false}>
+  <section class="flex min-h-[70vh] flex-col items-center justify-center text-center">
+    <p class="font-mono text-sm text-accent-2">// ERR_ROUTE_NOT_FOUND</p>
+    <h1
+      class="mt-4 font-mono text-7xl font-extrabold text-gradient text-glow sm:text-9xl"
+      style="animation: flicker 3s linear infinite"
+    >
+      404
+    </h1>
+    <p class="mt-4 max-w-sm text-fg-muted">
+      This node doesn't exist in the grid. It may have been moved, deleted, or never compiled.
+    </p>
+    <div class="mt-8 flex gap-3">
+      <Button href="/" variant="primary">← Return home</Button>
+      <Button href="/projects" variant="outline">Browse work</Button>
+    </div>
+  </section>
+</BaseLayout>

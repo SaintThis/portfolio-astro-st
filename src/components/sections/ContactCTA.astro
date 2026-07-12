@@ -1,0 +1,26 @@
+---
+import { SITE } from '@/config';
+import Button from '@components/ui/Button.astro';
+import Reveal from '@components/ui/Reveal.astro';
+---
+
+<section class="py-24">
+  <Reveal>
+    <div
+      class="scanlines relative overflow-hidden rounded-[var(--radius-box)] border border-accent/30 bg-surface p-10 text-center box-glow sm:p-16"
+    >
+      <div class="pointer-events-none absolute inset-0 bg-grid opacity-40"></div>
+      <p class="kicker relative">// let's build</p>
+      <h2 class="relative mt-4 text-3xl font-bold sm:text-5xl">
+        Have a project in <span class="text-gradient">mind?</span>
+      </h2>
+      <p class="relative mx-auto mt-4 max-w-md text-fg-muted">
+        I'm open to fullstack roles, freelance builds, and interesting collaborations. Fast replies.
+      </p>
+      <div class="relative mt-8 flex flex-wrap justify-center gap-3">
+        <Button href="/contact" variant="primary">Start a conversation</Button>
+        <Button href={`mailto:${SITE.email}`} variant="outline">{SITE.email}</Button>
+      </div>
+    </div>
+  </Reveal>
+</section>

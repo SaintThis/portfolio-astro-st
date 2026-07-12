@@ -1,0 +1,26 @@
+---
+import SectionHeading from '@components/ui/SectionHeading.astro';
+import ProjectCard from '@components/ui/ProjectCard.astro';
+import Reveal from '@components/ui/Reveal.astro';
+import Button from '@components/ui/Button.astro';
+import { getFeaturedProjects } from '@lib/api';
+
+const projects = await getFeaturedProjects(3);
+---
+
+<section class="py-20">
+  <div class="mb-10 flex flex-wrap items-end justify-between gap-4">
+    <SectionHeading kicker="Selected work" title="Featured projects" index="01" />
+    <Button href="/projects" variant="ghost" size="sm">All projects →</Button>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      projects.map((p, i) => (
+        <Reveal delay={i * 0.08} class="h-full">
+          <ProjectCard project={p} />
+        </Reveal>
+      ))
+    }
+  </div>
+</section>

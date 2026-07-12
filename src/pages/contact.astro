@@ -1,0 +1,59 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import SectionHeading from '@components/ui/SectionHeading.astro';
+import ContactForm from '@components/react/ContactForm.tsx';
+import { SITE, SOCIALS } from '@/config';
+---
+
+<BaseLayout
+  title="Contact"
+  description={`Get in touch with ${SITE.name} — open to fullstack roles, freelance builds, and collaborations.`}
+>
+  <section class="py-16">
+    <SectionHeading kicker="./contact --init" title="Get in touch" index="//" />
+    <p class="mt-4 max-w-xl text-fg-muted">
+      Got a project, role, or idea? Drop a message below or reach me directly. I usually reply within
+      a day.
+    </p>
+
+    <div class="mt-12 grid gap-10 md:grid-cols-[1.3fr_1fr]">
+      <div>
+        <ContactForm client:visible />
+      </div>
+
+      <aside class="space-y-6">
+        <div class="rounded-[var(--radius-box)] border border-border bg-surface p-6">
+          <p class="kicker mb-3">Direct</p>
+          <ul class="space-y-3 font-mono text-sm">
+            {
+              SOCIALS.map((s) => (
+                <li>
+                  <a
+                    href={s.href}
+                    data-cursor="hover"
+                    target={s.href.startsWith('http') ? '_blank' : undefined}
+                    rel={s.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                    class="group flex items-center justify-between text-fg-muted transition-colors hover:text-accent"
+                  >
+                    <span>{s.label}</span>
+                    <span class="text-fg-faint group-hover:text-accent-2">{s.handle} →</span>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <div class="rounded-[var(--radius-box)] border border-border bg-surface p-6">
+          <p class="kicker mb-2">Location</p>
+          <p class="text-sm text-fg-muted">{SITE.location}</p>
+          <p class="mt-1 font-mono text-xs text-fg-faint">UTC+8 · remote-friendly</p>
+          <p class="mt-4 flex items-center gap-2 font-mono text-xs">
+            <span class="h-2 w-2 rounded-full bg-success animate-pulse"></span>
+            <span class="text-success">Available for work</span>
+          </p>
+        </div>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>

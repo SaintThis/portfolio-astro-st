@@ -1,0 +1,21 @@
+---
+/** Small mono pill for tech tags. */
+import { cn } from '@lib/utils';
+interface Props {
+  class?: string;
+  accent?: boolean;
+}
+const { class: className, accent = false } = Astro.props;
+---
+
+<span
+  class={cn(
+    'inline-flex items-center rounded-[var(--radius-box)] border px-2 py-0.5 font-mono text-[11px] tracking-wide',
+    accent
+      ? 'border-accent/40 bg-accent/10 text-accent'
+      : 'border-border bg-surface text-fg-muted',
+    className
+  )}
+>
+  <slot />
+</span>

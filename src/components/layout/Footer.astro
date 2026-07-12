@@ -1,0 +1,70 @@
+---
+import { SITE, SOCIALS, NAV_LINKS } from '@/config';
+const year = new Date().getFullYear();
+---
+
+<footer class="relative mt-24 border-t border-border">
+  <div class="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 md:grid-cols-4">
+    <div class="sm:col-span-2">
+      <a href="/" class="font-mono text-lg font-bold" data-cursor="hover">
+        <span class="text-accent-2">&gt;</span> {SITE.name}<span class="text-accent">_</span>
+      </a>
+      <p class="mt-3 max-w-sm text-sm text-fg-muted">{SITE.role} · {SITE.location}</p>
+      <p class="mt-4 font-mono text-xs text-fg-faint">
+        <span class="text-success">●</span> Available for select work
+      </p>
+    </div>
+
+    <nav aria-label="Footer">
+      <p class="kicker mb-3">Navigate</p>
+      <ul class="space-y-2">
+        {
+          NAV_LINKS.map((l) => (
+            <li>
+              <a
+                href={l.href}
+                data-cursor="hover"
+                class="text-sm text-fg-muted transition-colors hover:text-accent"
+              >
+                {l.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <nav aria-label="Social">
+      <p class="kicker mb-3">Connect</p>
+      <ul class="space-y-2">
+        {
+          SOCIALS.map((s) => (
+            <li>
+              <a
+                href={s.href}
+                data-cursor="hover"
+                target={s.href.startsWith('http') ? '_blank' : undefined}
+                rel={s.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                class="group inline-flex items-center gap-2 text-sm text-fg-muted transition-colors hover:text-accent"
+              >
+                <span class="text-fg-faint group-hover:text-accent-2">→</span>
+                {s.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+
+  <div class="border-t border-border">
+    <div
+      class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-5 py-5 font-mono text-xs text-fg-faint sm:flex-row"
+    >
+      <span>© {year} {SITE.name}. Built with Astro.</span>
+      <span class="flex items-center gap-1">
+        <span class="text-success">$</span> crafted in Cagayan de Oro
+      </span>
+    </div>
+  </div>
+</footer>
