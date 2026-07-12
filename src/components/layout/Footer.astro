@@ -62,8 +62,19 @@ const year = new Date().getFullYear();
       class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-5 py-5 font-mono text-xs text-fg-faint sm:flex-row"
     >
       <span>© {year} {SITE.name}. Built with Astro.</span>
-      <span class="flex items-center gap-1">
-        <span class="text-success">$</span> crafted in Cagayan de Oro
+      <span class="flex items-center gap-3">
+        <a
+          href={SITE.repo}
+          data-cursor="hover"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="transition-colors hover:text-accent"
+        >
+          &lt;/&gt; source
+        </a>
+        <span class="flex items-center gap-1">
+          <span class="text-success">$</span> crafted in Cagayan de Oro
+        </span>
       </span>
     </div>
   </div>

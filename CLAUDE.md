@@ -4,7 +4,7 @@ Guidance for Claude (and other AI agents) working in this repo. Keep changes con
 
 ## What this is
 
-A cyberpunk/coder-themed **Astro 5** portfolio. Static-first, islands for interactivity, multi-theme, SEO-complete, and structured so a real API can replace example data with minimal changes. Read `ARCHITECTURE.md` and `DESIGN.md` before non-trivial work.
+A cyberpunk/coder-themed **Astro 7** portfolio. Static-first, islands for interactivity, multi-theme, SEO-complete, and structured so a real API can replace example data with minimal changes. Read `ARCHITECTURE.md` and `DESIGN.md` before non-trivial work.
 
 ## Commands
 

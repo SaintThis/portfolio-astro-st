@@ -76,6 +76,6 @@ export const PROJECTS: Project[] = [
     date: '2026-07-12',
     featured: false,
     status: 'live',
-    links: { repo: 'https://github.com/' },
+    links: { repo: 'https://github.com/SaintThis/portfolio-astro-st' },
   },
 ];

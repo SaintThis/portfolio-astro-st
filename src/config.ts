@@ -18,6 +18,9 @@ export const SITE = {
   location: 'Cagayan de Oro City, Philippines',
   email: 'saintstraborrr@gmail.com',
   phone: '+63 997 355 8878',
+  // GitHub profile + this repo — referenced in the footer, contact page & meta.
+  github: 'https://github.com/SaintThis',
+  repo: 'https://github.com/SaintThis/portfolio-astro-st',
   // Path to the default social-share image in /public.
   ogImage: '/og/default.png',
   themeColor: '#0a0a0f',
@@ -41,7 +44,7 @@ export const NAV_LINKS = [
 
 /** Social / external links — rendered in footer + contact page. */
 export const SOCIALS = [
-  { label: 'GitHub', href: 'https://github.com/', icon: 'github', handle: 'saint-rabor' },
+  { label: 'GitHub', href: 'https://github.com/SaintThis', icon: 'github', handle: 'SaintThis' },
   {
     label: 'LinkedIn',
     href: 'https://linkedin.com/in/saint-rabor18',

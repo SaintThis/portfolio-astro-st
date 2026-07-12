@@ -1,0 +1,51 @@
+name: Deploy to GitHub Pages
+
+# Builds the Astro site and publishes it to GitHub Pages on every push to main.
+# Enable it once under: repo → Settings → Pages → Build and deployment → Source: "GitHub Actions".
+#
+# NOTE ON BASE PATH: a *project* Pages site is served from
+#   https://<user>.github.io/portfolio-astro-st/
+# which requires `base: '/portfolio-astro-st'` in astro.config.mjs. Because this
+# theme uses root-absolute links (`/about`, `/projects`…), the friction-free
+# options are:
+#   • a custom domain (base stays '/'), or
+#   • renaming the repo to `<user>.github.io` (a user site, served at root), or
+#   • deploying to Vercel / Netlify / Cloudflare Pages (root domain, zero config).
+# See README → Deployment.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; don't cancel an in-progress run.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build with Astro
+        uses: withastro/action@v4
+        # with:
+        #   node-version: 22
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

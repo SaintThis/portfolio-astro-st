@@ -22,7 +22,7 @@ Personal site for **Saint Rabor** — Fullstack Developer (React/Next · TypeScr
 
 | Concern         | Choice                              | Why                                                                 |
 | --------------- | ----------------------------------- | ------------------------------------------------------------------- |
-| Framework       | **Astro 5**                         | HTML-first, islands, best-in-class static perf + SSR when needed    |
+| Framework       | **Astro 7**                         | HTML-first, islands, Rust compiler (fast builds), SSR when needed   |
 | UI islands      | **React 19**                        | Interactivity only where it's needed (cursor, theme, forms, nav)    |
 | Styling         | **Tailwind CSS v4**                 | Utility-first, CSS-native config, theme tokens via CSS variables    |
 | Timeline anim   | **GSAP + ScrollTrigger**            | Robust scroll reveals, boot loader, skill bars                      |
@@ -108,9 +108,21 @@ For SSR/dynamic pages, flip `output: 'server'` in `astro.config.mjs`, add an ada
 - Semantic landmarks, focus-visible rings, `aria-current` on nav.
 - Fonts use `display=swap`; consider self-hosting via `@fontsource` (see [`DESIGN.md`](./DESIGN.md#fonts)).
 
-## 📦 Deploy
+## 📦 Deploy (free hosting)
 
-Static output builds to `dist/` — deploy anywhere (Vercel, Netlify, Cloudflare Pages, GitHub Pages). Set `site` in `astro.config.mjs` to your domain first (drives canonical URLs, sitemap, RSS).
+Static output builds to `dist/` — host it anywhere. First set `site` in `astro.config.mjs` to your final URL (drives canonical URLs, sitemap, RSS).
+
+**Easiest — root-domain hosts (recommended, zero config, works with this theme's root-absolute links):**
+
+| Host | How | URL you get |
+| ---- | --- | ----------- |
+| **Vercel** | Import the GitHub repo → framework auto-detected as Astro → Deploy | `your-project.vercel.app` |
+| **Netlify** | "Add new site" → pick repo (build `npm run build`, publish `dist`) | `your-project.netlify.app` |
+| **Cloudflare Pages** | Connect repo → framework preset **Astro** | `your-project.pages.dev` |
+
+All three auto-redeploy on every push to `main` and support free custom domains.
+
+**GitHub Pages** (you're already here) — a workflow is included at [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). Enable it under **Settings → Pages → Source: GitHub Actions**. ⚠️ A *project* Pages site serves under `…github.io/portfolio-astro-st/`, which needs `base: '/portfolio-astro-st'` **and** base-aware internal links. To avoid that, use a **custom domain**, rename the repo to `<user>.github.io` (served at root), or pick one of the hosts above.
 
 ## 📄 License
 
