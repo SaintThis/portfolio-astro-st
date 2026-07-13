@@ -1,11 +1,21 @@
 ---
-import { NAV_LINKS, SITE } from '@/config';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { NAV_LINKS, SITE, FEATURES } from '@/config';
 import ThemeSwitcher from '@components/react/ThemeSwitcher.tsx';
 import Sidebar from '@components/react/Sidebar.tsx';
+import Lanyard from '@components/react/Lanyard.tsx';
 
 const pathname = Astro.url.pathname;
 const isActive = (href: string) =>
   href === '/' ? pathname === '/' : pathname.startsWith(href);
+
+// Drop a photo at public/lanyard/photo.jpg to have it appear on the lanyard's
+// front face — no code change needed, same build-time existsSync pattern as
+// v2's ProfileCard portrait. Falls back to the model's built-in blank-card
+// texture until then.
+const PHOTO_PATH = '/lanyard/photo.jpg';
+const hasPhoto = existsSync(fileURLToPath(new URL(`../../../public${PHOTO_PATH}`, import.meta.url)));
 ---
 
 <header
@@ -31,7 +41,7 @@ const isActive = (href: string) =>
             data-nav-link
             aria-current={isActive(link.href) ? 'page' : undefined}
             class:list={[
-              'nav-link rounded-[var(--radius-box)] px-3 py-1.5 font-mono text-sm transition-colors',
+              'nav-link rounded-(--radius-box) px-3 py-1.5 font-mono text-sm transition-colors',
               isActive(link.href)
                 ? 'is-active text-accent'
                 : 'text-fg-muted hover:bg-surface hover:text-fg',
@@ -51,6 +61,54 @@ const isActive = (href: string) =>
 </header>
 <!-- Spacer for the fixed header -->
 <div class="h-16" aria-hidden="true"></div>
+
+{
+  /*
+    Deliberately a *sibling* of <header>, not nested inside it — same reason
+    as #base-ui-portal-root above: Header's `backdrop-blur-md` creates a
+    containing block for `position: fixed` descendants, which would clip
+    this to the header's own ~4rem height instead of the viewport (see
+    CLAUDE.md gotchas).
+  */
+}
+{
+  FEATURES.headerLanyard && (
+    // Spans most of the viewport, not a small corner box — the card can be
+    // dragged/hovered anywhere, not just within a fixed-size area. This div
+    // stays pointer-events:none itself; Lanyard.tsx toggles the *canvas
+    // element's* own pointer-events per-frame based on proximity to the
+    // card, so the rest of the page underneath stays fully clickable.
+    <div
+      class="pointer-events-none fixed inset-x-0 top-10 bottom-0 z-30 hidden lg:block"
+      transition:persist
+    >
+      {/*
+        Tuning knobs, all on Lanyard itself:
+        - `position`: camera distance (3rd number) — bigger = more zoomed
+          out, shows more cord/context.
+        - `anchorPosition`: where the clip attaches, in the same 3D space
+          the camera looks at. X moves it left/right, Y moves it up/down.
+          Y needs to stay near the top of the camera's view for the cord to
+          reach the header with no gap — if you change the camera distance
+          above, re-check this doesn't leave a gap or push the badge
+          off-screen.
+        - `ropeLength`: cord length multiplier — 1 is the original
+          component's own (long) proportions; lower pulls the card up
+          closer to the clip. Safe to tune freely: it scales the rope
+          segments and the card's attachment offset together, so it can't
+          fall out of physics sync the way tuning them separately once did.
+      */}
+      <Lanyard
+        client:media="(min-width: 1024px)"
+        className="h-full w-full"
+        frontImage={hasPhoto ? PHOTO_PATH : null}
+        position={[0, 0, 18]}
+        anchorPosition={[3.4, 4.5, 2]}
+        ropeLength={1}
+      />
+    </div>
+  )
+}
 
 <script>
   // The header persists across View Transitions, so its server-rendered active
