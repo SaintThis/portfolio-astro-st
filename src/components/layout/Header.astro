@@ -1,6 +1,4 @@
 ---
-import { existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { NAV_LINKS, SITE, FEATURES } from '@/config';
 import ThemeSwitcher from '@components/react/ThemeSwitcher.tsx';
 import Sidebar from '@components/react/Sidebar.tsx';
@@ -11,11 +9,12 @@ const isActive = (href: string) =>
   href === '/' ? pathname === '/' : pathname.startsWith(href);
 
 // Drop a photo at public/lanyard/photo.jpg to have it appear on the lanyard's
-// front face — no code change needed, same build-time existsSync pattern as
-// v2's ProfileCard portrait. Falls back to the model's built-in blank-card
-// texture until then.
+// front face — no code change needed, same build-time import.meta.glob pattern
+// as v2's ProfileCard portrait. Falls back to the model's built-in blank-card
+// texture until then. Uses Vite's glob (resolved at build time, not a runtime
+// node:fs call) so it also works under the Cloudflare Workers prerenderer.
 const PHOTO_PATH = '/lanyard/photo.jpg';
-const hasPhoto = existsSync(fileURLToPath(new URL(`../../../public${PHOTO_PATH}`, import.meta.url)));
+const hasPhoto = Object.keys(import.meta.glob('/public/lanyard/photo.jpg')).length > 0;
 ---
 
 <header
