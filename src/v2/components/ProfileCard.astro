@@ -11,9 +11,6 @@
  * Panel stays simple (project cards, CTAs); this is the one place in v2
  * that needs the full reference composition.
  */
-import { existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-
 interface Props {
   name: string;
   tag: string;
@@ -26,9 +23,7 @@ interface Props {
 const { name, tag, quote, statLabel, statValue, version } = Astro.props;
 
 const PORTRAIT_PATH = '/v2/portrait.png';
-const hasPortrait = existsSync(
-  fileURLToPath(new URL(`../../../public${PORTRAIT_PATH}`, import.meta.url))
-);
+const hasPortrait = Object.keys(import.meta.glob('/public/v2/portrait.png')).length > 0;
 const [firstName, ...rest] = name.split(' ');
 const lastName = rest.join(' ') || firstName;
 ---

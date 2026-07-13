@@ -5,6 +5,8 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import { SITE } from './src/config.ts';
 
+import cloudflare from '@astrojs/cloudflare';
+
 // https://astro.build/config
 export default defineConfig({
   // SITE.url is the single source of truth (src/config.ts) — drives canonical
@@ -45,4 +47,6 @@ export default defineConfig({
   build: {
     inlineStylesheets: 'auto',
   },
+
+  adapter: cloudflare(),
 });
