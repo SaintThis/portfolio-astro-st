@@ -74,4 +74,8 @@ export const FEATURES = {
   customCursor: true,
   introLoader: true,
   pageTransitions: true,
+  /** 3D physics lanyard, fixed top-right of the header — the heaviest island
+   *  in the codebase (three.js + react-three-fiber + a WASM physics engine).
+   *  Easy off-switch while its cost/benefit is still being decided. */
+  headerLanyard: true,
 } as const;

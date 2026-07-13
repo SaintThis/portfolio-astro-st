@@ -4,6 +4,16 @@ import Button from '@components/ui/Button.astro';
 import Tag from '@components/ui/Tag.astro';
 
 const stack = ['React', 'Next.js', 'TypeScript', 'Rust', 'Django', 'Node.js'];
+
+// Longest word in the rotator below — reserved as a `ch`-based min-width on
+// the span so switching words never changes its box size mid-scramble. The
+// old version had no reserved width: as the scramble replaced e.g.
+// "fullstack systems" (18 chars) with "microfrontends" (14) the span's
+// rendered width kept changing every frame, which nudged the following
+// paragraph/buttons up and down — the "jumping" line the reveal was
+// supposed to look clean, not disruptive.
+const ROTATOR_WORDS = ['fullstack systems', 'microfrontends', 'Rust services', 'clean interfaces'];
+const ROTATOR_MAX_CH = Math.max(...ROTATOR_WORDS.map((w) => w.length));
 ---
 
 <section class="relative flex min-h-[calc(100dvh-4rem)] flex-col justify-center py-16">
@@ -17,7 +27,13 @@ const stack = ['React', 'Next.js', 'TypeScript', 'Rust', 'Django', 'Node.js'];
     data-reveal
   >
     <span class="block">Building</span>
-    <span class="block text-gradient text-glow" id="hero-role">fullstack systems</span>
+    <span
+      class="inline-block whitespace-nowrap font-mono text-gradient text-glow"
+      id="hero-role"
+      style={`min-width: ${ROTATOR_MAX_CH}ch`}
+    >
+      fullstack systems
+    </span>
     <span class="block">that ship &amp; scale.</span>
   </h1>
 
