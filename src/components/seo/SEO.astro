@@ -3,7 +3,7 @@
  * Centralized <head> SEO. One place for title/description/OG/Twitter/canonical
  * + JSON-LD. Every page passes its own values; sensible defaults come from config.
  */
-import { SITE, AUTHOR } from '@/config';
+import { SITE, AUTHOR, SOCIALS } from '@/config';
 
 interface Props {
   title?: string;
@@ -56,6 +56,10 @@ const jsonLd =
         address: SITE.location,
         url: SITE.url,
         description: SITE.description,
+        // Links Google's Knowledge Graph entry for this name to the same
+        // identity across profiles — the single highest-leverage addition
+        // to a Person schema beyond the basics.
+        sameAs: SOCIALS.filter((s) => s.href.startsWith('http')).map((s) => s.href),
       };
 ---
 
