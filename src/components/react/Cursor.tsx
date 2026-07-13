@@ -2,6 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'motion/react';
 import { useCursorStore } from '@stores/index';
 
+/** Breathing room (px) added around a hovered element's own box before the
+ *  cursor's shape matches it — a ring that clipped exactly to the element's
+ *  edges read as a selection outline, not a cursor. */
+const SHAPE_PADDING = 10;
+
 /**
  * Custom animated cursor, built on Motion springs.
  *
@@ -11,6 +16,16 @@ import { useCursorStore } from '@stores/index';
  * (buttons, cards, nav links) while hovering it — motion.dev's cursor docs
  * describe this as a paid `<Cursor/>` component; we get the same tactile
  * feel for free by driving the same spring toward a different target.
+ *
+ * The ring's *shape* is decoupled from its *position*: a `shapeRef` div
+ * nested inside the spring-positioned wrapper morphs its width/height/
+ * border-radius (via a plain CSS transition, not a spring — there's no
+ * "velocity" to a size change) to match whatever it's hovering, read
+ * straight off `getBoundingClientRect`/`getComputedStyle`. A button gets a
+ * pill that hugs its own rounding; a square card gets a square ring. It
+ * also picks up the current theme's accent glow (`--glow` + `--color-
+ * accent-2`, the same tokens `.box-glow` uses) so the highlight always
+ * matches whichever theme is active, never a hardcoded color.
  *
  * Motion's springs stop scheduling frames once they're at rest, unlike a
  * naive rAF loop that runs forever — this matters because an always-on rAF
@@ -28,6 +43,7 @@ import { useCursorStore } from '@stores/index';
 export default function Cursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
+  const shapeRef = useRef<HTMLDivElement>(null);
   const labelRef = useRef<HTMLSpanElement>(null);
   const setVariant = useCursorStore((s) => s.setVariant);
 
@@ -51,8 +67,9 @@ export default function Cursor() {
 
     const dot = dotRef.current;
     const ring = ringRef.current;
+    const shape = shapeRef.current;
     const label = labelRef.current;
-    if (!dot || !ring || !label) return;
+    if (!dot || !ring || !shape || !label) return;
 
     // A distinct attribute from the per-element `data-cursor="hover"|"text"`
     // variant tag below — sharing one name let `closest('[data-cursor]')`
@@ -83,6 +100,29 @@ export default function Cursor() {
       }
     };
 
+    // Morph the ring to the hovered element's own footprint — same aspect
+    // ratio and corner rounding, plus a fixed padding so it reads as a
+    // highlight rather than a pixel-perfect mask. Falls back to the design
+    // system's base radius for elements with no explicit rounding (e.g. a
+    // plain text link) so the shape still looks intentional.
+    const applyShape = (el: HTMLElement) => {
+      const r = el.getBoundingClientRect();
+      const radius = getComputedStyle(el).borderRadius;
+      shape.style.width = `${r.width + SHAPE_PADDING * 2}px`;
+      shape.style.height = `${r.height + SHAPE_PADDING * 2}px`;
+      shape.style.borderRadius = radius === '0px' ? 'var(--radius-box)' : radius;
+    };
+    const applyTextShape = () => {
+      shape.style.width = '2px';
+      shape.style.height = '1.4rem';
+      shape.style.borderRadius = '1px';
+    };
+    const clearShape = () => {
+      shape.style.width = '';
+      shape.style.height = '';
+      shape.style.borderRadius = '';
+    };
+
     const onMove = (e: PointerEvent) => {
       mx = e.clientX;
       my = e.clientY;
@@ -96,30 +136,30 @@ export default function Cursor() {
       const interactive = (e.target as HTMLElement)?.closest<HTMLElement>(
         'a, button, [role="button"], input, textarea, select, label'
       );
-      if (el) {
-        const variant = (el.dataset.cursor as 'hover' | 'text') ?? 'hover';
-        const text = el.dataset.cursorLabel ?? '';
-        ring.dataset.variant = variant;
+      const target = el ?? interactive;
+      const variant = el ? ((el.dataset.cursor as 'hover' | 'text') ?? 'hover') : 'hover';
+      const text = el?.dataset.cursorLabel ?? '';
+
+      if (target) {
+        shape.dataset.variant = variant;
         label.textContent = text;
         setVariant(variant, text);
-        magnetEl = variant === 'hover' ? el : null;
-      } else if (interactive) {
-        ring.dataset.variant = 'hover';
-        label.textContent = '';
-        setVariant('hover');
-        magnetEl = interactive;
+        magnetEl = variant === 'hover' ? target : null;
+        if (variant === 'hover') applyShape(target);
+        else applyTextShape();
       }
       updateTarget();
     };
     const onOut = () => {
-      ring.dataset.variant = 'default';
+      shape.dataset.variant = 'default';
       label.textContent = '';
       setVariant('default');
       magnetEl = null;
+      clearShape();
       updateTarget();
     };
-    const onDown = () => (ring.dataset.pressed = 'true');
-    const onUp = () => (ring.dataset.pressed = 'false');
+    const onDown = () => (shape.dataset.pressed = 'true');
+    const onUp = () => (shape.dataset.pressed = 'false');
     const onLeave = () => (dot.style.opacity = ring.style.opacity = '0');
     const onEnter = () => seen && (dot.style.opacity = ring.style.opacity = '1');
 
@@ -153,20 +193,47 @@ export default function Cursor() {
         className="absolute -ml-[3px] -mt-[3px] h-[6px] w-[6px] rounded-full bg-accent opacity-0 will-change-transform"
         style={{ transition: 'opacity .2s' }}
       />
+      {/* Position wrapper: spring-follows the pointer/magnet target, zero
+          footprint of its own so the shape below can center on it via
+          `translate(-50%,-50%)` regardless of its current size. */}
       <motion.div
         ref={ringRef}
-        data-variant="default"
-        className="cursor-ring absolute -ml-5 -mt-5 flex h-10 w-10 items-center justify-center rounded-full border border-accent-2 opacity-0 will-change-transform"
+        className="absolute left-0 top-0 h-0 w-0 opacity-0"
         style={{ x: ringX, y: ringY }}
       >
-        <span ref={labelRef} className="font-mono text-[10px] tracking-wide text-accent-2" />
+        <div
+          ref={shapeRef}
+          data-variant="default"
+          className="cursor-ring absolute flex items-center justify-center border border-accent-2 will-change-[width,height,border-radius,box-shadow]"
+        >
+          <span ref={labelRef} className="font-mono text-[10px] tracking-wide text-accent-2" />
+        </div>
       </motion.div>
 
       <style>{`
-        .cursor-ring { transition: width .18s var(--ease-out-expo), height .18s var(--ease-out-expo), background-color .18s, opacity .2s; }
-        .cursor-ring[data-variant='hover'] { width: 3.5rem; height: 3.5rem; margin-left:-1.75rem; margin-top:-1.75rem; background: color-mix(in srgb, var(--color-accent-2) 12%, transparent); }
-        .cursor-ring[data-variant='text']  { width: 2px; height: 1.4rem; border-radius: 1px; margin-left:-1px; }
-        .cursor-ring[data-pressed='true']  { filter: brightness(1.4) saturate(1.4); }
+        .cursor-ring {
+          top: 0;
+          left: 0;
+          width: 2.5rem;
+          height: 2.5rem;
+          border-radius: 9999px;
+          transform: translate(-50%, -50%);
+          transition:
+            width .18s var(--ease-out-expo),
+            height .18s var(--ease-out-expo),
+            border-radius .18s var(--ease-out-expo),
+            box-shadow .2s ease,
+            background-color .2s ease;
+        }
+        /* Accent-glow highlight, sized/shaped in JS to match whatever's hovered
+           (see applyShape in Cursor.tsx) — same --glow token as .box-glow, so
+           it always matches the active theme instead of a hardcoded color. */
+        .cursor-ring[data-variant='hover'] {
+          background: color-mix(in srgb, var(--color-accent-2) 12%, transparent);
+          border-color: var(--color-accent-2);
+          box-shadow: var(--glow) color-mix(in srgb, var(--color-accent-2) 45%, transparent);
+        }
+        .cursor-ring[data-pressed='true'] { filter: brightness(1.4) saturate(1.4); }
       `}</style>
     </div>
   );
