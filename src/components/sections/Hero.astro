@@ -3,7 +3,7 @@ import { SITE, AUTHOR } from '@/config';
 import Button from '@components/ui/Button.astro';
 import Tag from '@components/ui/Tag.astro';
 
-const stack = ['React', 'Next.js', 'TypeScript', 'Rust', 'Django', 'Node.js'];
+const stack = ['React', 'Next.js', 'TypeScript', 'Django', 'Node.js', 'Flutter'];
 
 // Longest word in the rotator below — reserved as a `ch`-based min-width on
 // the span so switching words never changes its box size mid-scramble. The
@@ -23,7 +23,7 @@ const ROTATOR_MAX_CH = Math.max(...ROTATOR_WORDS.map((w) => w.length));
   </p>
 
   <h1
-    class="max-w-4xl text-4xl font-extrabold leading-[1.05] sm:text-6xl md:text-7xl xl:text-8xl"
+    class="max-w-4xl text-4xl font-extrabold leading-[1.05] sm:text-5xl md:text-7xl xl:text-8xl"
     data-reveal
   >
     <span class="block">Building</span>
