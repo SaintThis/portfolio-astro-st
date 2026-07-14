@@ -1,9 +1,18 @@
 ---
-import { SITE, AUTHOR } from '@/config';
+import { SITE, AUTHOR, FEATURES } from '@/config';
 import Button from '@components/ui/Button.astro';
 import Tag from '@components/ui/Tag.astro';
+import Lanyard from '@components/react/Lanyard.tsx';
 
 const stack = ['React', 'Next.js', 'TypeScript', 'Django', 'Node.js', 'Flutter'];
+
+// Drop a photo at public/lanyard/photo.jpg to have it appear on the lanyard's
+// front face — no code change needed, same build-time import.meta.glob pattern
+// as v2's ProfileCard portrait. Falls back to the model's built-in blank-card
+// texture until then. Uses Vite's glob (resolved at build time, not a runtime
+// node:fs call) so it also works under the Cloudflare Workers prerenderer.
+const PHOTO_PATH = '/lanyard/photo.jpg';
+const hasPhoto = Object.keys(import.meta.glob('/public/lanyard/photo.jpg')).length > 0;
 
 // Longest word in the rotator below — reserved as a `ch`-based min-width on
 // the span so switching words never changes its box size mid-scramble. The
@@ -59,6 +68,48 @@ const ROTATOR_MAX_CH = Math.max(...ROTATOR_WORDS.map((w) => w.length));
     <span class="font-mono text-xs text-fg-faint">stack:</span>
     {stack.map((s) => <Tag>{s}</Tag>)}
   </div>
+
+  {
+    FEATURES.heroLanyard && (
+      // `absolute` within this (already `relative`) section — not `fixed` —
+      // so it scrolls away with the rest of the hero instead of staying
+      // pinned over whatever's below once you scroll past it, and is
+      // bounded to a fixed height near the top instead of stretching to the
+      // section's own full (near-viewport-height) size. Homepage-only by
+      // construction: Hero.astro is only ever rendered from
+      // src/pages/index.astro, unlike the old Header.astro placement which
+      // showed it on every page. This div stays pointer-events:none itself;
+      // Lanyard.tsx toggles the *canvas element's* own pointer-events
+      // per-frame based on proximity to the card, so the rest of the page
+      // underneath stays fully clickable.
+      <div class="pointer-events-none absolute inset-x-0 top-0 z-10 hidden h-[600px] lg:block">
+        {/*
+          Tuning knobs, all on Lanyard itself:
+          - `position`: camera distance (3rd number) — bigger = more zoomed
+            out, shows more cord/context.
+          - `anchorPosition`: where the clip attaches, in the same 3D space
+            the camera looks at. X moves it left/right, Y moves it up/down.
+            Y needs to stay near the top of the camera's view for the cord
+            to reach the top of this box with no gap — if you change the
+            camera distance above, or the box's own height, re-check this
+            doesn't leave a gap or push the badge out of view.
+          - `ropeLength`: cord length multiplier — 1 is the original
+            component's own (long) proportions. Safe to tune freely: it
+            scales the rope segments and the card's attachment offset
+            together, so it can't fall out of physics sync the way tuning
+            them separately once did.
+        */}
+        <Lanyard
+          client:media="(min-width: 1024px)"
+          className="h-full w-full"
+          frontImage={hasPhoto ? PHOTO_PATH : null}
+          position={[0, 0, 18]}
+          anchorPosition={[3.4, 4.5, 2]}
+          ropeLength={1}
+        />
+      </div>
+    )
+  }
 </section>
 
 <script>
