@@ -132,8 +132,10 @@ export default function Lanyard({
   // A swinging physics lanyard is exactly the "autoplaying decorative
   // animation" golden rule #5 warns about — under reduced-motion, skip
   // loading three.js/rapier entirely rather than just freezing them in
-  // place, so reduced-motion users also never pay for the download.
-  if (!mounted || reduced) {
+  // place, so reduced-motion users also never pay for the download. This
+  // fallback is permanent for them (they never get the 3D version), so it's
+  // fine for it to show the flat photo on its own.
+  if (reduced) {
     return (
       <div
         className={className}
@@ -155,6 +157,16 @@ export default function Lanyard({
         )}
       </div>
     );
+  }
+
+  // Client-only mount gate, but *without* the flat-photo fallback: showing
+  // the photo here too meant it popped in alone (no card, no cord) for a
+  // moment, then blanked out, then the real 3D scene finally appeared —
+  // two visible swaps instead of one. An empty placeholder means there's
+  // only a single transition (blank -> 3D), which reads as loading in,
+  // not glitching.
+  if (!mounted) {
+    return <div className={className} aria-hidden="true" />;
   }
 
   return (
@@ -290,21 +302,41 @@ function Band({
   const frontTex = useTexture(frontImage || BLANK_PIXEL);
   const backTex = useTexture(backImage || BLANK_PIXEL);
 
+  // Bumped once by the retry effect below, purely to force cardMap to
+  // recompute after an image that wasn't ready on the first pass finishes
+  // decoding — see that effect's comment.
+  const [retryTick, setRetryTick] = useState(0);
+
   // Composite the front/back photos into the card's texture atlas (front =
   // left half, back = right half), each drawn aspect-preserving.
   const cardMap = useMemo(() => {
     const baseMap = materials.base.map;
     if (!frontImage && !backImage) return baseMap;
 
-    const baseImg = baseMap.image;
-    const W = baseImg.width;
-    const H = baseImg.height;
+    // Guard against compositing onto a not-yet-decoded image. `useGLTF`'s
+    // Suspense only guarantees the GLTF's JSON/buffers are parsed, not that
+    // every referenced texture image has finished decoding — and
+    // `useTexture` resolving doesn't guarantee full decode either in every
+    // browser. A 0x0 source here silently produces a canvas/texture with
+    // invalid pixel data, which WebGL rejects at upload time
+    // ("texSubImage2D: bad image data") and has been seen taking the whole
+    // context down with it ("Context Lost") on the deployed site. Bail out
+    // to the stock texture instead — the retry effect below re-fires this
+    // memo once everything's actually decoded.
+    const baseImg = baseMap.image as HTMLImageElement | undefined;
+    const frontImg = frontTex.image as HTMLImageElement | undefined;
+    const backImg = backTex.image as HTMLImageElement | undefined;
+    const ready = (img: HTMLImageElement | undefined) => !img || (img.width > 0 && img.height > 0);
+    if (!ready(baseImg) || !ready(frontImg) || !ready(backImg)) return baseMap;
+
+    const W = baseImg!.width;
+    const H = baseImg!.height;
     const canvas = document.createElement('canvas');
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext('2d');
     if (!ctx) return baseMap;
-    ctx.drawImage(baseImg, 0, 0, W, H);
+    ctx.drawImage(baseImg!, 0, 0, W, H);
 
     const drawFitted = (img: HTMLImageElement, rect: typeof FRONT_UV_RECT) => {
       const rx = rect.x * W;
@@ -335,7 +367,23 @@ function Band({
     composite.needsUpdate = true;
     return composite;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [frontImage, backImage, imageFit, frontTex, backTex, materials.base.map]);
+  }, [frontImage, backImage, imageFit, frontTex, backTex, materials.base.map, retryTick]);
+
+  // Retry once for whichever image(s) cardMap bailed out on above. Each of
+  // these is a no-op `addEventListener` if the image is already decoded
+  // (the common case), so this isn't a perpetual poll — it only ever fires
+  // the state update if something genuinely wasn't ready yet.
+  useEffect(() => {
+    const images = [materials.base.map?.image, frontTex.image, backTex.image] as (
+      | HTMLImageElement
+      | undefined
+    )[];
+    const pending = images.filter((img) => img && !(img.width > 0 && img.height > 0));
+    if (pending.length === 0) return;
+    const onLoad = () => setRetryTick((t) => t + 1);
+    pending.forEach((img) => img!.addEventListener('load', onLoad, { once: true }));
+    return () => pending.forEach((img) => img!.removeEventListener('load', onLoad));
+  }, [materials.base.map, frontTex.image, backTex.image]);
 
   const [curve] = useState(
     () =>
