@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "portfolio-content-local": {
+      "command": "npx",
+      "args": ["tsx", "mcp-server/index.ts"],
+      "env": {
+        "MCP_TARGET": "local",
+        "MCP_ENV_FILE": ".env"
+      }
+    },
+    "portfolio-content-prod": {
+      "command": "npx",
+      "args": ["tsx", "mcp-server/index.ts"],
+      "env": {
+        "MCP_TARGET": "prod",
+        "MCP_ENV_FILE": ".env.production"
+      }
+    }
+  }
+}
