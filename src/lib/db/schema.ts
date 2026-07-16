@@ -20,6 +20,7 @@ import {
   jsonb,
   timestamp,
   index,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
 /** Tech-stack projects. Backs `getProjects()` / `getProject()`. */
@@ -108,7 +109,7 @@ export const postViews = pgTable(
     day: text('day').notNull(), // YYYY-MM-DD bucket
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index('post_views_unique_idx').on(t.postSlug, t.visitorHash, t.day)]
+  (t) => [uniqueIndex('post_views_unique_idx').on(t.postSlug, t.visitorHash, t.day)]
 );
 
 export type ProjectRow = typeof projects.$inferSelect;

@@ -18,6 +18,7 @@ import * as schema from '../src/lib/db/schema.ts';
 import { PROJECTS } from '../src/data/projects.ts';
 import { renderMarkdown } from '../src/lib/db/render-markdown.ts';
 import { readingTime } from '../src/lib/utils/format.ts';
+import { suggestCategory } from '../src/lib/blog/categorize.ts';
 
 const url = process.env.DATABASE_URL;
 if (!url) throw new Error('DATABASE_URL is not set — add it to .env.');
@@ -81,7 +82,7 @@ async function seedPosts() {
       updated: data.updated ? new Date(data.updated) : null,
       tags: Array.isArray(data.tags) ? data.tags : [],
       draft: Boolean(data.draft ?? false),
-      category: data.category ?? null,
+      category: data.category ?? suggestCategory(`${data.title}\n${(data.tags ?? []).join(' ')}\n${content}`) ?? null,
       series: data.series ?? null,
       heroVideo: data.heroVideo ?? null,
       cover: typeof data.cover === 'string' ? data.cover : null,

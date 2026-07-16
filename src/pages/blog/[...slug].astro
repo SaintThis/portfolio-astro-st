@@ -6,6 +6,7 @@ import TableOfContents from '@components/blog/TableOfContents.astro';
 import ShareRail from '@components/blog/ShareRail.astro';
 import PostAside from '@components/blog/PostAside.astro';
 import PostHeroMedia from '@components/blog/PostHeroMedia.astro';
+import ViewTracker from '@components/blog/ViewTracker.astro';
 import { BLOG } from '@/config';
 import { getPost, getPosts } from '@lib/api';
 import { formatDate, isoDate } from '@lib/utils';
@@ -42,6 +43,7 @@ const related = [...otherPosts]
   tags={post.tags}
 >
   {BLOG.readingProgress && <ReadingProgress target="#post-body" />}
+  {BLOG.viewCounts && <ViewTracker slug={post.slug} />}
 
   <div class="py-16">
     <a href="/blog" class="font-mono text-sm text-fg-muted hover:text-accent" data-cursor="hover"
@@ -64,6 +66,7 @@ const related = [...otherPosts]
             title={post.title}
             path={path}
             series={post.series}
+            views={post.views}
             class="hidden lg:block"
           />
         )
@@ -76,6 +79,16 @@ const related = [...otherPosts]
             <time datetime={isoDate(post.date)}>{formatDate(post.date)}</time>
             <span>·</span>
             <span>{mins} min read</span>
+            {
+              BLOG.viewCounts && (
+                <>
+                  <span>·</span>
+                  <span>
+                    <span data-view-count>{(post.views ?? 0).toLocaleString()}</span> views
+                  </span>
+                </>
+              )
+            }
           </div>
           <h1 class="mt-4 text-4xl font-extrabold leading-tight sm:text-5xl">{post.title}</h1>
           <p class="mt-4 text-lg text-fg-muted">{post.description}</p>

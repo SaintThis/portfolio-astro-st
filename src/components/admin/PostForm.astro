@@ -1,0 +1,122 @@
+---
+/**
+ * Post editor form — plain HTML (zero client JS), posts to /api/admin/posts.
+ * Used by both /admin/posts/new and /admin/posts/[slug]/edit; pass `post` to
+ * pre-fill for editing.
+ */
+import { BLOG } from '@/config';
+import type { PostFull } from '@lib/api/types';
+import { isoDate } from '@lib/utils';
+
+interface Props {
+  post?: PostFull;
+}
+const { post } = Astro.props;
+const editing = !!post;
+---
+
+<form method="POST" action="/api/admin/posts" class="admin-form">
+  {editing && <input type="hidden" name="slug" value={post!.slug} />}
+
+  <label class="af-field">
+    <span class="af-label">Title</span>
+    <input class="af-input" name="title" required maxlength="90" value={post?.title ?? ''} />
+  </label>
+
+  <label class="af-field">
+    <span class="af-label">Description</span>
+    <input
+      class="af-input"
+      name="description"
+      required
+      maxlength="200"
+      value={post?.description ?? ''}
+    />
+  </label>
+
+  <div class="af-row">
+    <label class="af-field">
+      <span class="af-label">Category</span>
+      <select class="af-input" name="category">
+        <option value="">— auto / none —</option>
+        {
+          BLOG.categories.map((c) => (
+            <option value={c.slug} selected={post?.category === c.slug}>
+              {c.label}
+            </option>
+          ))
+        }
+      </select>
+    </label>
+    <label class="af-field">
+      <span class="af-label">Date</span>
+      <input
+        class="af-input"
+        type="date"
+        name="date"
+        value={post ? isoDate(post.date) : isoDate(new Date())}
+      />
+    </label>
+  </div>
+
+  <label class="af-field">
+    <span class="af-label">Tags <em class="af-hint">(comma-separated)</em></span>
+    <input class="af-input" name="tags" value={post?.tags.join(', ') ?? ''} />
+  </label>
+
+  <div class="af-row">
+    <label class="af-field">
+      <span class="af-label">Cover image URL <em class="af-hint">(optional)</em></span>
+      <input class="af-input" name="cover" value={post?.cover ?? ''} />
+    </label>
+    <label class="af-field">
+      <span class="af-label">Hero video URL <em class="af-hint">(YouTube/Vimeo/MP4)</em></span>
+      <input class="af-input" name="heroVideo" value={post?.heroVideo ?? ''} />
+    </label>
+  </div>
+
+  <label class="af-field">
+    <span class="af-label">Series <em class="af-hint">(optional)</em></span>
+    <input class="af-input" name="series" value={post?.series ?? ''} />
+  </label>
+
+  <label class="af-field">
+    <span class="af-label">Body <em class="af-hint">(markdown)</em></span>
+    <textarea class="af-input af-textarea" name="markdown" rows="18" required
+      >{post?.bodyMarkdown ?? ''}</textarea
+    >
+  </label>
+
+  <div class="af-checks">
+    <label class="af-check">
+      <input type="checkbox" name="draft" checked={post?.draft ?? false} /> Draft
+    </label>
+    <label class="af-check">
+      <input type="checkbox" name="featured" checked={post?.featured ?? false} /> Featured
+    </label>
+  </div>
+
+  <div class="af-actions">
+    <button type="submit" class="af-btn af-btn--primary" data-cursor="hover">
+      {editing ? 'Save changes' : 'Create post'}
+    </button>
+    <a href="/admin" class="af-btn" data-cursor="hover">Cancel</a>
+  </div>
+</form>
+
+{
+  editing && (
+    <form
+      method="POST"
+      action="/api/admin/posts"
+      class="mt-4"
+      onsubmit="return confirm('Delete this post permanently?')"
+    >
+      <input type="hidden" name="_action" value="delete" />
+      <input type="hidden" name="slug" value={post!.slug} />
+      <button type="submit" class="af-btn af-btn--danger" data-cursor="hover">
+        Delete post
+      </button>
+    </form>
+  )
+}

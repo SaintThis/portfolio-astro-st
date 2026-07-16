@@ -17,9 +17,10 @@ interface Props {
   title: string;
   path: string;
   series?: string;
+  views?: number;
   class?: string;
 }
-const { title, path, series, class: className = '' } = Astro.props;
+const { title, path, series, views, class: className = '' } = Astro.props;
 ---
 
 <aside class:list={['post-aside', className]}>
@@ -43,7 +44,9 @@ const { title, path, series, class: className = '' } = Astro.props;
       BLOG.viewCounts && (
         <div class="post-aside__card">
           <p class="kicker text-fg-faint">Views</p>
-          <p class="mt-1 font-mono text-2xl text-accent" data-view-count>—</p>
+          <p class="mt-1 font-mono text-2xl text-accent" data-view-count>
+            {typeof views === 'number' ? views.toLocaleString() : '—'}
+          </p>
         </div>
       )
     }

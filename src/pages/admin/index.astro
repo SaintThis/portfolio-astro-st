@@ -1,0 +1,102 @@
+---
+import AdminLayout from '@layouts/AdminLayout.astro';
+import { getPosts, getProjects } from '@lib/api';
+import { formatDate } from '@lib/utils';
+
+export const prerender = false;
+
+const [posts, projects] = await Promise.all([getPosts(), getProjects()]);
+const saved = Astro.url.searchParams.get('saved');
+---
+
+<AdminLayout title="Dashboard">
+  {
+    saved && (
+      <p class="mb-6 rounded border border-border bg-surface px-4 py-2 font-mono text-sm text-success">
+        ✓ Saved "{saved}".
+      </p>
+    )
+  }
+
+  <section class="mb-12">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="font-mono text-sm uppercase tracking-wider text-fg-muted">Posts ({posts.length})</h2>
+      <a href="/admin/posts/new" class="af-btn af-btn--primary" data-cursor="hover">+ New post</a>
+    </div>
+    <div class="admin-list">
+      {
+        posts.map((p) => (
+          <div class="admin-row">
+            <div class="min-w-0">
+              <a href={`/admin/posts/${p.slug}/edit`} class="admin-row__title" data-cursor="hover">
+                {p.title}
+              </a>
+              <div class="mt-0.5 font-mono text-xs text-fg-faint">
+                {formatDate(p.date)}
+                {p.category && <span class="text-accent-2"> · {p.category}</span>}
+                {p.draft && <span class="text-warning"> · draft</span>}
+              </div>
+            </div>
+            <div class="flex items-center gap-3 font-mono text-xs">
+              <a href={`/blog/${p.slug}`} class="text-fg-muted hover:text-accent" data-cursor="hover">
+                view
+              </a>
+              <a
+                href={`/admin/posts/${p.slug}/edit`}
+                class="text-fg-muted hover:text-accent"
+                data-cursor="hover"
+              >
+                edit
+              </a>
+            </div>
+          </div>
+        ))
+      }
+      {posts.length === 0 && <div class="admin-row font-mono text-sm text-fg-faint">No posts yet.</div>}
+    </div>
+  </section>
+
+  <section>
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="font-mono text-sm uppercase tracking-wider text-fg-muted">
+        Projects ({projects.length})
+      </h2>
+      <a href="/admin/projects/new" class="af-btn af-btn--primary" data-cursor="hover">
+        + New project
+      </a>
+    </div>
+    <div class="admin-list">
+      {
+        projects.map((p) => (
+          <div class="admin-row">
+            <div class="min-w-0">
+              <a href={`/admin/projects/${p.slug}/edit`} class="admin-row__title" data-cursor="hover">
+                {p.title}
+              </a>
+              <div class="mt-0.5 font-mono text-xs text-fg-faint">
+                {formatDate(p.date)} · {p.category} · {p.status}
+                {p.featured && <span class="text-accent"> · featured</span>}
+              </div>
+            </div>
+            <div class="flex items-center gap-3 font-mono text-xs">
+              <a
+                href={`/projects/${p.slug}`}
+                class="text-fg-muted hover:text-accent"
+                data-cursor="hover"
+              >
+                view
+              </a>
+              <a
+                href={`/admin/projects/${p.slug}/edit`}
+                class="text-fg-muted hover:text-accent"
+                data-cursor="hover"
+              >
+                edit
+              </a>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+</AdminLayout>

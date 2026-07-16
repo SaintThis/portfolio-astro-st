@@ -1,7 +1,6 @@
 // @ts-check
 import { defineConfig, envField } from 'astro/config';
 import react from '@astrojs/react';
-import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import { SITE } from './src/config.ts';
 
@@ -29,14 +28,9 @@ export default defineConfig({
   },
 
   // Only ship JS for the islands that need it. Keep this lean.
-  integrations: [
-    react(),
-    sitemap({
-      changefreq: 'weekly',
-      priority: 0.7,
-      lastmod: new Date(),
-    }),
-  ],
+  // Sitemap is now a request-time endpoint (src/pages/sitemap.xml.ts) instead of
+  // the build-time integration, so DB-added posts/projects appear without a rebuild.
+  integrations: [react()],
 
   vite: {
     plugins: [tailwindcss()],

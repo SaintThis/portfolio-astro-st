@@ -2,11 +2,10 @@
  * Shared helpers for the MCP tools: the write guard, response builders, and the
  * auto-categorizer.
  */
-import { BLOG } from '../src/config.ts';
 import { slugify } from '../src/lib/utils/format.ts';
 import { TARGET } from './db.ts';
 
-export const CATEGORY_SLUGS = BLOG.categories.map((c) => c.slug);
+export { suggestCategory, CATEGORY_SLUGS } from '../src/lib/blog/categorize.ts';
 
 /**
  * Write guard. Protects against accidental / unauthorized mutations, especially
@@ -50,33 +49,3 @@ export function toSlug(input: string): string {
   return slugify(input);
 }
 
-/**
- * Suggest the best-fit blog category from the allowed list by keyword scoring.
- * Used when a post is created without an explicit category — the "auto-categorize
- * on prompt" behavior. Returns a slug from BLOG.categories, or null if nothing
- * scores (caller can then leave it uncategorized or ask).
- */
-const SYNONYMS: Record<string, string[]> = {
-  engineering: ['engineering', 'scalab', 'infrastructure', 'deploy', 'pipeline', 'ci/cd', 'observability', 'system'],
-  architecture: ['architecture', 'design pattern', 'microservice', 'microfrontend', 'monolith', 'module federation', 'boundaries', 'coupling'],
-  frontend: ['frontend', 'react', 'css', 'ui', 'ux', 'browser', 'astro', 'vue', 'svelte', 'tailwind', 'component', 'accessibility'],
-  backend: ['backend', 'api', 'database', 'sql', 'postgres', 'server', 'node', 'django', 'auth', 'orm', 'drizzle'],
-  rust: ['rust', 'cargo', 'wasm', 'borrow checker', 'memory safety', 'ownership'],
-  career: ['career', 'interview', 'hiring', 'resume', 'productivity', 'soft skill', 'mentor', 'growth'],
-};
-
-export function suggestCategory(text: string): string | null {
-  const hay = text.toLowerCase();
-  let best: string | null = null;
-  let bestScore = 0;
-  for (const c of BLOG.categories) {
-    const keys = SYNONYMS[c.slug] ?? [c.slug, c.label.toLowerCase()];
-    let score = 0;
-    for (const k of keys) score += hay.split(k).length - 1;
-    if (score > bestScore) {
-      bestScore = score;
-      best = c.slug;
-    }
-  }
-  return bestScore > 0 ? best : null;
-}

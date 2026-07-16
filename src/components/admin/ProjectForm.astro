@@ -1,0 +1,123 @@
+---
+/**
+ * Project editor form — plain HTML, posts to /api/admin/projects. Used by
+ * /admin/projects/new and /admin/projects/[slug]/edit.
+ */
+import type { Project } from '@lib/api/types';
+import { isoDate } from '@lib/utils';
+
+interface Props {
+  project?: Project;
+}
+const { project } = Astro.props;
+const editing = !!project;
+
+const CATEGORIES = ['web', 'backend', 'tooling', 'mobile', 'experiment'];
+const STATUSES = ['live', 'wip', 'archived'];
+---
+
+<form method="POST" action="/api/admin/projects" class="admin-form">
+  {editing && <input type="hidden" name="slug" value={project!.slug} />}
+
+  <label class="af-field">
+    <span class="af-label">Title</span>
+    <input class="af-input" name="title" required value={project?.title ?? ''} />
+  </label>
+
+  <label class="af-field">
+    <span class="af-label">Summary</span>
+    <input class="af-input" name="summary" required value={project?.summary ?? ''} />
+  </label>
+
+  <label class="af-field">
+    <span class="af-label">Description</span>
+    <textarea class="af-input af-textarea" name="description" rows="5">{project?.description ?? ''}</textarea>
+  </label>
+
+  <div class="af-row">
+    <label class="af-field">
+      <span class="af-label">Category</span>
+      <select class="af-input" name="category">
+        {
+          CATEGORIES.map((c) => (
+            <option value={c} selected={project?.category === c}>
+              {c}
+            </option>
+          ))
+        }
+      </select>
+    </label>
+    <label class="af-field">
+      <span class="af-label">Status</span>
+      <select class="af-input" name="status">
+        {
+          STATUSES.map((s) => (
+            <option value={s} selected={project?.status === s}>
+              {s}
+            </option>
+          ))
+        }
+      </select>
+    </label>
+  </div>
+
+  <div class="af-row">
+    <label class="af-field">
+      <span class="af-label">Date</span>
+      <input
+        class="af-input"
+        type="date"
+        name="date"
+        value={project ? isoDate(project.date) : isoDate(new Date())}
+      />
+    </label>
+    <label class="af-field">
+      <span class="af-label">Tags <em class="af-hint">(comma-separated)</em></span>
+      <input class="af-input" name="tags" value={project?.tags.join(', ') ?? ''} />
+    </label>
+  </div>
+
+  <div class="af-row">
+    <label class="af-field">
+      <span class="af-label">Live URL</span>
+      <input class="af-input" name="live" value={project?.links.live ?? ''} />
+    </label>
+    <label class="af-field">
+      <span class="af-label">Repo URL</span>
+      <input class="af-input" name="repo" value={project?.links.repo ?? ''} />
+    </label>
+  </div>
+
+  <label class="af-field">
+    <span class="af-label">Cover image URL <em class="af-hint">(optional)</em></span>
+    <input class="af-input" name="cover" value={project?.cover ?? ''} />
+  </label>
+
+  <label class="af-check">
+    <input type="checkbox" name="featured" checked={project?.featured ?? false} /> Featured
+  </label>
+
+  <div class="af-actions">
+    <button type="submit" class="af-btn af-btn--primary" data-cursor="hover">
+      {editing ? 'Save changes' : 'Create project'}
+    </button>
+    <a href="/admin" class="af-btn" data-cursor="hover">Cancel</a>
+  </div>
+</form>
+
+{
+  editing && (
+    <form
+      method="POST"
+      action="/api/admin/projects"
+      class="mt-4"
+      onsubmit="return confirm('Delete this project permanently?')"
+    >
+      <input type="hidden" name="_action" value="delete" />
+      <input type="hidden" name="slug" value={project!.slug} />
+      <button type="submit" class="af-btn af-btn--danger" data-cursor="hover">
+        Delete project
+      </button>
+    </form>
+  )
+}

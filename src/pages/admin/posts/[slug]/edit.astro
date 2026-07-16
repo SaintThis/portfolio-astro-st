@@ -1,0 +1,14 @@
+---
+import AdminLayout from '@layouts/AdminLayout.astro';
+import PostForm from '@components/admin/PostForm.astro';
+import { getPost } from '@lib/api';
+
+export const prerender = false;
+
+const post = await getPost(Astro.params.slug!);
+if (!post) return Astro.redirect('/admin');
+---
+
+<AdminLayout title={`Edit · ${post.title}`}>
+  <PostForm post={post} />
+</AdminLayout>

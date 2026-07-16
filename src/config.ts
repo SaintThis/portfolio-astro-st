@@ -93,7 +93,7 @@ export const BLOG = {
   readingProgress: true,
   shareRail: true,
   leftAside: true,
-  viewCounts: false, // needs backend
+  viewCounts: true, // DB-backed (post_views table)
   reactions: false, // needs backend (future)
   comments: false, // needs backend (future)
   /** Blog index categories. Also used to validate/auto-file posts (the MCP

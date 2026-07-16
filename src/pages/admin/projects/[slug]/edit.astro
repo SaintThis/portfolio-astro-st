@@ -1,0 +1,14 @@
+---
+import AdminLayout from '@layouts/AdminLayout.astro';
+import ProjectForm from '@components/admin/ProjectForm.astro';
+import { getProject } from '@lib/api';
+
+export const prerender = false;
+
+const project = await getProject(Astro.params.slug!);
+if (!project) return Astro.redirect('/admin');
+---
+
+<AdminLayout title={`Edit · ${project.title}`}>
+  <ProjectForm project={project} />
+</AdminLayout>

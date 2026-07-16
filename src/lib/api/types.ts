@@ -40,6 +40,8 @@ export interface PostMeta {
   draft: boolean;
   readingTime: number;
   cover?: string;
+  /** Primary category — drives the blog index filter chips. */
+  category?: string;
 }
 
 /**

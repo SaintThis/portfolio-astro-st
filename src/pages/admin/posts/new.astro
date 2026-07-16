@@ -1,0 +1,10 @@
+---
+import AdminLayout from '@layouts/AdminLayout.astro';
+import PostForm from '@components/admin/PostForm.astro';
+
+export const prerender = false;
+---
+
+<AdminLayout title="New post">
+  <PostForm />
+</AdminLayout>

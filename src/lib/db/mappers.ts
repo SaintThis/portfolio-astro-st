@@ -39,6 +39,7 @@ export function rowToPostMeta(r: PostRow): PostMeta {
     draft: r.draft,
     readingTime: r.readingTime,
     cover: r.cover ?? undefined,
+    category: r.category ?? undefined,
   };
 }
 

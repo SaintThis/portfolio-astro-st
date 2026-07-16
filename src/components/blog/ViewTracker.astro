@@ -1,0 +1,75 @@
+---
+/**
+ * ViewTracker — fires a single qualified view for a post, then reflects the new
+ * total into any `[data-view-count]` element on the page. Zero visible output.
+ *
+ * A view "counts" only when the reader stays ≥10s AND scrolls past ≥25% of the
+ * article — filtering bounces and bots. Server-side dedup (per visitor/day)
+ * means a refresh won't re-count. Respects reduced-motion irrelevantly (no
+ * animation); guards double-binding across View Transitions.
+ */
+interface Props {
+  slug: string;
+}
+const { slug } = Astro.props;
+---
+
+<div data-view-tracker={slug} hidden></div>
+
+<script>
+  function initViewTracker() {
+    const el = document.querySelector<HTMLElement>('[data-view-tracker]');
+    if (!el || el.dataset.bound) return;
+    el.dataset.bound = 'true';
+    const slug = el.dataset.viewTracker;
+    if (!slug) return;
+
+    const paint = (views: number) => {
+      document
+        .querySelectorAll<HTMLElement>('[data-view-count]')
+        .forEach((n) => (n.textContent = views.toLocaleString()));
+    };
+
+    // Show the current count immediately (GET), without counting a view.
+    fetch(`/api/views/${slug}`)
+      .then((r) => r.json())
+      .then((d) => typeof d.views === 'number' && paint(d.views))
+      .catch(() => {});
+
+    // Qualification: dwell + scroll depth.
+    let dwelled = false;
+    let scrolled = false;
+    let done = false;
+
+    const scrollDepth = () => {
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      return max <= 0 ? 1 : window.scrollY / max;
+    };
+    const onScroll = () => {
+      if (scrollDepth() >= 0.25) {
+        scrolled = true;
+        maybeCount();
+      }
+    };
+
+    const maybeCount = () => {
+      if (done || !dwelled || !scrolled) return;
+      done = true;
+      window.removeEventListener('scroll', onScroll);
+      fetch(`/api/views/${slug}`, { method: 'POST' })
+        .then((r) => r.json())
+        .then((d) => typeof d.views === 'number' && paint(d.views))
+        .catch(() => {});
+    };
+
+    setTimeout(() => {
+      dwelled = true;
+      maybeCount();
+    }, 10_000);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
+
+  document.addEventListener('astro:page-load', initViewTracker);
+</script>
