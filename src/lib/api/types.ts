@@ -42,6 +42,27 @@ export interface PostMeta {
   cover?: string;
 }
 
+/**
+ * A full blog post — `PostMeta` plus the rendered body and the extra reading-UI
+ * fields. Returned by `getPost(slug)`; list endpoints return `PostMeta`. Extends
+ * PostMeta additively so summary consumers keep working unchanged.
+ */
+export interface PostFull extends PostMeta {
+  /** Pre-rendered HTML (rendered at write time). */
+  bodyHtml: string;
+  /** Raw markdown source — for editing/re-rendering. */
+  bodyMarkdown: string;
+  category?: string;
+  series?: string;
+  heroVideo?: string;
+  ogImage?: string;
+  featured?: boolean;
+  /** Lifetime view count (0 until the view-tracking backend is live). */
+  views?: number;
+  /** Extracted {depth, slug, text} for the table of contents. */
+  headings?: { depth: number; slug: string; text: string }[];
+}
+
 export interface Skill {
   name: string;
   level: number; // 0–100 for the bar meters

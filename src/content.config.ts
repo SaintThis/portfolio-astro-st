@@ -22,6 +22,18 @@ const blog = defineCollection({
       draft: z.boolean().default(false),
       cover: image().optional(),
       ogImage: z.string().optional(),
+      // --- Flexible, additive fields (all optional so existing posts still
+      // validate). These mirror what the future `posts` DB table will hold, so
+      // the frontmatter → DB migration is a straight copy. Add more here freely;
+      // optional-with-default keeps it backward-compatible.
+      /** Single primary bucket for the blog index filter/category chips. */
+      category: z.string().optional(),
+      /** Groups multi-part posts (shown in the left rail as "part of a series"). */
+      series: z.string().optional(),
+      /** A hero video (YouTube/Vimeo/MP4 URL) rendered above the article body. */
+      heroVideo: z.string().optional(),
+      /** Surface on the blog index "featured" strip. */
+      featured: z.boolean().default(false),
     }),
 });
 

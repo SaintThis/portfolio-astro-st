@@ -5,6 +5,10 @@ import ProjectCard from '@components/ui/ProjectCard.astro';
 import Reveal from '@components/ui/Reveal.astro';
 import { getProjects, getProjectCategories } from '@lib/api';
 
+// On-demand rendered: reads live from the DB at request time so MCP/admin edits
+// appear without a rebuild. Falls back to fixtures when DATABASE_URL is unset.
+export const prerender = false;
+
 const projects = await getProjects();
 const categories = await getProjectCategories();
 ---

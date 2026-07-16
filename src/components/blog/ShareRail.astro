@@ -1,0 +1,136 @@
+---
+/**
+ * ShareRail — share controls for a post. Renders as icon buttons: native share
+ * (mobile, via the Web Share API when available), copy-link, X/Twitter, and
+ * LinkedIn. The direction is horizontal by default; pass `orientation="vertical"`
+ * for the sticky left-aside placement.
+ *
+ * Links work with zero JS (plain anchors); the inline script only adds the
+ * copy-to-clipboard and native-share niceties. Re-inits on `astro:page-load`.
+ */
+import { SITE } from '@/config';
+
+interface Props {
+  title: string;
+  /** Absolute path of the post, e.g. `/blog/my-post`. */
+  path: string;
+  orientation?: 'horizontal' | 'vertical';
+  class?: string;
+}
+const { title, path, orientation = 'horizontal', class: className = '' } = Astro.props;
+
+const url = new URL(path, SITE.url).toString();
+const enc = (s: string) => encodeURIComponent(s);
+const xHref = `https://twitter.com/intent/tweet?text=${enc(title)}&url=${enc(url)}`;
+const liHref = `https://www.linkedin.com/sharing/share-offsite/?url=${enc(url)}`;
+---
+
+<div
+  class:list={[
+    'share-rail flex items-center gap-2',
+    orientation === 'vertical' ? 'flex-col' : 'flex-row',
+    className,
+  ]}
+  data-share-title={title}
+  data-share-url={url}
+>
+  <span class="kicker mr-1 text-fg-faint" class:list={[orientation === 'vertical' && 'sr-only']}>
+    Share
+  </span>
+
+  <a href={xHref} target="_blank" rel="noopener noreferrer" class="share-btn" aria-label="Share on X" data-cursor="hover">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"
+      ><path d="M18.9 2h3.3l-7.2 8.3L23.7 22h-6.6l-5.2-6.8L5.9 22H2.6l7.7-8.9L2 2h6.8l4.7 6.2L18.9 2Zm-1.2 18h1.8L7.2 3.9H5.3L17.7 20Z"></path></svg>
+  </a>
+
+  <a href={liHref} target="_blank" rel="noopener noreferrer" class="share-btn" aria-label="Share on LinkedIn" data-cursor="hover">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"
+      ><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.56V9h3.56v11.45ZM22.23 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.46c.98 0 1.77-.77 1.77-1.73V1.73C24 .77 23.21 0 22.23 0Z"></path></svg>
+  </a>
+
+  <button type="button" class="share-btn" data-share-copy aria-label="Copy link" data-cursor="hover">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+      ><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+    <span class="share-btn__toast" data-share-toast aria-live="polite"></span>
+  </button>
+
+  <button type="button" class="share-btn share-btn--native" data-share-native aria-label="Share…" data-cursor="hover" hidden>
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+      ><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"></path></svg>
+  </button>
+</div>
+
+<style>
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-box);
+    color: var(--color-fg-muted);
+    background: var(--color-surface);
+    transition: color 0.2s var(--ease-out-expo), border-color 0.2s var(--ease-out-expo),
+      box-shadow 0.2s var(--ease-out-expo);
+  }
+  .share-btn:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    box-shadow: var(--glow) color-mix(in srgb, var(--color-accent) 40%, transparent);
+  }
+  .share-btn__toast {
+    position: absolute;
+    bottom: calc(100% + 0.4rem);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-success);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s var(--ease-out-expo);
+  }
+  .share-btn__toast[data-show='true'] {
+    opacity: 1;
+  }
+</style>
+
+<script>
+  function initShareRail() {
+    document.querySelectorAll<HTMLElement>('.share-rail').forEach((rail) => {
+      if (rail.dataset.bound) return;
+      rail.dataset.bound = 'true';
+
+      const url = rail.dataset.shareUrl || location.href;
+      const title = rail.dataset.shareTitle || document.title;
+
+      const copyBtn = rail.querySelector<HTMLElement>('[data-share-copy]');
+      const toast = rail.querySelector<HTMLElement>('[data-share-toast]');
+      copyBtn?.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(url);
+          if (toast) {
+            toast.textContent = 'Copied!';
+            toast.dataset.show = 'true';
+            setTimeout(() => (toast.dataset.show = 'false'), 1600);
+          }
+        } catch {
+          /* clipboard blocked — the X/LinkedIn anchors still work */
+        }
+      });
+
+      const nativeBtn = rail.querySelector<HTMLElement>('[data-share-native]');
+      if (nativeBtn && typeof navigator.share === 'function') {
+        nativeBtn.hidden = false;
+        nativeBtn.addEventListener('click', () => {
+          navigator.share({ title, url }).catch(() => {});
+        });
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', initShareRail);
+</script>

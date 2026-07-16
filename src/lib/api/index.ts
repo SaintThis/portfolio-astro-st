@@ -7,4 +7,6 @@ export {
   getProject,
   getProjectCategories,
 } from './repositories/projects.repo';
+export { getPosts, getPost } from './repositories/posts.repo';
 export { getSkills, getExperience } from './repositories/meta.repo';
+export { dbEnabled } from '@lib/db';

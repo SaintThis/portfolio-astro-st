@@ -1,0 +1,96 @@
+---
+/**
+ * PostAside — the sticky left rail on a post page. Deliberately restrained
+ * (this is a hiring-manager-facing portfolio, not an ad farm): a vertical share
+ * rail, an optional series note, a tasteful "sponsor" empty-state, and a
+ * newsletter placeholder. The view-count line only renders once the backend is
+ * wired (`BLOG.viewCounts`).
+ *
+ * Everything here is a placeholder-safe empty state today — no third-party ad
+ * scripts, nothing that hurts the perf/SEO story. Swap the sponsor/newsletter
+ * blocks for real integrations when they exist.
+ */
+import { BLOG, SITE } from '@/config';
+import ShareRail from './ShareRail.astro';
+
+interface Props {
+  title: string;
+  path: string;
+  series?: string;
+  class?: string;
+}
+const { title, path, series, class: className = '' } = Astro.props;
+---
+
+<aside class:list={['post-aside', className]}>
+  <div class="post-aside__sticky space-y-6">
+    {BLOG.shareRail && <ShareRail title={title} path={path} orientation="vertical" />}
+
+    {
+      series && (
+        <div class="post-aside__card">
+          <p class="kicker text-fg-faint">
+            <span class="text-accent-2">//</span> Series
+          </p>
+          <p class="mt-2 text-sm text-fg-muted">
+            Part of <span class="text-fg">{series}</span>
+          </p>
+        </div>
+      )
+    }
+
+    {
+      BLOG.viewCounts && (
+        <div class="post-aside__card">
+          <p class="kicker text-fg-faint">Views</p>
+          <p class="mt-1 font-mono text-2xl text-accent" data-view-count>—</p>
+        </div>
+      )
+    }
+
+    <!-- Sponsor slot: empty state until there's a real sponsor. Reads as
+         "available", not as a broken/blank ad. -->
+    <div class="post-aside__card post-aside__card--dashed">
+      <p class="kicker text-fg-faint">Sponsor</p>
+      <p class="mt-2 text-sm text-fg-muted">This space is open.</p>
+      <a href="/contact" class="post-aside__link" data-cursor="hover">Get in touch →</a>
+    </div>
+
+    <!-- Newsletter placeholder — no real capture yet, links to contact. -->
+    <div class="post-aside__card">
+      <p class="kicker text-fg-faint">Newsletter</p>
+      <p class="mt-2 text-sm text-fg-muted">New posts, occasionally. No spam.</p>
+      <a href={`mailto:${SITE.email}?subject=Subscribe`} class="post-aside__link" data-cursor="hover">
+        Notify me →
+      </a>
+    </div>
+  </div>
+</aside>
+
+<style>
+  .post-aside__sticky {
+    position: sticky;
+    top: 7rem;
+  }
+  .post-aside__card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-box);
+    background: var(--color-surface);
+    padding: 1rem;
+  }
+  .post-aside__card--dashed {
+    border-style: dashed;
+    background: transparent;
+  }
+  .post-aside__link {
+    display: inline-block;
+    margin-top: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-accent);
+    transition: color 0.2s var(--ease-out-expo);
+  }
+  .post-aside__link:hover {
+    color: var(--color-accent-2);
+  }
+</style>

@@ -1,0 +1,115 @@
+---
+/**
+ * TableOfContents — sticky, scroll-spy contents list for a post. Fed by the
+ * `headings` array Astro returns from `render(post)` (each has `depth`, `slug`,
+ * `text`); Astro auto-assigns matching `id`s to the rendered headings, so the
+ * anchor links and the IntersectionObserver highlight line up for free.
+ *
+ * Renders nothing if there are fewer than 2 headings. Re-inits on
+ * `astro:page-load` and guards against double-binding.
+ */
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+  class?: string;
+}
+const { headings, class: className = '' } = Astro.props;
+
+// Only h2/h3 make a useful outline — h1 is the title, h4+ is noise.
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{
+  items.length >= 2 && (
+    <nav class:list={['toc', className]} aria-label="Table of contents">
+      <p class="kicker mb-3 text-fg-faint">
+        <span class="text-accent-2">#</span> On this page
+      </p>
+      <ul class="toc__list">
+        {items.map((h) => (
+          <li class:list={['toc__item', h.depth === 3 && 'toc__item--sub']}>
+            <a href={`#${h.slug}`} class="toc__link" data-toc-link={h.slug} data-cursor="hover">
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<style>
+  .toc {
+    position: sticky;
+    top: 7rem;
+    max-height: calc(100vh - 9rem);
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+  }
+  .toc__list {
+    list-style: none;
+    border-left: 1px solid var(--color-border);
+  }
+  .toc__item--sub {
+    padding-left: 0.9rem;
+  }
+  .toc__link {
+    display: block;
+    padding: 0.35rem 0 0.35rem 0.9rem;
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+    color: var(--color-fg-faint);
+    line-height: 1.35;
+    transition: color 0.2s var(--ease-out-expo), border-color 0.2s var(--ease-out-expo);
+  }
+  .toc__link:hover {
+    color: var(--color-fg-muted);
+  }
+  .toc__link[data-active='true'] {
+    color: var(--color-accent);
+    border-left-color: var(--color-accent);
+  }
+</style>
+
+<script>
+  function initToc() {
+    const nav = document.querySelector<HTMLElement>('.toc');
+    if (!nav || nav.dataset.bound) return;
+    nav.dataset.bound = 'true';
+
+    const links = new Map<string, HTMLElement>();
+    nav.querySelectorAll<HTMLElement>('[data-toc-link]').forEach((el) => {
+      const slug = el.dataset.tocLink;
+      if (slug) links.set(slug, el);
+    });
+
+    const headings = Array.from(links.keys())
+      .map((slug) => document.getElementById(slug))
+      .filter((el): el is HTMLElement => el !== null);
+    if (headings.length === 0) return;
+
+    let activeSlug = '';
+    const setActive = (slug: string) => {
+      if (slug === activeSlug) return;
+      activeSlug = slug;
+      links.forEach((el, s) => el.setAttribute('data-active', String(s === slug)));
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Pick the topmost heading currently intersecting the trigger band.
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]?.target.id) setActive(visible[0].target.id);
+      },
+      // A band near the top of the viewport so "active" means "you're reading it".
+      { rootMargin: '-10% 0px -75% 0px', threshold: 0 }
+    );
+    headings.forEach((h) => observer.observe(h));
+  }
+
+  document.addEventListener('astro:page-load', initToc);
+</script>

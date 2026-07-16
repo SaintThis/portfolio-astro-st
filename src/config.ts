@@ -79,3 +79,34 @@ export const FEATURES = {
    *  engine). Easy off-switch while its cost/benefit is still being decided. */
   heroLanyard: true,
 } as const;
+
+/**
+ * Blog reading-experience config. These toggle the surrounding chrome on a post
+ * page (table of contents, share rail, left aside, reading progress). Kept here
+ * so the blog layout never hardcodes these decisions.
+ *
+ * `viewCounts`, `reactions`, and `comments` stay OFF until the Postgres backend
+ * is wired — they need server state. Flip them on there.
+ */
+export const BLOG = {
+  tableOfContents: true,
+  readingProgress: true,
+  shareRail: true,
+  leftAside: true,
+  viewCounts: false, // needs backend
+  reactions: false, // needs backend (future)
+  comments: false, // needs backend (future)
+  /** Blog index categories. Also used to validate/auto-file posts (the MCP
+   *  admin tool picks the closest match when you add content). Keep lowercase
+   *  slugs; the label is derived by title-casing unless you add one here. */
+  categories: [
+    { slug: 'engineering', label: 'Engineering' },
+    { slug: 'architecture', label: 'Architecture' },
+    { slug: 'frontend', label: 'Frontend' },
+    { slug: 'backend', label: 'Backend' },
+    { slug: 'rust', label: 'Rust' },
+    { slug: 'career', label: 'Career' },
+  ],
+  /** Posts per page on the blog index (real pagination lands with the SSR/DB phase). */
+  pageSize: 8,
+} as const;

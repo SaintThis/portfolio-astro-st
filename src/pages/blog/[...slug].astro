@@ -1,95 +1,141 @@
 ---
-import { getCollection, render } from 'astro:content';
 import BaseLayout from '@layouts/BaseLayout.astro';
 import Tag from '@components/ui/Tag.astro';
-import { formatDate, isoDate, readingTime } from '@lib/utils';
+import ReadingProgress from '@components/blog/ReadingProgress.astro';
+import TableOfContents from '@components/blog/TableOfContents.astro';
+import ShareRail from '@components/blog/ShareRail.astro';
+import PostAside from '@components/blog/PostAside.astro';
+import PostHeroMedia from '@components/blog/PostHeroMedia.astro';
+import { BLOG } from '@/config';
+import { getPost, getPosts } from '@lib/api';
+import { formatDate, isoDate } from '@lib/utils';
 
-export async function getStaticPaths() {
-  const posts = await getCollection('blog');
-  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
-}
+// On-demand rendered: reads the post live from the DB at request time.
+export const prerender = false;
 
-const { post } = Astro.props;
-const { Content } = await render(post);
-const mins = readingTime(post.body ?? '');
+const { slug } = Astro.params;
+const post = await getPost(slug!);
+if (!post) return Astro.redirect('/404');
+
+const mins = post.readingTime;
+const path = `/blog/${post.slug}`;
+const headings = post.headings ?? [];
 
 // Related posts: prefer shared tags, fall back to latest so the section is
 // never empty — readers always leave with a next thing to read.
-const otherPosts = (
-  await getCollection('blog', ({ data, id }) =>
-    id !== post.id && (import.meta.env.PROD ? !data.draft : true)
-  )
-).sort((a, b) => +b.data.date - +a.data.date);
+const otherPosts = (await getPosts()).filter((p) => p.slug !== post.slug);
 
 const tagOverlap = (candidate: (typeof otherPosts)[number]) =>
-  candidate.data.tags.filter((t) => post.data.tags.includes(t)).length;
+  candidate.tags.filter((t) => post.tags.includes(t)).length;
 
 const related = [...otherPosts]
-  .sort((a, b) => tagOverlap(b) - tagOverlap(a) || +b.data.date - +a.data.date)
+  .sort((a, b) => tagOverlap(b) - tagOverlap(a) || +new Date(b.date) - +new Date(a.date))
   .slice(0, 3);
 ---
 
 <BaseLayout
-  title={post.data.title}
-  description={post.data.description}
+  title={post.title}
+  description={post.description}
   type="article"
-  publishedTime={isoDate(post.data.date)}
-  modifiedTime={post.data.updated ? isoDate(post.data.updated) : undefined}
-  tags={post.data.tags}
+  publishedTime={isoDate(post.date)}
+  modifiedTime={post.updated ? isoDate(post.updated) : undefined}
+  tags={post.tags}
 >
-  <article class="py-16">
+  {BLOG.readingProgress && <ReadingProgress target="#post-body" />}
+
+  <div class="py-16">
     <a href="/blog" class="font-mono text-sm text-fg-muted hover:text-accent" data-cursor="hover"
       >← all posts</a
     >
 
-    <header class="mt-6 max-w-3xl">
-      <div class="flex flex-wrap items-center gap-3 font-mono text-xs text-fg-faint">
-        <time datetime={isoDate(post.data.date)}>{formatDate(post.data.date)}</time>
-        <span>·</span>
-        <span>{mins} min read</span>
-      </div>
-      <h1 class="mt-4 text-4xl font-extrabold leading-tight sm:text-5xl">{post.data.title}</h1>
-      <p class="mt-4 text-lg text-fg-muted">{post.data.description}</p>
-      <div class="mt-4 flex flex-wrap gap-1.5">
-        {post.data.tags.map((t) => <Tag accent>{t}</Tag>)}
-      </div>
-    </header>
+    <!--
+      Reading layout. Below `lg` everything stacks (article only, centered).
+      At `lg` a three-track grid opens up: left aside (share + sponsor/newsletter),
+      the article, and a sticky table of contents on the right. Tracks are sized
+      to fit inside BaseLayout's max-w-6xl container.
+    -->
+    <div
+      class="mt-6 lg:grid lg:grid-cols-[13rem_minmax(0,1fr)_14rem] lg:items-start lg:gap-8 xl:gap-10"
+    >
+      <!-- Left aside — hidden until lg. -->
+      {
+        BLOG.leftAside && (
+          <PostAside
+            title={post.title}
+            path={path}
+            series={post.series}
+            class="hidden lg:block"
+          />
+        )
+      }
 
-    <div class="prose-cyber mt-10 max-w-3xl">
-      <Content />
+      <article class="min-w-0 max-w-3xl">
+        <header>
+          <div class="flex flex-wrap items-center gap-3 font-mono text-xs text-fg-faint">
+            {post.category && <span class="text-accent-2">{post.category}</span>}
+            <time datetime={isoDate(post.date)}>{formatDate(post.date)}</time>
+            <span>·</span>
+            <span>{mins} min read</span>
+          </div>
+          <h1 class="mt-4 text-4xl font-extrabold leading-tight sm:text-5xl">{post.title}</h1>
+          <p class="mt-4 text-lg text-fg-muted">{post.description}</p>
+          <div class="mt-4 flex flex-wrap gap-1.5">
+            {post.tags.map((t) => <Tag accent>{t}</Tag>)}
+          </div>
+
+          <PostHeroMedia heroVideo={post.heroVideo} cover={post.cover} alt={post.title} />
+
+          <!-- Horizontal share row — always visible, including on mobile where
+               the left aside is hidden. -->
+          {
+            BLOG.shareRail && (
+              <div class="mt-6 border-y border-border py-3 lg:hidden">
+                <ShareRail title={post.title} path={path} />
+              </div>
+            )
+          }
+        </header>
+
+        <div id="post-body" class="prose-cyber mt-10" set:html={post.bodyHtml}></div>
+
+        {
+          related.length > 0 && (
+            <footer class="mt-20 border-t border-border pt-10">
+              <p class="kicker mb-6">
+                <span class="text-accent-2">//</span> Read next
+              </p>
+              <ul class="space-y-5">
+                {related.map((r) => (
+                  <li>
+                    <a
+                      href={`/blog/${r.slug}`}
+                      data-cursor="hover"
+                      data-cursor-label="Read"
+                      class="group block"
+                    >
+                      <div class="flex flex-wrap items-center gap-3 font-mono text-xs text-fg-faint">
+                        <time datetime={isoDate(r.date)}>{formatDate(r.date)}</time>
+                        {tagOverlap(r) > 0 && <span class="text-accent">related</span>}
+                      </div>
+                      <h3 class="mt-1 text-lg font-bold transition-colors group-hover:text-accent">
+                        {r.title}
+                      </h3>
+                      <p class="mt-1 text-sm text-fg-muted">{r.description}</p>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </footer>
+          )
+        }
+      </article>
+
+      <!-- Right table of contents — hidden until lg. -->
+      {
+        BLOG.tableOfContents && <TableOfContents headings={headings} class="hidden lg:block" />
+      }
     </div>
-
-    {
-      related.length > 0 && (
-        <footer class="mt-20 max-w-3xl border-t border-border pt-10">
-          <p class="kicker mb-6">
-            <span class="text-accent-2">//</span> Read next
-          </p>
-          <ul class="space-y-5">
-            {related.map((r) => (
-              <li>
-                <a
-                  href={`/blog/${r.id}`}
-                  data-cursor="hover"
-                  data-cursor-label="Read"
-                  class="group block"
-                >
-                  <div class="flex flex-wrap items-center gap-3 font-mono text-xs text-fg-faint">
-                    <time datetime={isoDate(r.data.date)}>{formatDate(r.data.date)}</time>
-                    {tagOverlap(r) > 0 && <span class="text-accent">related</span>}
-                  </div>
-                  <h3 class="mt-1 text-lg font-bold transition-colors group-hover:text-accent">
-                    {r.data.title}
-                  </h3>
-                  <p class="mt-1 text-sm text-fg-muted">{r.data.description}</p>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </footer>
-      )
-    }
-  </article>
+  </div>
 </BaseLayout>
 
 <style is:global>
@@ -106,7 +152,12 @@ const related = [...otherPosts]
     scroll-margin-top: 6rem;
   }
   .prose-cyber h2::before { content: '# '; color: var(--color-accent-2); }
-  .prose-cyber h3 { margin-top: 2rem; font-size: 1.25rem; color: var(--color-fg); }
+  .prose-cyber h3 {
+    margin-top: 2rem;
+    font-size: 1.25rem;
+    color: var(--color-fg);
+    scroll-margin-top: 6rem;
+  }
   .prose-cyber a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 3px; }
   .prose-cyber strong { color: var(--color-fg); }
   .prose-cyber ul, .prose-cyber ol { padding-left: 1.4rem; }
@@ -135,4 +186,11 @@ const related = [...otherPosts]
     overflow-x: auto;
   }
   .prose-cyber pre code { background: none; padding: 0; color: inherit; }
+  /* Inline video/iframe embeds inside the article body. */
+  .prose-cyber iframe, .prose-cyber video {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-box);
+  }
 </style>
