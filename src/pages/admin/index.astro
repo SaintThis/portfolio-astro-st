@@ -1,11 +1,11 @@
 ---
 import AdminLayout from '@layouts/AdminLayout.astro';
-import { getPosts, getProjects } from '@lib/api';
+import { getPosts, getProjects, getExperience } from '@lib/api';
 import { formatDate } from '@lib/utils';
 
 export const prerender = false;
 
-const [posts, projects] = await Promise.all([getPosts(), getProjects()]);
+const [posts, projects, experience] = await Promise.all([getPosts(), getProjects(), getExperience()]);
 const saved = Astro.url.searchParams.get('saved');
 ---
 
@@ -97,6 +97,50 @@ const saved = Astro.url.searchParams.get('saved');
           </div>
         ))
       }
+    </div>
+  </section>
+
+  <section class="mt-12">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="font-mono text-sm uppercase tracking-wider text-fg-muted">
+        Experience ({experience.length})
+      </h2>
+      <a href="/admin/experience/new" class="af-btn af-btn--primary" data-cursor="hover">
+        + New experience
+      </a>
+    </div>
+    <div class="admin-list">
+      {
+        experience.map((e) => (
+          <div class="admin-row">
+            <div class="min-w-0">
+              <a
+                href={`/admin/experience/${e.slug}/edit`}
+                class="admin-row__title"
+                data-cursor="hover"
+              >
+                {e.role}
+              </a>
+              <div class="mt-0.5 font-mono text-xs text-fg-faint">
+                {e.company} · {e.period}
+                {e.current && <span class="text-accent"> · current</span>}
+              </div>
+            </div>
+            <div class="flex items-center gap-3 font-mono text-xs">
+              <a
+                href={`/admin/experience/${e.slug}/edit`}
+                class="text-fg-muted hover:text-accent"
+                data-cursor="hover"
+              >
+                edit
+              </a>
+            </div>
+          </div>
+        ))
+      }
+      {experience.length === 0 && (
+        <div class="admin-row font-mono text-sm text-fg-faint">No experience entries yet.</div>
+      )}
     </div>
   </section>
 </AdminLayout>

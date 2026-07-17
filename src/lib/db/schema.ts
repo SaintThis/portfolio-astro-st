@@ -112,7 +112,36 @@ export const postViews = pgTable(
   (t) => [uniqueIndex('post_views_unique_idx').on(t.postSlug, t.visitorHash, t.day)]
 );
 
+/**
+ * Work history. Backs `getExperience()`. `period` is the free-text label shown
+ * on the About page (e.g. "Dec 2023 – Feb 2024") since real-world job dates are
+ * often approximate; `startDate` is a real date used only for sort order, so
+ * "current" and recent roles surface first without parsing `period` strings.
+ */
+export const experience = pgTable(
+  'experience',
+  {
+    id: serial('id').primaryKey(),
+    slug: text('slug').notNull().unique(),
+    role: text('role').notNull(),
+    company: text('company').notNull(),
+    /** Free-text display label, e.g. "May 2026 – Present". */
+    period: text('period').notNull(),
+    /** Sort key only — not displayed. */
+    startDate: timestamp('start_date', { withTimezone: true }).notNull().defaultNow(),
+    location: text('location'),
+    highlights: jsonb('highlights').$type<string[]>().notNull().default([]),
+    current: boolean('current').notNull().default(false),
+    meta: jsonb('meta').$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('experience_start_date_idx').on(t.startDate)]
+);
+
 export type ProjectRow = typeof projects.$inferSelect;
 export type PostRow = typeof posts.$inferSelect;
+export type ExperienceRow = typeof experience.$inferSelect;
 export type NewProjectRow = typeof projects.$inferInsert;
 export type NewPostRow = typeof posts.$inferInsert;
+export type NewExperienceRow = typeof experience.$inferInsert;

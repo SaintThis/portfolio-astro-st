@@ -1,7 +1,11 @@
 /**
- * Seed script — LOCAL ONLY. Loads the local fixtures into whatever DATABASE_URL
- * points at (your dev branch). Idempotent: upserts by slug, so re-running just
- * refreshes rows. Run with `npm run db:seed`.
+ * Seed script — LOCAL ONLY. Loads blog posts from Content Collections markdown
+ * into whatever DATABASE_URL points at. Idempotent: upserts by slug, so
+ * re-running just refreshes rows from the markdown files. Run with `npm run db:seed`.
+ *
+ * Projects have no seed path here — real content lives only in Postgres now,
+ * managed via `/admin` or the MCP server (see `src/data/projects.ts`). There's
+ * nothing to seed projects *from* anymore.
  *
  * Standalone Node (not the Astro runtime), so it builds its own Neon client from
  * process.env rather than going through `@lib/db` (which uses astro:env). It
@@ -15,7 +19,6 @@ import matter from 'gray-matter';
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from '../src/lib/db/schema.ts';
-import { PROJECTS } from '../src/data/projects.ts';
 import { renderMarkdown } from '../src/lib/db/render-markdown.ts';
 import { readingTime } from '../src/lib/utils/format.ts';
 import { suggestCategory } from '../src/lib/blog/categorize.ts';
@@ -25,46 +28,6 @@ if (!url) throw new Error('DATABASE_URL is not set — add it to .env.');
 
 const db = drizzle(neon(url), { schema });
 const BLOG_DIR = join(process.cwd(), 'src/content/blog');
-
-async function seedProjects() {
-  for (const p of PROJECTS) {
-    await db
-      .insert(schema.projects)
-      .values({
-        slug: p.slug,
-        title: p.title,
-        summary: p.summary,
-        description: p.description,
-        tags: p.tags,
-        category: p.category,
-        date: new Date(p.date),
-        featured: p.featured,
-        status: p.status,
-        links: p.links,
-        cover: p.cover ?? null,
-        metrics: p.metrics ?? null,
-        updatedAt: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: schema.projects.slug,
-        set: {
-          title: p.title,
-          summary: p.summary,
-          description: p.description,
-          tags: p.tags,
-          category: p.category,
-          date: new Date(p.date),
-          featured: p.featured,
-          status: p.status,
-          links: p.links,
-          cover: p.cover ?? null,
-          metrics: p.metrics ?? null,
-          updatedAt: new Date(),
-        },
-      });
-  }
-  console.log(`✓ Seeded ${PROJECTS.length} projects`);
-}
 
 async function seedPosts() {
   const files = readdirSync(BLOG_DIR).filter((f) => /\.mdx?$/.test(f));
@@ -104,7 +67,6 @@ async function seedPosts() {
 }
 
 async function main() {
-  await seedProjects();
   await seedPosts();
   console.log('Done.');
 }

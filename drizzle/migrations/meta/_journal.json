@@ -15,6 +15,13 @@
       "when": 1784218037493,
       "tag": "0001_calm_flatman",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784291496092,
+      "tag": "0002_tearful_rumiko_fujikawa",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,15 @@
+---
+import AdminLayout from '@layouts/AdminLayout.astro';
+import ExperienceForm from '@components/admin/ExperienceForm.astro';
+import { getExperience } from '@lib/api';
+
+export const prerender = false;
+
+const all = await getExperience();
+const item = all.find((e) => e.slug === Astro.params.slug);
+if (!item) return Astro.redirect('/admin');
+---
+
+<AdminLayout title={`Edit · ${item.role}`}>
+  <ExperienceForm item={item} />
+</AdminLayout>

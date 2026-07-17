@@ -96,3 +96,38 @@ export async function upsertProject(input: ProjectInput): Promise<string> {
 export async function deleteProject(slug: string): Promise<void> {
   await getDb().delete(schema.projects).where(eq(schema.projects.slug, slug));
 }
+
+export interface ExperienceInput {
+  slug?: string;
+  role: string;
+  company: string;
+  period: string;
+  startDate?: string | null;
+  location?: string | null;
+  highlights?: string[];
+  current?: boolean;
+}
+
+export async function upsertExperience(input: ExperienceInput): Promise<string> {
+  const slug = slugify(input.slug || `${input.role}-${input.company}`);
+  const row = {
+    slug,
+    role: input.role,
+    company: input.company,
+    period: input.period,
+    startDate: input.startDate ? new Date(input.startDate) : new Date(),
+    location: input.location ?? null,
+    highlights: input.highlights ?? [],
+    current: input.current ?? false,
+    updatedAt: new Date(),
+  };
+  await getDb()
+    .insert(schema.experience)
+    .values(row)
+    .onConflictDoUpdate({ target: schema.experience.slug, set: row });
+  return slug;
+}
+
+export async function deleteExperience(slug: string): Promise<void> {
+  await getDb().delete(schema.experience).where(eq(schema.experience.slug, slug));
+}

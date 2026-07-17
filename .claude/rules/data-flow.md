@@ -51,9 +51,11 @@ There is no `getPosts`, `getPost`, `getSkill`, or `getExperienceItem` — don't 
 
 | File | Backs |
 | --- | --- |
-| `src/data/projects.ts` | `PROJECTS` — array of `Project` |
-| `src/data/skills.ts` | `SKILLS` — array of `Skill` |
-| `src/data/experience.ts` | `EXPERIENCE` — array of `ExperienceItem` |
+| `src/data/projects.ts` | `PROJECTS` — deliberately **empty**. Real project content lives only in Postgres now (managed via `/admin` or the MCP server); this only matters as a fallback for a fresh clone with no `DATABASE_URL` set. |
+| `src/data/experience.ts` | `EXPERIENCE` — deliberately **empty**, same reasoning as `projects.ts`. Real content lives in the `experience` table. Note `about.astro` is statically prerendered (no `prerender = false`), so DB edits only appear on the live site after the next deploy — unlike posts/projects, which are on-demand SSR. |
+| `src/data/skills.ts` | `SKILLS` — array of `Skill`. Still the real source; no DB table for skills (kept out of scope — even smaller/rarer-changing than experience was). |
+
+**Note:** this doc predates the Postgres/MCP backend work and is otherwise stale (no `getPosts`/`getPost`/`PostFull`/`dbEnabled`/`sitemap.xml.ts` mentioned below) — treat the rest of this file as historical until it gets a full pass.
 
 ## Switching a repository to a real backend
 

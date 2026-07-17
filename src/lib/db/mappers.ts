@@ -4,8 +4,8 @@
  * `PostFull`). Everything crossing that boundary goes through here, so a schema
  * tweak never leaks column names into components.
  */
-import type { Project, PostMeta, PostFull } from '@lib/api/types';
-import type { ProjectRow, PostRow } from './schema';
+import type { Project, PostMeta, PostFull, ExperienceItem } from '@lib/api/types';
+import type { ProjectRow, PostRow, ExperienceRow } from './schema';
 
 const iso = (d: Date | string): string =>
   (typeof d === 'string' ? new Date(d) : d).toISOString();
@@ -57,5 +57,17 @@ export function rowToPostFull(r: PostRow): PostFull {
     featured: r.featured,
     views: r.views,
     headings: headings ?? [],
+  };
+}
+
+export function rowToExperience(r: ExperienceRow): ExperienceItem {
+  return {
+    slug: r.slug,
+    role: r.role,
+    company: r.company,
+    period: r.period,
+    location: r.location ?? undefined,
+    highlights: r.highlights ?? [],
+    current: r.current,
   };
 }

@@ -1,0 +1,79 @@
+---
+/**
+ * Experience editor form — plain HTML, posts to /api/admin/experience.
+ * Used by /admin/experience/new and /admin/experience/[slug]/edit.
+ */
+import type { ExperienceItem } from '@lib/api/types';
+
+interface Props {
+  item?: ExperienceItem;
+}
+const { item } = Astro.props;
+const editing = !!item;
+---
+
+<form method="POST" action="/api/admin/experience" class="admin-form">
+  {editing && <input type="hidden" name="slug" value={item!.slug} />}
+
+  <div class="af-row">
+    <label class="af-field">
+      <span class="af-label">Role</span>
+      <input class="af-input" name="role" required value={item?.role ?? ''} />
+    </label>
+    <label class="af-field">
+      <span class="af-label">Company</span>
+      <input class="af-input" name="company" required value={item?.company ?? ''} />
+    </label>
+  </div>
+
+  <div class="af-row">
+    <label class="af-field">
+      <span class="af-label">Period <em class="af-hint">(display text, e.g. "May 2026 – Present")</em></span>
+      <input class="af-input" name="period" required value={item?.period ?? ''} />
+    </label>
+    <label class="af-field">
+      <span class="af-label">Start date <em class="af-hint">(sort order only, not shown)</em></span>
+      <input class="af-input" type="date" name="startDate" />
+    </label>
+  </div>
+
+  <label class="af-field">
+    <span class="af-label">Location <em class="af-hint">(optional)</em></span>
+    <input class="af-input" name="location" value={item?.location ?? ''} />
+  </label>
+
+  <label class="af-field">
+    <span class="af-label">Highlights <em class="af-hint">(one per line)</em></span>
+    <textarea class="af-input af-textarea" name="highlights" rows="6"
+      >{item?.highlights.join('\n') ?? ''}</textarea
+    >
+  </label>
+
+  <label class="af-check">
+    <input type="checkbox" name="current" checked={item?.current ?? false} /> Current role
+  </label>
+
+  <div class="af-actions">
+    <button type="submit" class="af-btn af-btn--primary" data-cursor="hover">
+      {editing ? 'Save changes' : 'Add experience'}
+    </button>
+    <a href="/admin" class="af-btn" data-cursor="hover">Cancel</a>
+  </div>
+</form>
+
+{
+  editing && (
+    <form
+      method="POST"
+      action="/api/admin/experience"
+      class="mt-4"
+      onsubmit="return confirm('Delete this experience entry permanently?')"
+    >
+      <input type="hidden" name="_action" value="delete" />
+      <input type="hidden" name="slug" value={item!.slug} />
+      <button type="submit" class="af-btn af-btn--danger" data-cursor="hover">
+        Delete
+      </button>
+    </form>
+  )
+}

@@ -72,8 +72,11 @@ export interface Skill {
 }
 
 export interface ExperienceItem {
+  /** Stable id for admin/MCP edit & delete — not used for routing (no per-item page). */
+  slug: string;
   role: string;
   company: string;
+  /** Free-text display label, e.g. "May 2026 – Present". */
   period: string;
   location?: string;
   highlights: string[];

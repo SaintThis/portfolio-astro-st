@@ -17,12 +17,14 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { TARGET } from './db.ts';
 import { registerPostTools } from './tools/posts.ts';
 import { registerProjectTools } from './tools/projects.ts';
+import { registerExperienceTools } from './tools/experience.ts';
 
 async function main() {
   const server = new McpServer({ name: 'portfolio-content', version: '1.0.0' });
 
   registerPostTools(server);
   registerProjectTools(server);
+  registerExperienceTools(server);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
