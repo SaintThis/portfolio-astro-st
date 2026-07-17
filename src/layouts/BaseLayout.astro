@@ -31,9 +31,15 @@ interface Props {
   noindex?: boolean;
   /** Set false on ultra-minimal pages (e.g. 404) to drop the grid backdrop. */
   backdrop?: boolean;
+  /**
+   * Widen the container (72rem → 80rem). For multi-column reading layouts (the
+   * blog post page) where two side rails would otherwise squeeze the article
+   * column below a comfortable measure.
+   */
+  wide?: boolean;
 }
 
-const { backdrop = true, ...seo } = Astro.props;
+const { backdrop = true, wide = false, ...seo } = Astro.props;
 ---
 
 <!doctype html>
@@ -111,7 +117,7 @@ const { backdrop = true, ...seo } = Astro.props;
     -->
     <div id="base-ui-portal-root" transition:persist aria-hidden="true"></div>
 
-    <main id="main" class="mx-auto w-full max-w-6xl px-5">
+    <main id="main" class:list={['mx-auto w-full px-5', wide ? 'max-w-7xl' : 'max-w-6xl']}>
       <slot />
     </main>
 

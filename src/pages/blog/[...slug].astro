@@ -41,6 +41,7 @@ const related = [...otherPosts]
   publishedTime={isoDate(post.date)}
   modifiedTime={post.updated ? isoDate(post.updated) : undefined}
   tags={post.tags}
+  wide
 >
   {BLOG.readingProgress && <ReadingProgress target="#post-body" />}
   {BLOG.viewCounts && <ViewTracker slug={post.slug} />}
@@ -53,22 +54,20 @@ const related = [...otherPosts]
     <!--
       Reading layout. Below `lg` everything stacks (article only, centered).
       At `lg` a three-track grid opens up: left aside (share + sponsor/newsletter),
-      the article, and a sticky table of contents on the right. Tracks are sized
-      to fit inside BaseLayout's max-w-6xl container.
+      the article, and a sticky table of contents on the right.
+
+      Generous gutters are deliberate — the rails must read as separate furniture,
+      not as part of the article. Combined with BaseLayout's `wide` container this
+      leaves the centre column ~44rem (a comfortable ~70ch measure) instead of the
+      cramped ~40rem the rails would otherwise squeeze it to.
     -->
     <div
-      class="mt-6 lg:grid lg:grid-cols-[13rem_minmax(0,1fr)_14rem] lg:items-start lg:gap-8 xl:gap-10"
+      class="mt-6 lg:grid lg:grid-cols-[12rem_minmax(0,1fr)_14rem] lg:items-start lg:gap-12 xl:gap-16"
     >
       <!-- Left aside — hidden until lg. -->
       {
         BLOG.leftAside && (
-          <PostAside
-            title={post.title}
-            path={path}
-            series={post.series}
-            views={post.views}
-            class="hidden lg:block"
-          />
+          <PostAside title={post.title} path={path} series={post.series} class="hidden lg:block" />
         )
       }
 

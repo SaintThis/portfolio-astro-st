@@ -3,8 +3,8 @@
  * PostAside — the sticky left rail on a post page. Deliberately restrained
  * (this is a hiring-manager-facing portfolio, not an ad farm): a vertical share
  * rail, an optional series note, a tasteful "sponsor" empty-state, and a
- * newsletter placeholder. The view-count line only renders once the backend is
- * wired (`BLOG.viewCounts`).
+ * newsletter placeholder. The view count deliberately lives in the article
+ * header instead — one indicator, next to the date/reading-time it belongs with.
  *
  * Everything here is a placeholder-safe empty state today — no third-party ad
  * scripts, nothing that hurts the perf/SEO story. Swap the sponsor/newsletter
@@ -17,10 +17,9 @@ interface Props {
   title: string;
   path: string;
   series?: string;
-  views?: number;
   class?: string;
 }
-const { title, path, series, views, class: className = '' } = Astro.props;
+const { title, path, series, class: className = '' } = Astro.props;
 ---
 
 <aside class:list={['post-aside', className]}>
@@ -35,17 +34,6 @@ const { title, path, series, views, class: className = '' } = Astro.props;
           </p>
           <p class="mt-2 text-sm text-fg-muted">
             Part of <span class="text-fg">{series}</span>
-          </p>
-        </div>
-      )
-    }
-
-    {
-      BLOG.viewCounts && (
-        <div class="post-aside__card">
-          <p class="kicker text-fg-faint">Views</p>
-          <p class="mt-1 font-mono text-2xl text-accent" data-view-count>
-            {typeof views === 'number' ? views.toLocaleString() : '—'}
           </p>
         </div>
       )
