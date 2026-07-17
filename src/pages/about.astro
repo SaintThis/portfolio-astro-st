@@ -8,6 +8,11 @@ import Button from '@components/ui/Button.astro';
 import { getSkills, getExperience } from '@lib/api';
 import { AUTHOR, SITE } from '@/config';
 
+// On-demand rendered: experience is DB-backed now, so this reads live from
+// Postgres at request time — admin/MCP edits show up with no rebuild, matching
+// the blog/projects pages. Skills stays a cheap local-fixture read either way.
+export const prerender = false;
+
 const skills = await getSkills();
 const experience = await getExperience();
 
