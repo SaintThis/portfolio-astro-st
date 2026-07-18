@@ -26,6 +26,8 @@ Granular agent-behavior protocols (not project architecture — that's `ARCHITEC
 - [`.claude/rules/data-flow.md`](.claude/rules/data-flow.md) — every real type, repository function, and store that exists in `src/lib/api`/`src/lib/stores`. Read before adding or changing anything data-related, so you never invent a function or field that isn't there.
 - [`.claude/rules/component-inventory.md`](.claude/rules/component-inventory.md) — every component's real props. Read before building something new, so you reuse instead of re-implementing.
 - [`.claude/rules/verification-protocol.md`](.claude/rules/verification-protocol.md) — the check → build → browser-preview loop to run before calling any change done.
+- [`.claude/rules/astro-vite-best-practices.md`](.claude/rules/astro-vite-best-practices.md) — when a new client dependency needs registering in `vite.optimizeDeps`, when the dev server needs a manual restart, and general Astro conventions. Read before adding a dependency, a new island, or touching `astro.config.mjs`. Pairs with [`.claude/known-errors.md`](.claude/known-errors.md), a running log of real dev/build/run errors — check it first on any new error, and append to it once a new one is diagnosed.
+- [`.claude/rules/rule-generation.md`](.claude/rules/rule-generation.md) — when and how to turn a new feature/fix into a durable rule so it's auto-loaded next session. Read before/after implementing anything that establishes a new convention, not just when touching existing rule topics.
 
 When adding a new agent-behavior rule, put it in `.claude/rules/<topic>.md` and add a one-line entry above — don't grow this file or scatter rules across other docs.
 

@@ -34,6 +34,36 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+
+    // Force eager pre-bundling of every dep pulled in by client islands —
+    // especially Lanyard.tsx's heavy three.js/r3f/rapier stack, which Vite
+    // otherwise only discovers on the first request that renders Hero.astro.
+    // That late discovery triggers a mid-session "re-optimizing dependencies"
+    // pass, which invalidates the SSR module graph *while a request is still
+    // in flight* and produces "Invalid hook call" / "Cannot read properties
+    // of null (reading 'useRef')" errors from React/zustand — not an actual
+    // bug in the components. See known-errors.txt.
+    optimizeDeps: {
+      include: [
+        'react',
+        'react-dom',
+        'react-dom/client',
+        'react/jsx-runtime',
+        'zustand',
+        'zustand/middleware',
+        'motion/react',
+        'gsap',
+        'gsap/ScrollTrigger',
+        'three',
+        '@react-three/fiber',
+        '@react-three/drei',
+        '@react-three/rapier',
+        'meshline',
+        '@base-ui/react',
+        'clsx',
+        'tailwind-merge',
+      ],
+    },
   },
 
   // Cross-page smoothness + drives the intro loader on navigation.
