@@ -125,3 +125,44 @@ npx wrangler deploy --dry-run                            # must show bindings, n
 **Prevention:** `wrangler` is intentionally pinned exact (no `^`) in `package.json` now — don't loosen it back to a caret range without re-testing `wrangler deploy --dry-run` against whatever newer version you're moving to. Re-check `npm view wrangler versions` periodically; a future wrangler release may fix this upstream, at which point the pin can be bumped deliberately.
 
 **Files touched:** `package.json` (`wrangler` pinned to `4.110.0` exact), `package-lock.json`
+
+---
+
+## 2026-07-21 — Cloudflare deploy fails: Worker exceeded 3 MiB size limit
+
+**Command:** Cloudflare's deploy step, `npx wrangler deploy` (also reproducible locally via `npx wrangler deploy --dry-run` — safe, doesn't publish; prints the real "Total Upload" gzip size)
+
+**Symptom:**
+
+The `legacy_env` failure above being fixed let deploy reach the actual upload step for the first time this project attempted it, revealing a second, unrelated problem:
+
+```
+✘ [ERROR] Your Worker failed validation because it exceeded size limits.
+   - Your Worker exceeded the size limit of 3 MiB. Please upgrade to a paid
+     plan to deploy Workers up to 10 MiB.
+  Here are the 5 largest dependencies included in your script:
+  - dist/server/chunks/index_eOEQoACq.mjs - 2401.58 KiB
+  - dist/server/chunks/rapier_BDdYf7yi.mjs - 2213.45 KiB
+  - dist/server/chunks/render-markdown_CQcu7s3u.mjs - 1389.14 KiB
+  - dist/server/chunks/BaseLayout_Kd81iEX3.mjs - 805.45 KiB
+  - dist/server/chunks/emacs-lisp_bmXv6FlQ.mjs - 764.12 KiB
+```
+
+**Diagnosis:**
+
+Two independent, unrelated causes stacked to blow the budget:
+
+1. **`src/lib/db/render-markdown.ts`** (added earlier this project, for write-time markdown→HTML rendering used by admin/MCP/seed) called `@astrojs/markdown-remark`'s `createMarkdownProcessor()` with no language restriction. Its Shiki integration keeps an **unconditional** `highlighter.loadLanguage(arbitraryString)` fallback for whatever language string appears in any code fence, so a bundler cannot rule out any of Shiki's ~180 built-in languages being that string — all of them (`emacs-lisp`, `cpp`, `wolfram`, `vue-vine`, `mdx`, `asciidoc`, `php`, `blade`, dozens more, none ever used by this blog) got pulled into the deployed Worker as separate chunks. **Passing `syntaxHighlight: false` to `createMarkdownProcessor` does NOT fix this** — confirmed empirically. `@astrojs/markdown-remark`'s main entry does `import { rehypeShiki } from './rehype-shiki.js'` at the top of the file, unconditionally; the runtime flag only skips *calling* `rehypeShiki`, not bundling it (and everything it imports) — a static-import problem, not fixable with a runtime option.
+2. **`src/components/react/Lanyard.tsx`** (the homepage's 3D physics lanyard) is mounted via `client:media="(min-width: 1024px)"`, which server-renders initial HTML before hydrating. That pulls `three`, `@react-three/fiber`, `@react-three/drei`, `@react-three/rapier` (a WASM physics engine), and `meshline` into the server bundle — 2.2+ MiB — for a canvas-only component with zero meaningful server-renderable output. Not yet fixed (the render-markdown fix alone brought the total under budget, see below); flagged as a known remaining reduction if the budget gets tight again.
+
+Both were latent as soon as `blog`/`projects`/`about`/`index` were flipped from static prerendering to on-demand SSR earlier this project — a static `output: 'static'` build never bundles any of this into a deployed Worker at all (it only matters at `astro build` time, on a machine with no 3 MiB ceiling); on-demand rendering is what turns "code reachable from a page" into "code that must ship in the Worker."
+
+**Fix:**
+
+Rewrote `render-markdown.ts` to never import `@astrojs/markdown-remark`'s main entry at all. Built the markdown→HTML pipeline directly from the same underlying packages it uses internally (`unified`, `remark-parse`, `remark-gfm`, `remark-smartypants`, `remark-rehype`, `rehype-raw`, `rehype-stringify`), plus a hand-rolled heading-id plugin replicating its `rehype-collect-headings.js` (same `github-slugger` package, same algorithm, MDX-only branches dropped — this project has no MDX) so table-of-contents anchors keep matching exactly. Syntax highlighting is a separate pass using Shiki's `createHighlighterCore` with **explicit static imports** of only the ~14 languages this blog actually uses (`@shikijs/langs/typescript`, `.../rust`, etc.) and the dependency-free `@shikijs/engine-javascript` regex engine instead of the ~600 KB WASM oniguruma one — no string-keyed dynamic import exists anywhere in this path, so nothing outside that fixed list can ever be pulled in, by construction. A fence in an unlisted language just renders unhighlighted (still valid `<pre><code>`), it doesn't fail.
+
+Result: chunk count 659 → 61, `dist/server/` 21 MiB → 9.6 MiB, **deployed gzip size 4285 KiB → 2341 KiB** (limit is 3072 KiB). Verified: `astro check` 0 errors, full rebuild, `wrangler deploy --dry-run` passes with no size error, and output parity confirmed against real content (heading ids, Shiki-highlighted code, GFM tables) both at seed-time and via a live admin-form write.
+
+**Prevention:** Any future code that needs Markdown→HTML or syntax highlighting **inside a page/route that is or could become on-demand-rendered** must not import `@astrojs/markdown-remark`'s main entry, and must not create a Shiki highlighter without an explicit `langs: [...]` array of statically-imported `@shikijs/langs/*` modules — never rely on Shiki's convenience `createHighlighter` resolving language strings from its own bundled map in server-bundled code. For any new heavy client-only visual (3D, canvas, WASM), default to `client:only="<framework>"` over `client:load`/`client:idle`/`client:visible`/`client:media` if it has no meaningful server-rendered fallback — the latter four all SSR the component (pulling its full import graph into the server bundle) before hydrating; `client:only` skips that. Run `npx wrangler deploy --dry-run` after any change that adds a real dependency to a `prerender = false` page — it's the only way to catch this before Cloudflare does, and it never publishes anything.
+
+**Files touched:** `src/lib/db/render-markdown.ts` (full rewrite), `package.json`/`package-lock.json` (added `unified`, `remark-parse`, `remark-gfm`, `remark-smartypants`, `remark-rehype`, `rehype-raw`, `rehype-stringify`, `github-slugger`, `shiki`, `@shikijs/core`, `@shikijs/engine-javascript`, `@shikijs/langs`, `@shikijs/themes` as direct deps — previously transitive/hoisted only)
