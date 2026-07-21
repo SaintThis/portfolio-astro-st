@@ -4,6 +4,15 @@ import Hero from '@components/sections/Hero.astro';
 import BentoAbout from '@components/sections/BentoAbout.astro';
 import FeaturedWork from '@components/sections/FeaturedWork.astro';
 import ContactCTA from '@components/sections/ContactCTA.astro';
+
+// On-demand rendered: <FeaturedWork /> reads projects live from Postgres.
+// Was still static-prerendered — the one page missed when blog/projects/about
+// were flipped, since it doesn't call a DB getter directly (FeaturedWork.astro
+// does). That's why this page kept showing an empty section: the Cloudflare
+// build's static HTML was baked before DATABASE_URL existed as a Worker
+// secret, and `wrangler secret put` only affects request-time reads, not the
+// build step — so only pages that read at request time see it.
+export const prerender = false;
 ---
 
 <BaseLayout
