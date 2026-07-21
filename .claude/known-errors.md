@@ -45,3 +45,43 @@ Actual cause: `src/components/react/Lanyard.tsx` imports `three`, `@react-three/
 Note: could not reproduce/re-verify against the actual `astro dev` server (port 4321) because it was already occupied by the user's own terminal session (the one that produced this error log) — did not kill it without asking. If this error recurs after a normal `npm run dev` restart, the first move is still: stop the server, delete `node_modules/.vite` and `node_modules/.astro`, restart (see [`astro-vite-best-practices.md`](rules/astro-vite-best-practices.md)).
 
 **Files touched:** `astro.config.mjs`
+
+---
+
+## 2026-07-16 / 2026-07-21 — Cloudflare `npm ci` EUSAGE: lockfile out of sync (recurred twice)
+
+**Command:** Cloudflare's build step, `npm clean-install --progress=false`
+
+**Symptom:**
+
+```
+npm error code EUSAGE
+npm error `npm ci` can only install packages when your package.json and
+npm error package-lock.json or npm-shrinkwrap.json are in sync. Please update
+npm error your lock file with `npm install` before continuing.
+npm error
+npm error Missing: @emnapi/runtime@1.11.2 from lock file
+npm error Missing: @emnapi/core@1.11.2 from lock file
+```
+
+Build fails at the install step, before anything else runs.
+
+**Diagnosis:**
+
+Local machine's global npm is **11.x**; Cloudflare's build image uses **npm 10.9.2** (confirmed via its own log line: `Detected the following tools from environment: nodejs@X, npm@10.9.2`). Any `npm install` run locally with npm 11 regenerates `package-lock.json` with different hoisting for `@emnapi/core`/`@emnapi/runtime` (transitive deps of Astro's WASM image tooling, `sharp`/`@img`) — npm 11 nests them under sub-dependencies instead of hoisting them to the top level, which is what npm 10's `npm ci` expects to find. Since `npm ci` requires an *exact* match, not just a resolvable tree, this fails immediately.
+
+Triggered both times by a routine local `npm install`/`npm i <pkg>` — first when adding backend packages, second from `npm i wrangler` while troubleshooting the Cloudflare secret. Neither time involved editing `package.json` by hand or anything unusual — **any** local install regenerates the lock in the wrong shape.
+
+**Fix:**
+
+Regenerate the lock using npm 10.9.2 specifically (matches Cloudflare exactly), then verify with the same command Cloudflare runs:
+
+```bash
+npx --yes npm@10.9.2 install --no-audit --no-fund
+npx --yes npm@10.9.2 ci --dry-run --no-audit --no-fund   # must show no EUSAGE
+npm run build                                             # sanity check
+```
+
+**Prevention:** `.node-version` (pinned to `22`) was added after the first occurrence specifically to keep Cloudflare's Node major aligned with local — but it does **not** pin the npm minor/major, so this can still recur after any local `npm install`. After running `npm install`/`npm i <pkg>` locally, always re-sync with `npx npm@10.9.2 install` before pushing (or ask the agent to do it) — don't assume a normal install is safe to push as-is.
+
+**Files touched:** `package-lock.json` (both times), `.node-version` (added on first occurrence)
