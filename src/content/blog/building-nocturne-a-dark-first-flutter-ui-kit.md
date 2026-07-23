@@ -4,14 +4,14 @@ description: Eight responsive, production-styled Flutter screens with a frosted-
 date: 2026-07-23
 tags: ['flutter', 'ui-kit', 'design-systems', 'riverpod']
 category: 'flutter'
-cover: ./nocturne-images/nocturne-desktop.png
+cover: /uploads/nocturne-desktop.png
 featured: true
 draft: false
 ---
 
 Most Flutter UI kits look like a Material Design demo with the colors swapped. Nocturne doesn't — it's a dark-first, glass-morphic NFT-marketplace kit built to look like a real, funded product from the first screen, not a template.
 
-![Nocturne desktop home screen with the frosted-glass hero, trending rail, and Top Creators panel](/blog/nocturne-desktop.png)
+![Nocturne desktop home screen with the frosted-glass hero, trending rail, and Top Creators panel](/uploads/nocturne-desktop.png)
 
 ## What you get
 
@@ -22,7 +22,7 @@ Most Flutter UI kits look like a Material Design demo with the colors swapped. N
 - **Full dark/light theming from one file.** Every color, radius, and shadow traces back to a single token file. Reskinning the entire kit for a client is a find-and-replace on values, not a hunt through sixty widgets for hardcoded hex codes.
 - **A mock backend with documented swap points.** The kit ships fully functional with zero backend — seeded JSON catalog data and a mock auth/wallet flow — but every data access goes through a repository interface. Point `catalogRepositoryProvider` at a real API and every screen keeps working, unchanged.
 
-![Nocturne on mobile: floating bottom nav, glass hero card, and the trending feed](/blog/nocturne-mobile.png)
+![Nocturne on mobile: floating bottom nav, glass hero card, and the trending feed](/uploads/nocturne-mobile.png)
 
 ## Built on a real architecture, not a pile of widgets
 

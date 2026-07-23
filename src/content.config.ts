@@ -12,7 +12,7 @@ import { z } from 'astro/zod';
 
 const blog = defineCollection({
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blog' }),
-  schema: ({ image }) =>
+  schema: () =>
     z.object({
       title: z.string().max(90),
       description: z.string().max(200),
@@ -20,7 +20,11 @@ const blog = defineCollection({
       updated: z.coerce.date().optional(),
       tags: z.array(z.string()).default([]),
       draft: z.boolean().default(false),
-      cover: image().optional(),
+      /** A URL/path — a local co-located image would need Astro's asset
+       *  pipeline (image()), but the DB-backed production path (see
+       *  posts.repo.ts) only ever stores a plain string, so frontmatter
+       *  matches that shape instead of requiring a bundled file. */
+      cover: z.string().optional(),
       ogImage: z.string().optional(),
       // --- Flexible, additive fields (all optional so existing posts still
       // validate). These mirror what the future `posts` DB table will hold, so

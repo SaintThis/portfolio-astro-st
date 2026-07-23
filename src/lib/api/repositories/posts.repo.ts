@@ -33,7 +33,7 @@ function ccToMeta(entry: CollectionEntry<'blog'>): PostMeta {
     tags: entry.data.tags,
     draft: entry.data.draft,
     readingTime: readingTime(entry.body ?? ''),
-    cover: typeof entry.data.cover === 'string' ? entry.data.cover : entry.data.cover?.src,
+    cover: entry.data.cover,
     category: entry.data.category,
   };
 }
