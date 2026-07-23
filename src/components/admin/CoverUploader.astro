@@ -1,0 +1,67 @@
+---
+/**
+ * Small progressive-enhancement upload control paired with a "cover" URL
+ * text input: pick a file, it POSTs to /api/admin/upload (R2-backed), and
+ * fills the sibling input's value with the returned /uploads/<key> URL.
+ * Zero-JS if unused; the inline script only runs on user interaction.
+ */
+interface Props {
+  /** `name` of the text input this uploader fills in. */
+  targetName: string;
+}
+const { targetName } = Astro.props;
+---
+
+<div class="cover-uploader" data-target={targetName}>
+  <input type="file" class="af-input" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" />
+  <span class="cover-uploader__status"></span>
+</div>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLDivElement>('.cover-uploader').forEach((el) => {
+      if (el.dataset.bound) return;
+      el.dataset.bound = 'true';
+
+      const targetName = el.dataset.target!;
+      const fileInput = el.querySelector('input[type="file"]') as HTMLInputElement;
+      const status = el.querySelector('.cover-uploader__status') as HTMLSpanElement;
+      const urlInput = el
+        .closest('form')
+        ?.querySelector<HTMLInputElement>(`input[name="${targetName}"]`);
+
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files?.[0];
+        if (!file || !urlInput) return;
+
+        status.textContent = 'Uploading…';
+        const body = new FormData();
+        body.set('file', file);
+
+        try {
+          const res = await fetch('/api/admin/upload', { method: 'POST', body });
+          const data = await res.json<{ url?: string; error?: string }>();
+          if (!res.ok || !data.url) throw new Error(data.error ?? 'Upload failed');
+          urlInput.value = data.url;
+          status.textContent = `Uploaded: ${data.url}`;
+        } catch (err) {
+          status.textContent = err instanceof Error ? err.message : 'Upload failed';
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  .cover-uploader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.375rem;
+  }
+  .cover-uploader__status {
+    font-size: 0.8125rem;
+    color: var(--color-fg-faint);
+    word-break: break-all;
+  }
+</style>

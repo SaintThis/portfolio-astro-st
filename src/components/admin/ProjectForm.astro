@@ -5,6 +5,7 @@
  */
 import type { Project } from '@lib/api/types';
 import { isoDate } from '@lib/utils';
+import CoverUploader from './CoverUploader.astro';
 
 interface Props {
   project?: Project;
@@ -91,6 +92,7 @@ const STATUSES = ['live', 'wip', 'archived'];
   <label class="af-field">
     <span class="af-label">Cover image URL <em class="af-hint">(optional)</em></span>
     <input class="af-input" name="cover" value={project?.cover ?? ''} />
+    <CoverUploader targetName="cover" />
   </label>
 
   <label class="af-check">

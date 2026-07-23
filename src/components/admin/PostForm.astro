@@ -7,6 +7,7 @@
 import { BLOG } from '@/config';
 import type { PostFull } from '@lib/api/types';
 import { isoDate } from '@lib/utils';
+import CoverUploader from './CoverUploader.astro';
 
 interface Props {
   post?: PostFull;
@@ -68,6 +69,7 @@ const editing = !!post;
     <label class="af-field">
       <span class="af-label">Cover image URL <em class="af-hint">(optional)</em></span>
       <input class="af-input" name="cover" value={post?.cover ?? ''} />
+      <CoverUploader targetName="cover" />
     </label>
     <label class="af-field">
       <span class="af-label">Hero video URL <em class="af-hint">(YouTube/Vimeo/MP4)</em></span>

@@ -32,7 +32,7 @@ const { slug } = Astro.props;
 
     // Show the current count immediately (GET), without counting a view.
     fetch(`/api/views/${slug}`)
-      .then((r) => r.json())
+      .then((r) => r.json() as Promise<{ views?: number }>)
       .then((d) => typeof d.views === 'number' && paint(d.views))
       .catch(() => {});
 
@@ -58,7 +58,7 @@ const { slug } = Astro.props;
       done = true;
       window.removeEventListener('scroll', onScroll);
       fetch(`/api/views/${slug}`, { method: 'POST' })
-        .then((r) => r.json())
+        .then((r) => r.json() as Promise<{ views?: number }>)
         .then((d) => typeof d.views === 'number' && paint(d.views))
         .catch(() => {});
     };
