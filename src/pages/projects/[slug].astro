@@ -32,6 +32,18 @@ if (!project) return Astro.redirect('/404');
     </header>
 
     {
+      project.cover && (
+        <img
+          src={project.cover}
+          alt={`${project.title} — cover`}
+          class="mt-8 w-full rounded-[var(--radius-box)] border border-border"
+          loading="eager"
+          decoding="async"
+        />
+      )
+    }
+
+    {
       project.metrics && (
         <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {project.metrics.map((m) => (
@@ -62,5 +74,24 @@ if (!project) return Astro.redirect('/404');
         )
       }
     </div>
+
+    {
+      project.screenshots && project.screenshots.length > 0 && (
+        <div class="mt-16">
+          <h2 class="kicker">Screenshots</h2>
+          <div class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
+            {project.screenshots.map((src, i) => (
+              <img
+                src={src}
+                alt={`${project.title} — screenshot ${i + 1}`}
+                class="w-full rounded-[var(--radius-box)] border border-border"
+                loading="lazy"
+                decoding="async"
+              />
+            ))}
+          </div>
+        </div>
+      )
+    }
   </article>
 </BaseLayout>

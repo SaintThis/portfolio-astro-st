@@ -11,6 +11,7 @@ const iso = (d: Date | string): string =>
   (typeof d === 'string' ? new Date(d) : d).toISOString();
 
 export function rowToProject(r: ProjectRow): Project {
+  const screenshots = (r.meta as { screenshots?: string[] } | null)?.screenshots;
   return {
     slug: r.slug,
     title: r.title,
@@ -24,6 +25,7 @@ export function rowToProject(r: ProjectRow): Project {
     links: r.links ?? {},
     cover: r.cover ?? undefined,
     metrics: r.metrics ?? undefined,
+    screenshots: screenshots ?? undefined,
   };
 }
 

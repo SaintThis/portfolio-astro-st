@@ -28,6 +28,8 @@ export interface Project {
   cover?: string;
   /** Optional headline metrics for the case study. */
   metrics?: { label: string; value: string }[];
+  /** Additional real screenshots shown as a gallery on the case-study page. */
+  screenshots?: string[];
 }
 
 export interface PostMeta {
