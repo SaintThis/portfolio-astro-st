@@ -28,6 +28,7 @@ Granular agent-behavior protocols (not project architecture — that's `ARCHITEC
 - [`.claude/rules/verification-protocol.md`](.claude/rules/verification-protocol.md) — the check → build → browser-preview loop to run before calling any change done.
 - [`.claude/rules/astro-vite-best-practices.md`](.claude/rules/astro-vite-best-practices.md) — when a new client dependency needs registering in `vite.optimizeDeps`, when the dev server needs a manual restart, and general Astro conventions. Read before adding a dependency, a new island, or touching `astro.config.mjs`. Pairs with [`.claude/known-errors.md`](.claude/known-errors.md), a running log of real dev/build/run errors — check it first on any new error, and append to it once a new one is diagnosed.
 - [`.claude/rules/rule-generation.md`](.claude/rules/rule-generation.md) — when and how to turn a new feature/fix into a durable rule so it's auto-loaded next session. Read before/after implementing anything that establishes a new convention, not just when touching existing rule topics.
+- [`.claude/rules/blog-writing-voice.md`](.claude/rules/blog-writing-voice.md) — the house voice, hook, title/description, and structure rules for `src/content/blog/*.md` posts (expressive, convincing, catchy). Read before drafting or editing any blog post, so a new post matches the existing ones instead of drifting into generic listicle filler.
 
 When adding a new agent-behavior rule, put it in `.claude/rules/<topic>.md` and add a one-line entry above — don't grow this file or scatter rules across other docs.
 
