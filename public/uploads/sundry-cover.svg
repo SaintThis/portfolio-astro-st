@@ -1,0 +1,105 @@
+<svg width="1200" height="750" viewBox="0 0 1200 750" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sundry — a colorful retro-pixel marketplace app storefront">
+  <defs>
+    <clipPath id="round"><rect width="1200" height="750" rx="14"/></clipPath>
+    <filter id="tag" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="3" dy="3" stdDeviation="0" flood-color="#22201b"/>
+    </filter>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="1200" height="750" fill="#fff6e6"/>
+
+    <!-- top bar -->
+    <rect width="1200" height="64" fill="#fff6e6"/>
+    <text x="40" y="41" font-family="'Courier New', monospace" font-size="26" font-weight="700" fill="#ff5a3c">Sundry</text>
+    <g font-family="'Courier New', monospace" font-size="14" fill="#22201b">
+      <text x="150" y="40">Browse</text><text x="230" y="40">Sell</text><text x="290" y="40">Account</text>
+    </g>
+    <rect x="430" y="22" width="300" height="26" rx="6" fill="#ffffff" stroke="#e5d6b8"/>
+    <text x="446" y="39" font-family="'Courier New', monospace" font-size="12" fill="#9a927e">Search Sundry…</text>
+    <rect x="736" y="22" width="44" height="26" rx="6" fill="#ff5a3c"/>
+    <text x="748" y="39" font-family="'Courier New', monospace" font-size="12" fill="#ffffff">Go</text>
+    <line x1="0" y1="64" x2="1200" y2="64" stroke="#22201b" stroke-width="2"/>
+
+    <!-- category pill rail -->
+    <g font-family="'Courier New', monospace" font-size="12" fill="#22201b">
+      <rect x="40" y="82" width="44" height="26" rx="13" fill="#ff5a3c"/><text x="55" y="99" fill="#fff">All</text>
+      <rect x="96" y="82" width="120" height="26" rx="13" fill="#fff" stroke="#e5d6b8"/><text x="112" y="99">Home &amp; Kitchen</text>
+      <rect x="228" y="82" width="120" height="26" rx="13" fill="#fff" stroke="#e5d6b8"/><text x="244" y="99">Tech &amp; Gadgets</text>
+      <rect x="360" y="82" width="104" height="26" rx="13" fill="#fff" stroke="#e5d6b8"/><text x="376" y="99">Wearables</text>
+      <rect x="476" y="82" width="104" height="26" rx="13" fill="#fff" stroke="#e5d6b8"/><text x="492" y="99">Art &amp; Prints</text>
+      <rect x="592" y="82" width="110" height="26" rx="13" fill="#fff" stroke="#e5d6b8"/><text x="608" y="99">Books &amp; Zines</text>
+    </g>
+
+    <!-- hero -->
+    <rect x="40" y="128" width="600" height="300" rx="12" fill="#ff5a3c" stroke="#22201b" stroke-width="2"/>
+    <text x="72" y="176" font-family="'Courier New', monospace" font-size="12" letter-spacing="2" fill="#ffd9c9">A COLORFUL CORNER SHOP</text>
+    <text x="70" y="232" font-family="'Courier New', monospace" font-size="46" font-weight="800" fill="#fff6e6">Buy it. Sell it.</text>
+    <text x="70" y="284" font-family="'Courier New', monospace" font-size="46" font-weight="800" fill="#fff6e6">Boost it.</text>
+    <text x="72" y="326" font-family="'Courier New', monospace" font-size="15" fill="#ffe4d8">Where indie makers and hunters trade the good</text>
+    <text x="72" y="348" font-family="'Courier New', monospace" font-size="15" fill="#ffe4d8">stuff — no algorithm, just shelves.</text>
+    <rect x="72" y="368" width="130" height="38" rx="6" fill="#22201b"/><text x="98" y="392" font-family="'Courier New', monospace" font-size="13" fill="#fff">Shop Sundry</text>
+    <rect x="214" y="368" width="120" height="38" rx="6" fill="none" stroke="#fff6e6" stroke-width="2"/><text x="236" y="392" font-family="'Courier New', monospace" font-size="13" fill="#fff6e6">Start Selling</text>
+
+    <!-- featured stack -->
+    <rect x="664" y="128" width="496" height="300" rx="12" fill="#251e36" stroke="#22201b" stroke-width="2"/>
+    <text x="686" y="160" font-family="'Courier New', monospace" font-size="13" fill="#ffd166">★ 4.7 average rating</text>
+    <g>
+      <rect x="686" y="176" width="452" height="66" rx="8" fill="#1a1526"/>
+      <rect x="700" y="190" width="38" height="38" rx="6" fill="#ffc53d"/>
+      <text x="752" y="205" font-family="'Courier New', monospace" font-size="13" fill="#f5ecd8">Riso Print — City Skyline, A3</text>
+      <text x="752" y="223" font-family="'Courier New', monospace" font-size="11" fill="#8b7f97">New</text>
+      <rect x="1028" y="196" width="94" height="24" rx="4" fill="#7a5cff" filter="url(#tag)"/><text x="1040" y="212" font-family="'Courier New', monospace" font-size="11" font-weight="700" fill="#fff">BOOSTED $32</text>
+    </g>
+    <g>
+      <rect x="686" y="252" width="452" height="66" rx="8" fill="#1a1526"/>
+      <rect x="700" y="266" width="38" height="38" rx="6" fill="#7a5cff"/>
+      <text x="752" y="281" font-family="'Courier New', monospace" font-size="13" fill="#f5ecd8">68% Mechanical Keyboard, Tactile</text>
+      <text x="752" y="299" font-family="'Courier New', monospace" font-size="11" fill="#8b7f97">Used</text>
+      <rect x="1028" y="272" width="94" height="24" rx="4" fill="#7a5cff" filter="url(#tag)"/><text x="1040" y="288" font-family="'Courier New', monospace" font-size="11" font-weight="700" fill="#fff">BOOSTED $79</text>
+    </g>
+    <g>
+      <rect x="686" y="328" width="452" height="66" rx="8" fill="#1a1526"/>
+      <rect x="700" y="342" width="38" height="38" rx="6" fill="#1fb6a6"/>
+      <text x="752" y="357" font-family="'Courier New', monospace" font-size="13" fill="#f5ecd8">Enamel Camp Mug Set (4)</text>
+      <text x="752" y="375" font-family="'Courier New', monospace" font-size="11" fill="#8b7f97">New</text>
+      <rect x="1028" y="348" width="94" height="24" rx="4" fill="#7a5cff" filter="url(#tag)"/><text x="1040" y="364" font-family="'Courier New', monospace" font-size="11" font-weight="700" fill="#fff">BOOSTED $28</text>
+    </g>
+
+    <!-- section label -->
+    <text x="40" y="474" font-family="'Courier New', monospace" font-size="12" letter-spacing="2" fill="#1fb6a6">MARKETPLACE</text>
+    <text x="40" y="498" font-family="'Courier New', monospace" font-size="22" font-weight="800" fill="#22201b">Fresh on the shelves</text>
+
+    <!-- product grid: 6 tiles with pixel price tags -->
+    <g>
+      <!-- tile 1 -->
+      <rect x="40" y="518" width="176" height="176" rx="10" fill="#ffb43c" stroke="#22201b" stroke-width="2"/>
+      <rect x="176" y="524" width="46" height="26" rx="3" fill="#ffc53d" transform="rotate(6 199 537)" filter="url(#tag)"/><text x="182" y="541" font-family="'Courier New', monospace" font-size="12" font-weight="700" fill="#22201b" transform="rotate(6 199 537)">$18</text>
+      <circle cx="128" cy="606" r="20" fill="#ffd9b3"/><circle cx="122" cy="600" r="3" fill="#ff5a3c"/><circle cx="134" cy="600" r="3" fill="#7a5cff"/><circle cx="128" cy="612" r="3" fill="#1fb6a6"/>
+      <!-- tile 2 -->
+      <rect x="232" y="518" width="176" height="176" rx="10" fill="#ffb43c" stroke="#22201b" stroke-width="2"/>
+      <rect x="368" y="524" width="46" height="26" rx="3" fill="#ffc53d" transform="rotate(6 391 537)" filter="url(#tag)"/><text x="374" y="541" font-family="'Courier New', monospace" font-size="12" font-weight="700" fill="#22201b" transform="rotate(6 391 537)">$27</text>
+      <path d="M300 596 h40 v22 a8 8 0 0 1 -8 8 h-24 a8 8 0 0 1 -8 -8 z" fill="#1fb6a6"/><rect x="308" y="588" width="24" height="10" rx="3" fill="#1fb6a6"/>
+      <!-- tile 3 boosted -->
+      <rect x="424" y="518" width="176" height="176" rx="10" fill="#7a5cff" stroke="#22201b" stroke-width="2"/>
+      <rect x="556" y="524" width="94" height="24" rx="4" fill="#7a5cff" transform="rotate(6 603 536)" filter="url(#tag)"/><text x="566" y="540" font-family="'Courier New', monospace" font-size="11" font-weight="700" fill="#fff" transform="rotate(6 603 536)">BOOSTED $32</text>
+      <circle cx="512" cy="606" r="20" fill="#ffd9b3"/><circle cx="506" cy="600" r="3" fill="#ff5a3c"/><circle cx="518" cy="600" r="3" fill="#7a5cff"/><circle cx="512" cy="612" r="3" fill="#1fb6a6"/>
+      <!-- tile 4 -->
+      <rect x="616" y="518" width="176" height="176" rx="10" fill="#ff5a3c" stroke="#22201b" stroke-width="2"/>
+      <rect x="752" y="524" width="46" height="26" rx="3" fill="#ffc53d" transform="rotate(6 775 537)" filter="url(#tag)"/><text x="758" y="541" font-family="'Courier New', monospace" font-size="12" font-weight="700" fill="#22201b" transform="rotate(6 775 537)">$48</text>
+      <rect x="686" y="592" width="36" height="26" rx="6" fill="#251e36"/><rect x="700" y="584" width="8" height="12" fill="#251e36"/>
+      <!-- tile 5 -->
+      <rect x="808" y="518" width="176" height="176" rx="10" fill="#1fb6a6" stroke="#22201b" stroke-width="2"/>
+      <rect x="944" y="524" width="46" height="26" rx="3" fill="#ffc53d" transform="rotate(6 967 537)" filter="url(#tag)"/><text x="950" y="541" font-family="'Courier New', monospace" font-size="12" font-weight="700" fill="#22201b" transform="rotate(6 967 537)">$34</text>
+      <path d="M876 600 l14 -8 l14 8 v18 h-28 z" fill="#8a5a2b"/><rect x="884" y="590" width="12" height="8" fill="#c77b3b"/>
+      <!-- tile 6 sold -->
+      <rect x="1000" y="518" width="160" height="176" rx="10" fill="#ff8a6e" stroke="#22201b" stroke-width="2"/>
+      <rect x="1108" y="524" width="52" height="24" rx="3" fill="#f3e7ce" transform="rotate(6 1134 536)" filter="url(#tag)"/><text x="1114" y="540" font-family="'Courier New', monospace" font-size="10" font-weight="700" fill="#9a927e" transform="rotate(6 1134 536)">SOLD $19</text>
+      <circle cx="1080" cy="606" r="20" fill="#ffd9b3"/><circle cx="1074" cy="600" r="3" fill="#ff5a3c"/><circle cx="1086" cy="606" r="3" fill="#7a5cff"/>
+    </g>
+
+    <!-- caption strip -->
+    <text x="40" y="726" font-family="'Courier New', monospace" font-size="13" fill="#5b5548">Deno · Fresh · Preact islands · Tailwind — buy, sell &amp; boost indie-made goods</text>
+  </g>
+  <rect x="1" y="1" width="1198" height="748" rx="14" fill="none" stroke="#22201b" stroke-width="2"/>
+</svg>

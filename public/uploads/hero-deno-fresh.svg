@@ -1,0 +1,47 @@
+<svg width="1200" height="600" viewBox="0 0 1200 600" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Deno Fresh — an island of interactivity in a sea of server-rendered HTML">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="1200" y2="600" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0a0a12"/>
+      <stop offset="1" stop-color="#08080c"/>
+    </linearGradient>
+    <linearGradient id="lemon" x1="480" y1="230" x2="720" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffe14d"/>
+      <stop offset="1" stop-color="#f6c700"/>
+    </linearGradient>
+    <filter id="g" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="600" fill="url(#sea)"/>
+
+  <!-- "sea" of static HTML tags, low-contrast -->
+  <g font-family="JetBrains Mono, monospace" font-size="15" fill="#00f0ff" fill-opacity="0.13">
+    <text x="60" y="90">&lt;html&gt;</text><text x="240" y="130">&lt;section&gt;</text><text x="900" y="90">&lt;article&gt;</text>
+    <text x="1000" y="160">&lt;footer&gt;</text><text x="80" y="470">&lt;nav&gt;</text><text x="300" y="520">&lt;main&gt;</text>
+    <text x="820" y="500">&lt;div&gt;</text><text x="980" y="440">&lt;ul&gt;</text><text x="120" y="300">&lt;header&gt;</text>
+    <text x="1040" y="300">&lt;p&gt;</text><text x="60" y="180">&lt;h1&gt;</text><text x="900" y="560">&lt;span&gt;</text>
+  </g>
+  <g stroke="#00f0ff" stroke-opacity="0.06">
+    <path d="M0 150H1200M0 300H1200M0 450H1200"/><path d="M300 0V600M600 0V600M900 0V600"/>
+  </g>
+
+  <!-- the island: a lemon-yellow hydrated tile floating in the HTML sea -->
+  <g filter="url(#g)">
+    <rect x="470" y="215" width="260" height="200" rx="8" fill="url(#lemon)" stroke="#08080c" stroke-width="3"/>
+  </g>
+  <text x="600" y="300" font-family="JetBrains Mono, monospace" font-size="52" text-anchor="middle">🍋</text>
+  <text x="600" y="352" font-family="JetBrains Mono, monospace" font-size="20" font-weight="800" fill="#1a1400" text-anchor="middle">island</text>
+  <text x="600" y="384" font-family="JetBrains Mono, monospace" font-size="13" fill="#4a3d00" text-anchor="middle">// hydrated on purpose</text>
+
+  <!-- ripples around the island -->
+  <g stroke="#ffe14d" fill="none" stroke-opacity="0.35">
+    <rect x="446" y="191" width="308" height="248" rx="12" stroke-opacity="0.25"/>
+    <rect x="424" y="169" width="352" height="292" rx="16" stroke-opacity="0.12"/>
+  </g>
+
+  <!-- title -->
+  <text x="60" y="545" font-family="JetBrains Mono, monospace" font-size="26" fill="#e8e8f0">Deno Fresh vs. the frameworks</text>
+  <text x="60" y="577" font-family="JetBrains Mono, monospace" font-size="15" fill="#ffe14d">// ship HTML — make JavaScript the exception you justify</text>
+</svg>
