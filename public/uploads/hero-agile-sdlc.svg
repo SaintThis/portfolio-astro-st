@@ -1,0 +1,66 @@
+<svg width="1200" height="600" viewBox="0 0 1200 600" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A linear waterfall of SDLC phases beside the same phases running as a repeating loop">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="600" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0a0a12"/>
+      <stop offset="1" stop-color="#08080c"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="700" y1="140" x2="1060" y2="470" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff2e88"/>
+      <stop offset="0.5" stop-color="#b026ff"/>
+      <stop offset="1" stop-color="#00f0ff"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="head" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#00f0ff"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="600" fill="url(#bg)"/>
+  <g stroke="#ffffff" stroke-opacity="0.035">
+    <path d="M0 120H1200M0 240H1200M0 360H1200M0 480H1200"/>
+    <path d="M200 0V600M400 0V600M600 0V600M800 0V600M1000 0V600"/>
+  </g>
+
+  <!-- LEFT: waterfall — run once, dim -->
+  <text x="70" y="92" font-family="JetBrains Mono, monospace" font-size="13" letter-spacing="2" fill="#5a5a70">RUN ONCE</text>
+  <g font-family="JetBrains Mono, monospace" font-size="12" fill="#9a9ab0">
+    <rect x="70" y="112" width="150" height="40" rx="4" fill="#12121c" stroke="#262636"/><text x="86" y="137">Requirements</text>
+    <rect x="118" y="172" width="150" height="40" rx="4" fill="#12121c" stroke="#262636"/><text x="134" y="197">Design</text>
+    <rect x="166" y="232" width="150" height="40" rx="4" fill="#12121c" stroke="#262636"/><text x="182" y="257">Implementation</text>
+    <rect x="214" y="292" width="150" height="40" rx="4" fill="#12121c" stroke="#262636"/><text x="230" y="317">Testing</text>
+    <rect x="262" y="352" width="150" height="40" rx="4" fill="#12121c" stroke="#262636"/><text x="278" y="377">Deployment</text>
+    <rect x="310" y="412" width="150" height="40" rx="4" fill="#12121c" stroke="#262636"/><text x="326" y="437">Maintenance</text>
+  </g>
+  <g stroke="#3a3a50" stroke-width="2" fill="none">
+    <path d="M145 152 v20 h-27"/><path d="M193 212 v20 h-27"/><path d="M241 272 v20 h-27"/>
+    <path d="M289 332 v20 h-27"/><path d="M337 392 v20 h-27"/>
+  </g>
+  <text x="70" y="492" font-family="JetBrains Mono, monospace" font-size="13" fill="#5a5a70">// find out at the end</text>
+
+  <!-- RIGHT: the same phases, looped -->
+  <text x="700" y="92" font-family="JetBrains Mono, monospace" font-size="13" letter-spacing="2" fill="#00f0ff">RUN EVERY TWO WEEKS</text>
+
+  <g filter="url(#glow)">
+    <circle cx="880" cy="305" r="150" fill="none" stroke="url(#ring)" stroke-width="3" stroke-dasharray="700 60" marker-end="url(#head)"/>
+  </g>
+
+  <!-- phase nodes around the ring -->
+  <g font-family="JetBrains Mono, monospace" font-size="11" fill="#e8e8f0" text-anchor="middle">
+    <circle cx="880" cy="155" r="8" fill="#ff2e88"/><text x="880" y="138">requirements</text>
+    <circle cx="1010" cy="230" r="8" fill="#ff2e88"/><text x="1046" y="222">design</text>
+    <circle cx="1010" cy="380" r="8" fill="#b026ff"/><text x="1050" y="398">build</text>
+    <circle cx="880" cy="455" r="8" fill="#b026ff"/><text x="880" y="480">test</text>
+    <circle cx="750" cy="380" r="8" fill="#00f0ff"/><text x="702" y="398">deploy</text>
+    <circle cx="750" cy="230" r="8" fill="#00f0ff"/><text x="700" y="222">learn</text>
+  </g>
+
+  <text x="880" y="298" font-family="JetBrains Mono, monospace" font-size="19" font-weight="800" fill="#e8e8f0" text-anchor="middle">same six phases</text>
+  <text x="880" y="326" font-family="JetBrains Mono, monospace" font-size="14" fill="#00f0ff" text-anchor="middle">smaller · repeating</text>
+
+  <!-- title strip -->
+  <text x="70" y="548" font-family="JetBrains Mono, monospace" font-size="24" fill="#e8e8f0">Agile and the SDLC</text>
+  <text x="70" y="578" font-family="JetBrains Mono, monospace" font-size="14" fill="#00f0ff">// the phases don't vanish — they compress</text>
+</svg>
