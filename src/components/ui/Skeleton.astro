@@ -1,0 +1,73 @@
+---
+/**
+ * Skeleton — placeholder shimmer for content that genuinely arrives *after*
+ * first paint (client-side fetches), not for content the server already sent.
+ *
+ * The three loading states on this site are deliberately different jobs:
+ *   - `IntroLoader`  → cold document (first visit / refresh), full overlay
+ *   - `NavProgress`  → client-side navigation, 2px top bar
+ *   - `Skeleton`     → an async region inside an already-painted page
+ *
+ * Usage:
+ *   <Skeleton class="h-4 w-24" />          // a block
+ *   <Skeleton text />                       // inline, sized to the text line
+ * Hide it once the data lands by removing the node or toggling `hidden`.
+ */
+interface Props {
+  /** Inline variant — sits in a line of text instead of being a block. */
+  text?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+const { text = false, class: className, ...rest } = Astro.props;
+---
+
+<span class:list={['skeleton', text && 'skeleton--text', className]} aria-hidden="true" {...rest}
+></span>
+
+<style>
+  .skeleton {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    background: var(--color-surface-2);
+    border-radius: var(--radius-box);
+  }
+  .skeleton--text {
+    display: inline-block;
+    width: 2.5em;
+    height: 1em;
+    vertical-align: -0.15em;
+  }
+  /* Sheen sweeps the accent across the block. Uses the theme's own accent and
+     easing, so a skeleton in Paper/Latte reads as soft grey rather than neon. */
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--color-accent) 14%, transparent),
+      transparent
+    );
+    animation: skeleton-sweep 1.4s var(--ease-out-expo) infinite;
+  }
+  /* Under reduced-motion the sweep is pure decoration, so drop it entirely and
+     leave a static block — the global 0.001ms override can't remove an
+     infinite animation's presence, only its duration. */
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton::after {
+      display: none;
+    }
+  }
+</style>
+
+<style is:global>
+  @keyframes skeleton-sweep {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+</style>

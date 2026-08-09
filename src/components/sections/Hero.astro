@@ -3,6 +3,7 @@ import { SITE, AUTHOR, FEATURES } from '@/config';
 import Button from '@components/ui/Button.astro';
 import Tag from '@components/ui/Tag.astro';
 import Lanyard from '@components/react/Lanyard.tsx';
+import Skeleton from '@components/ui/Skeleton.astro';
 
 const stack = ['React', 'Next.js', 'TypeScript', 'Django', 'Node.js', 'Flutter'];
 
@@ -82,7 +83,21 @@ const ROTATOR_MAX_CH = Math.max(...ROTATOR_WORDS.map((w) => w.length));
       // Lanyard.tsx toggles the *canvas element's* own pointer-events
       // per-frame based on proximity to the card, so the rest of the page
       // underneath stays fully clickable.
-      <div class="pointer-events-none absolute inset-x-0 top-0 z-10 hidden h-[600px] lg:block">
+      <div
+        class="pointer-events-none absolute inset-x-0 top-0 z-10 hidden h-[600px] lg:block"
+        data-lanyard-slot
+      >
+        {/* Skeleton placeholder for the heaviest island on the site (three.js +
+            rapier WASM, loaded via client:media). It occupies the card's
+            footprint so the hero doesn't have a hole while that downloads, and
+            removes itself the moment the canvas actually mounts — see the
+            observer script at the bottom of this file. */}
+        <div
+          class="lanyard-skeleton absolute right-[12%] top-[46%] w-[190px] -translate-y-1/2"
+          data-lanyard-skeleton
+        >
+          <Skeleton class="h-[260px] w-full opacity-40" />
+        </div>
         {/*
           Tuning knobs, all on Lanyard itself:
           - `position`: camera distance (3rd number) — bigger = more zoomed
@@ -137,4 +152,31 @@ const ROTATOR_MAX_CH = Math.max(...ROTATOR_WORDS.map((w) => w.length));
   }
 
   document.addEventListener('astro:page-load', initHeroRotator);
+
+  /**
+   * Retire the lanyard skeleton once the 3D canvas actually exists. The island
+   * is `client:media`, so on a narrow viewport it never mounts — the skeleton
+   * lives inside a `lg:block` container that's display:none there, so nothing
+   * shows either way. The observer disconnects on first hit.
+   */
+  function initLanyardSkeleton() {
+    const slot = document.querySelector<HTMLElement>('[data-lanyard-slot]');
+    const skeleton = slot?.querySelector<HTMLElement>('[data-lanyard-skeleton]');
+    if (!slot || !skeleton || slot.dataset.skeletonBound) return;
+    slot.dataset.skeletonBound = 'true';
+
+    if (slot.querySelector('canvas')) {
+      skeleton.remove();
+      return;
+    }
+    const observer = new MutationObserver(() => {
+      if (slot.querySelector('canvas')) {
+        skeleton.remove();
+        observer.disconnect();
+      }
+    });
+    observer.observe(slot, { childList: true, subtree: true });
+  }
+
+  document.addEventListener('astro:page-load', initLanyardSkeleton);
 </script>

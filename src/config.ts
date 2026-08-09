@@ -60,9 +60,13 @@ export const SOCIALS = [
  * src/styles/themes.css and it just works — no code changes needed.
  */
 export const THEMES = [
-  { id: 'cyberpunk', label: 'Cyberpunk', hint: 'Neon magenta + cyan on void black' },
-  { id: 'matrix', label: 'Matrix', hint: 'Terminal green on black' },
-  { id: 'synthwave', label: 'Synthwave', hint: 'Sunset purple + orange' },
+  { id: 'cyberpunk', label: 'Cyberpunk', hint: 'Neon magenta + cyan, hard edges' },
+  { id: 'aurora', label: 'Aurora', hint: 'Glassy indigo, soft light-leaks' },
+  { id: 'nord', label: 'Nord', hint: 'Muted arctic blue, dot grid' },
+  { id: 'mono', label: 'Mono', hint: 'Brutalist black + white, no radius' },
+  { id: 'matrix', label: 'Matrix', hint: 'Terminal green, monospace display' },
+  { id: 'synthwave', label: 'Synthwave', hint: 'Sunset purple + orange wash' },
+  { id: 'latte', label: 'Latte', hint: 'Warm editorial light, serif display' },
   { id: 'paper', label: 'Paper', hint: 'Light, high-contrast day mode' },
 ] as const;
 

@@ -14,6 +14,7 @@ Every `Props` interface below is copied from the component's actual source — i
 | `SectionHeading.astro` | `kicker?, title: string, index?, align?: 'left'\|'center' (default 'left')` | Has a `title` named slot (overrides the `title` prop) and a default slot for extra header content. |
 | `TerminalWindow.astro` | `title?: string (default 'zsh — saint@dev'), class?` | Faux terminal chrome; content goes in the default slot. |
 | `ProjectCard.astro` | `project: Project` (from `@lib/api/types`) | Full-bleed card, `data-cursor="hover"` + `data-cursor-label="View"`. Renders `project.metrics` only if present. |
+| `Skeleton.astro` | `text?: boolean (default false), class?, [any other attr]` | Shimmer placeholder for content that arrives *after* first paint — not for server-rendered HTML. `text` makes it inline. Theme-aware (surface-2 + accent sweep); the sweep is dropped entirely under reduced-motion. See [`loading-states.md`](loading-states.md). |
 
 ## `src/components/react/*.tsx` — client islands
 
@@ -49,7 +50,8 @@ None take props either.
 | --- | --- |
 | `Header.astro` | Fixed nav, `transition:persist`'d across View Transitions. Owns `#base-ui-portal-root` sibling div (see `BaseLayout.astro` comment for why it must be a *sibling*, not nested inside). |
 | `Footer.astro` | Site-wide footer — nav links, socials, source link. Not the same as the per-post "Read next" footer in `src/pages/blog/[...slug].astro`, which is page-specific. |
-| `IntroLoader.astro` | Boot-sequence intro (Astro + inline script, deliberately not a React island — see `CLAUDE.md` gotchas). |
+| `IntroLoader.astro` | Boot-sequence intro (Astro + inline script, deliberately not a React island — see `CLAUDE.md` gotchas). Runs on a **cold document only**; never on client-side navigation. See [`loading-states.md`](loading-states.md). |
+| `NavProgress.astro` | 2px top progress bar for client-side navigation. Only appears if the navigation exceeds 180 ms, so fast ones show nothing. `transition:persist`'d. |
 | `ScrollReveal.astro` | Shared GSAP ScrollTrigger setup consumed by every `Reveal.astro` instance. |
 
 ## Before adding a new component

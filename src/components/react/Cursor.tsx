@@ -260,12 +260,16 @@ export default function Cursor() {
       </div>
 
       <style>{`
+        /* Resting size/shape are theme tokens, so the cursor is part of the
+           theme's personality: a big soft circle in Aurora, a hard square in
+           Matrix, a difference-blended block in Mono. The hover state still
+           overrides these in JS to match whatever element is hovered. */
         .cursor-glow, .cursor-label-box {
           top: 0;
           left: 0;
-          width: 2.5rem;
-          height: 2.5rem;
-          border-radius: 9999px;
+          width: var(--cursor-size, 2.5rem);
+          height: var(--cursor-size, 2.5rem);
+          border-radius: var(--cursor-radius, 9999px);
           transform: translate(-50%, -50%);
           transition:
             width .18s var(--ease-out-expo),
@@ -273,6 +277,7 @@ export default function Cursor() {
             border-radius .18s var(--ease-out-expo);
         }
         .cursor-glow {
+          mix-blend-mode: var(--cursor-blend, normal);
           transition:
             width .18s var(--ease-out-expo),
             height .18s var(--ease-out-expo),

@@ -1,13 +1,21 @@
 ---
 /**
- * Intro / boot loader.
+ * Intro / boot loader — the GLOBAL, once-per-document loading state.
  *
- * Shows a short terminal "boot sequence" on first paint AND on every client-side
- * navigation (Astro View Transitions). Implemented as an Astro component with a
- * vanilla + GSAP client script rather than a React island, because the swap
- * lifecycle (astro:before-preparation → astro:after-swap → astro:page-load) is
- * far easier to hook reliably from a persistent script than from a re-mounting
- * island.
+ * Runs on a cold document only: first visit, a hard refresh, or a direct URL
+ * hit. It deliberately does NOT run on client-side navigation — covering the
+ * whole viewport on every link click made the site feel slower than it is, and
+ * hid content that Astro had already fetched. Redirection gets a much lighter
+ * treatment instead (see `NavProgress.astro`), and genuinely async content uses
+ * `Skeleton.astro`.
+ *
+ * How "cold document" is detected: this module's own scope. View Transitions
+ * swap the DOM but never re-evaluate persisted scripts, so `hasBooted` stays
+ * true across navigations; a real reload re-evaluates the module and resets it.
+ *
+ * Implemented as an Astro component with a vanilla + GSAP client script rather
+ * than a React island, because the swap lifecycle is far easier to hook
+ * reliably from a persistent script than from a re-mounting island.
  *
  * Persisted across navigations via `transition:persist` so it never unmounts.
  */
@@ -109,16 +117,29 @@ import { SITE } from '@/config';
   import { scrambleText } from '@lib/utils/scramble';
 
   const MIN_BOOT = 1000; // ms — long enough to feel intentional, short enough not to annoy
-  let firstLoad = true;
+  /** Module-scoped, so it survives View Transitions but resets on a real
+   *  reload — which is exactly the "cold document" test we want. */
+  let hasBooted = false;
   let failsafe = 0;
 
   function runBoot() {
     const boot = document.getElementById('boot');
     if (!boot) return;
 
-    // Failsafe: never let the overlay trap the user if rAF/GSAP stalls.
+    // Failsafe must NOT depend on GSAP: `hideBoot` animates via rAF, and rAF is
+    // throttled (or stopped entirely) in a background tab — so a GSAP-based
+    // failsafe could never fire in exactly the case it exists for, leaving the
+    // overlay covering the page when the visitor returns. `forceHide` writes
+    // styles directly instead.
     window.clearTimeout(failsafe);
-    failsafe = window.setTimeout(hideBoot, 2600);
+    failsafe = window.setTimeout(forceHide, 2600);
+
+    // Nothing to watch in a hidden tab — skip straight to the finished state so
+    // the page is ready the moment it's foregrounded.
+    if (document.visibilityState === 'hidden') {
+      forceHide();
+      return;
+    }
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     boot.dataset.state = 'boot';
@@ -162,6 +183,18 @@ import { SITE } from '@/config';
     tl.to([...lines], { opacity: 1, stagger: MIN_BOOT / 1000 / lines.length, duration: 0.08 }, 0);
   }
 
+  /** Hard, synchronous teardown — no animation, no rAF dependency. */
+  function forceHide() {
+    const boot = document.getElementById('boot');
+    if (!boot || boot.dataset.state === 'done') return;
+    window.clearTimeout(failsafe);
+    gsap.killTweensOf(boot);
+    boot.dataset.state = 'done';
+    boot.style.opacity = '0';
+    boot.style.display = 'none';
+    document.dispatchEvent(new CustomEvent('boot:done'));
+  }
+
   function hideBoot() {
     const boot = document.getElementById('boot');
     if (!boot || boot.dataset.state === 'done') return;
@@ -172,31 +205,36 @@ import { SITE } from '@/config';
       ease: 'power2.inOut',
       onComplete: () => {
         boot.dataset.state = 'done';
+        boot.style.display = 'none';
         document.dispatchEvent(new CustomEvent('boot:done'));
       },
     });
+    // Belt-and-braces: if the fade's rAF never completes (tab backgrounded
+    // mid-fade), retire it anyway shortly after the animation's own duration.
+    window.setTimeout(forceHide, 700);
   }
 
-  function showInstant() {
+  /** Retire the overlay for the rest of this document's life. Called once the
+   *  first boot finishes so a later navigation can never re-show it. */
+  function retire() {
     const boot = document.getElementById('boot');
     if (!boot) return;
-    gsap.killTweensOf(boot);
-    boot.dataset.state = 'boot';
-    boot.style.visibility = 'visible';
-    gsap.set(boot, { opacity: 1 });
+    window.clearTimeout(failsafe);
+    boot.dataset.state = 'done';
+    boot.style.display = 'none';
   }
 
-  // First page load.
+  // Cold document only — see the component comment. Subsequent
+  // `astro:page-load` events (client-side navigation) fall through to the
+  // `retire()` branch, so the overlay never covers a redirect.
   document.addEventListener('astro:page-load', () => {
-    if (firstLoad) {
-      firstLoad = false;
-      runBoot();
-    } else {
-      // Arrived on a new page via view transition — finish the quick boot.
-      runBoot();
+    if (hasBooted) {
+      retire();
+      return;
     }
+    hasBooted = true;
+    runBoot();
   });
 
-  // Navigation started — cover the screen immediately for a seamless transition.
-  document.addEventListener('astro:before-preparation', showInstant);
+  document.addEventListener('boot:done', retire, { once: true });
 </script>

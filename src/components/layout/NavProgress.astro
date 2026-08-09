@@ -1,0 +1,115 @@
+---
+/**
+ * NavProgress — the loading state for *redirection* (client-side navigation),
+ * deliberately separate from the global boot overlay in `IntroLoader.astro`.
+ *
+ * A 2px accent bar along the top edge. It only appears if the navigation takes
+ * longer than SHOW_DELAY, so fast in-cache navigations (the common case) show
+ * nothing at all rather than flashing a bar — the flash is what makes progress
+ * UI feel worse than no progress UI.
+ *
+ * Astro + inline script, not a React island, for the same reason as the boot
+ * loader: the transition lifecycle is easier to hook from a persistent script.
+ * `transition:persist` keeps this node alive across swaps.
+ */
+---
+
+<div id="nav-progress" class="nav-progress" data-state="idle" transition:persist aria-hidden="true">
+  <i></i>
+</div>
+
+<style>
+  .nav-progress {
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 2px;
+    z-index: 9997;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s var(--ease-out-expo);
+  }
+  .nav-progress[data-state='loading'] {
+    opacity: 1;
+  }
+  .nav-progress > i {
+    display: block;
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-2));
+    box-shadow: var(--glow) color-mix(in srgb, var(--color-accent) 60%, transparent);
+    transition: width 0.25s var(--ease-out-expo);
+  }
+  /* The bar is a progress hint, not decoration — but its easing is motion, so
+     it collapses to an instant state change under reduced-motion. */
+  @media (prefers-reduced-motion: reduce) {
+    .nav-progress,
+    .nav-progress > i {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const SHOW_DELAY = 180; // ms — below this, a navigation feels instant; don't flash.
+
+  let showTimer = 0;
+  let creepTimer = 0;
+  let progress = 0;
+
+  function el() {
+    return document.getElementById('nav-progress');
+  }
+  function bar() {
+    return el()?.querySelector<HTMLElement>('i') ?? null;
+  }
+
+  function set(pct: number) {
+    progress = pct;
+    const b = bar();
+    if (b) b.style.width = `${pct}%`;
+  }
+
+  function start() {
+    const node = el();
+    if (!node) return;
+    window.clearTimeout(showTimer);
+    window.clearInterval(creepTimer);
+    set(0);
+
+    showTimer = window.setTimeout(() => {
+      node.dataset.state = 'loading';
+      set(25);
+      // Creep toward (but never reach) 90% — real completion comes from the
+      // swap event, so the bar must never claim to be done early.
+      creepTimer = window.setInterval(() => {
+        set(Math.min(90, progress + (90 - progress) * 0.18));
+      }, 220);
+    }, SHOW_DELAY);
+  }
+
+  function done() {
+    const node = el();
+    if (!node) return;
+    window.clearTimeout(showTimer);
+    window.clearInterval(creepTimer);
+
+    // Never shown (fast nav) — reset silently, no flash.
+    if (node.dataset.state !== 'loading') {
+      set(0);
+      return;
+    }
+
+    set(100);
+    window.setTimeout(() => {
+      node.dataset.state = 'idle';
+      window.setTimeout(() => set(0), 200);
+    }, 150);
+  }
+
+  // Registered once on the document (which persists across swaps), so these
+  // never double-bind the way a per-page listener would.
+  document.addEventListener('astro:before-preparation', start);
+  document.addEventListener('astro:page-load', done);
+  // A swap that errors out still needs the bar cleared.
+  document.addEventListener('astro:after-swap', done);
+</script>

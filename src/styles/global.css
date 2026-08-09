@@ -33,14 +33,16 @@
   --color-warning: var(--color-warning);
   --color-danger: var(--color-danger);
 
-  --font-sans:
-    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono:
-    'JetBrains Mono', ui-monospace, 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  /* These read straight through to the active theme's values (themes.css), so
+     a theme can change the typeface, corner radius, and easing — not just
+     color. Each has a fallback for the brief moment before themes.css applies. */
+  --font-sans: var(--font-sans, 'Inter', ui-sans-serif, system-ui, sans-serif);
+  --font-display: var(--font-display, var(--font-sans));
+  --font-mono: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
 
-  --radius-box: 4px; /* boxy, low-radius by design language */
+  --radius-box: var(--radius-box, 4px);
 
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-expo: var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
 }
 
 /* ------------------------------------------------------------------ */
@@ -65,6 +67,11 @@
 
   body {
     background-color: var(--color-bg);
+    /* Per-theme wash layered over the flat background — `none` in themes that
+       want a flat surface (cyberpunk, matrix, mono), a real gradient in
+       synthwave/aurora/latte. Fixed so it doesn't slide with content. */
+    background-image: var(--bg-gradient, none);
+    background-attachment: fixed;
     color: var(--color-fg);
     font-family: var(--font-sans);
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
@@ -85,9 +92,13 @@
     border-radius: 2px;
   }
 
+  /* Headings take the theme's display face, weight, and tracking — this is
+     what makes Latte read editorial and Mono read brutalist without either
+     one touching a component. */
   h1, h2, h3, h4 {
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-family: var(--font-display);
+    font-weight: var(--heading-weight, 700);
+    letter-spacing: var(--heading-tracking, -0.02em);
     text-wrap: balance;
   }
 
@@ -133,16 +144,18 @@
     color: transparent;
   }
 
-  /* Cyberpunk grid backdrop — apply to a full-bleed container. */
+  /* Full-bleed backdrop. The *pattern itself* is a theme token, so this one
+     class renders a neon grid (cyberpunk), a dot grid (nord/latte), soft
+     aurora light-leaks (aurora), or nothing at all (mono). */
   .bg-grid {
-    background-image:
-      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-    background-size: 44px 44px;
-    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    background-image: var(--backdrop-image);
+    background-size: var(--backdrop-size, 44px 44px);
+    mask-image: var(--backdrop-mask);
+    -webkit-mask-image: var(--backdrop-mask);
   }
 
-  /* Subtle animated scanline overlay. */
+  /* Scanline overlay — opacity is a theme token, so light/modern themes opt
+     out entirely (0) instead of needing a separate class. */
   .scanlines::before {
     content: '';
     position: absolute;
@@ -153,7 +166,20 @@
       transparent 0 2px,
       color-mix(in srgb, var(--color-fg) 3%, transparent) 2px 3px
     );
-    opacity: 0.4;
+    opacity: var(--scanline-opacity, 0.4);
+  }
+
+  /* Chrome surfaces (header, sidebar) — blur strength is a theme token, so
+     Aurora reads as heavy glass and Mono as a hard opaque bar. */
+  .nav-blur {
+    backdrop-filter: blur(var(--nav-blur, 12px));
+    -webkit-backdrop-filter: blur(var(--nav-blur, 12px));
+  }
+
+  /* Elevation, per theme. `none` in the flat themes; a real shadow in the
+     glassy/light ones where a border alone doesn't separate the surface. */
+  .shadow-card {
+    box-shadow: var(--shadow-card, none);
   }
 
   /* Mono "kicker" label used above section headings. */

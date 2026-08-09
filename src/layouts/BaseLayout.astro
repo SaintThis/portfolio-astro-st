@@ -17,6 +17,7 @@ import Analytics from '@components/seo/Analytics.astro';
 import Header from '@components/layout/Header.astro';
 import Footer from '@components/layout/Footer.astro';
 import IntroLoader from '@components/layout/IntroLoader.astro';
+import NavProgress from '@components/layout/NavProgress.astro';
 import ScrollReveal from '@components/layout/ScrollReveal.astro';
 import Cursor from '@components/react/Cursor.tsx';
 
@@ -60,11 +61,16 @@ const { backdrop = true, wide = false, ...seo } = Astro.props;
     <link rel="sitemap" href="/sitemap.xml" />
     <link rel="alternate" type="application/rss+xml" title={SITE.name} href="/rss.xml" />
 
-    <!-- Fonts: preconnect + swap. Swap to @fontsource for full self-hosting (see DESIGN.md). -->
+    <!-- Fonts: preconnect + swap. Swap to @fontsource for full self-hosting (see DESIGN.md).
+         Four families because typography is theme-owned (see themes.css):
+         Inter (body), JetBrains Mono (code/labels + Matrix's display face),
+         Space Grotesk (Aurora/Mono/Synthwave display), Fraunces (Latte's
+         editorial serif). All `display=swap`, so a theme the visitor never
+         selects costs a stylesheet entry, not a render block. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap"
       rel="stylesheet"
     />
 
@@ -101,7 +107,12 @@ const { backdrop = true, wide = false, ...seo } = Astro.props;
       )
     }
 
+    <!-- Three distinct loading states, three distinct jobs: IntroLoader covers
+         a cold document once; NavProgress marks client-side navigation with a
+         2px bar; Skeleton (components/ui) fills async regions in a painted
+         page. Only the first two are global. -->
     {FEATURES.introLoader && <IntroLoader />}
+    {FEATURES.pageTransitions && <NavProgress />}
     {FEATURES.customCursor && <Cursor client:load />}
 
     <Header />
