@@ -26,6 +26,7 @@ export function rowToProject(r: ProjectRow): Project {
     cover: r.cover ?? undefined,
     metrics: r.metrics ?? undefined,
     screenshots: screenshots ?? undefined,
+    views: r.views,
   };
 }
 

@@ -46,6 +46,8 @@ export const projects = pgTable(
     cover: text('cover'),
     /** { label, value }[] — optional headline metrics. */
     metrics: jsonb('metrics').$type<{ label: string; value: string }[]>(),
+    /** Lifetime view count (see project_views for the dedup/qualification log). */
+    views: integer('views').notNull().default(0),
     /** Catch-all for fields not yet promoted to real columns. */
     meta: jsonb('meta').$type<Record<string, unknown>>().notNull().default({}),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -110,6 +112,22 @@ export const postViews = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex('post_views_unique_idx').on(t.postSlug, t.visitorHash, t.day)]
+);
+
+/**
+ * Qualified project views — same contract as `post_views`, separate table so a
+ * project slug can never collide with a post slug in the dedup index.
+ */
+export const projectViews = pgTable(
+  'project_views',
+  {
+    id: serial('id').primaryKey(),
+    projectSlug: text('project_slug').notNull(),
+    visitorHash: text('visitor_hash').notNull(),
+    day: text('day').notNull(), // YYYY-MM-DD bucket
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex('project_views_unique_idx').on(t.projectSlug, t.visitorHash, t.day)]
 );
 
 /**

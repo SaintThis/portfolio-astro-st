@@ -10,11 +10,14 @@
  */
 interface Props {
   slug: string;
+  /** API base to hit. Defaults to the post counter; project pages pass
+   *  `/api/project-views` so the two never share a dedup namespace. */
+  endpoint?: string;
 }
-const { slug } = Astro.props;
+const { slug, endpoint = '/api/views' } = Astro.props;
 ---
 
-<div data-view-tracker={slug} hidden></div>
+<div data-view-tracker={slug} data-view-endpoint={endpoint} hidden></div>
 
 <script>
   function initViewTracker() {
@@ -22,6 +25,7 @@ const { slug } = Astro.props;
     if (!el || el.dataset.bound) return;
     el.dataset.bound = 'true';
     const slug = el.dataset.viewTracker;
+    const endpoint = el.dataset.viewEndpoint || '/api/views';
     if (!slug) return;
 
     const paint = (views: number) => {
@@ -31,7 +35,7 @@ const { slug } = Astro.props;
     };
 
     // Show the current count immediately (GET), without counting a view.
-    fetch(`/api/views/${slug}`)
+    fetch(`${endpoint}/${slug}`)
       .then((r) => r.json() as Promise<{ views?: number }>)
       .then((d) => typeof d.views === 'number' && paint(d.views))
       .catch(() => {});
@@ -57,7 +61,7 @@ const { slug } = Astro.props;
       if (done || !dwelled || !scrolled) return;
       done = true;
       window.removeEventListener('scroll', onScroll);
-      fetch(`/api/views/${slug}`, { method: 'POST' })
+      fetch(`${endpoint}/${slug}`, { method: 'POST' })
         .then((r) => r.json() as Promise<{ views?: number }>)
         .then((d) => typeof d.views === 'number' && paint(d.views))
         .catch(() => {});

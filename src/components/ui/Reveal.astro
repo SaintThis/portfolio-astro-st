@@ -10,11 +10,15 @@ interface Props {
   y?: number;
   delay?: number;
   class?: string;
+  /** Any other attribute (data-*, aria-*, id…) passes through to the wrapper —
+   *  callers filter/label the wrapped item (e.g. the projects grid's
+   *  `data-category`), and silently dropping those broke that filter once. */
+  [key: string]: unknown;
 }
-const { y = 24, delay = 0, class: className } = Astro.props;
+const { y = 24, delay = 0, class: className, ...rest } = Astro.props;
 ---
 
-<div class:list={['reveal', className]} data-reveal data-y={y} data-delay={delay}>
+<div class:list={['reveal', className]} data-reveal data-y={y} data-delay={delay} {...rest}>
   <slot />
 </div>
 

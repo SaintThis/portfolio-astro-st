@@ -24,11 +24,18 @@ interface Props {
   title?: string;
   description?: string;
   image?: string;
-  type?: 'website' | 'article';
+  type?: 'website' | 'article' | 'project';
   publishedTime?: string;
   modifiedTime?: string;
   tags?: string[];
   noindex?: boolean;
+  /** Project case studies: drives SoftwareSourceCode + breadcrumb JSON-LD. */
+  projectMeta?: {
+    stack?: string[];
+    repo?: string;
+    live?: string;
+    breadcrumb?: { name: string; item: string }[];
+  };
   /** Set false on ultra-minimal pages (e.g. 404) to drop the grid backdrop. */
   backdrop?: boolean;
   /**

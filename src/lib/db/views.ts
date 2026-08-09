@@ -56,3 +56,34 @@ export async function getViews(slug: string): Promise<number> {
     .limit(1);
   return row?.views ?? 0;
 }
+
+// --- Projects ---------------------------------------------------------------
+// Same contract as the post counters above, against project_views/projects.
+
+export async function recordProjectView(slug: string, visitorHash: string): Promise<number> {
+  const db = getDb();
+  const inserted = await db
+    .insert(schema.projectViews)
+    .values({ projectSlug: slug, visitorHash, day: today() })
+    .onConflictDoNothing()
+    .returning({ id: schema.projectViews.id });
+
+  if (inserted.length > 0) {
+    const [row] = await db
+      .update(schema.projects)
+      .set({ views: sql`${schema.projects.views} + 1` })
+      .where(eq(schema.projects.slug, slug))
+      .returning({ views: schema.projects.views });
+    return row?.views ?? 0;
+  }
+  return getProjectViews(slug);
+}
+
+export async function getProjectViews(slug: string): Promise<number> {
+  const [row] = await getDb()
+    .select({ views: schema.projects.views })
+    .from(schema.projects)
+    .where(eq(schema.projects.slug, slug))
+    .limit(1);
+  return row?.views ?? 0;
+}

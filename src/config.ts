@@ -110,3 +110,15 @@ export const BLOG = {
   /** Posts per page on the blog index (real pagination lands with the SSR/DB phase). */
   pageSize: 8,
 } as const;
+
+/**
+ * Projects index behaviour. Mirrors BLOG so both listings filter/paginate the
+ * same way — server-side via ?category= and ?page=, no client JS (an earlier
+ * client-side filter silently broke when its data attribute was dropped).
+ */
+export const PROJECTS = {
+  /** Cards per page on /projects — 6 fills two rows of the 3-column grid. */
+  pageSize: 6,
+  /** DB-backed view counts on project pages (project_views table). */
+  viewCounts: true,
+} as const;

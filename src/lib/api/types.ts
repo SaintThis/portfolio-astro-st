@@ -30,6 +30,8 @@ export interface Project {
   metrics?: { label: string; value: string }[];
   /** Additional real screenshots shown as a gallery on the case-study page. */
   screenshots?: string[];
+  /** Lifetime view count (0 until the view-tracking backend records one). */
+  views?: number;
 }
 
 export interface PostMeta {

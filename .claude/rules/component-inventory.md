@@ -10,7 +10,7 @@ Every `Props` interface below is copied from the component's actual source — i
 | --- | --- | --- |
 | `Button.astro` | `href?, variant?: 'primary'\|'ghost'\|'outline' (default 'primary'), size?: 'sm'\|'md'\|'lg' (default 'md'), class?, type?: 'button'\|'submit', [any other attr]` | Polymorphic: renders `<a>` if `href` is set, else `<button>`. Extra props (`download`, `target`, `aria-*`, …) pass straight through via `{...rest}`. Always carries `data-cursor="hover"`. |
 | `Tag.astro` | `class?, accent?: boolean (default false)` | Small mono pill. `accent` swaps to the accent-tinted variant. |
-| `Reveal.astro` | `y?: number (default 24), delay?: number (default 0), class?` | GSAP ScrollTrigger scroll-reveal wrapper. Respects reduced-motion; never leaves content hidden if JS is unavailable (`html.no-js` fallback). |
+| `Reveal.astro` | `y?: number (default 24), delay?: number (default 0), class?, [any other attr]` | GSAP ScrollTrigger scroll-reveal wrapper. Respects reduced-motion; never leaves content hidden if JS is unavailable (`html.no-js` fallback). Extra attrs (`data-*`, `id`, `aria-*`) pass through via `{...rest}` — it silently swallowed them once, which broke the projects grid's `data-category` filter (every card hid instead of filtering). |
 | `SectionHeading.astro` | `kicker?, title: string, index?, align?: 'left'\|'center' (default 'left')` | Has a `title` named slot (overrides the `title` prop) and a default slot for extra header content. |
 | `TerminalWindow.astro` | `title?: string (default 'zsh — saint@dev'), class?` | Faux terminal chrome; content goes in the default slot. |
 | `ProjectCard.astro` | `project: Project` (from `@lib/api/types`) | Full-bleed card, `data-cursor="hover"` + `data-cursor-label="View"`. Renders `project.metrics` only if present. |
@@ -23,6 +23,12 @@ Every `Props` interface below is copied from the component's actual source — i
 | `ThemeSwitcher.tsx` | none | `client:idle` | Base UI `Select`. Reads/writes `useThemeStore`. Portals into `#base-ui-portal-root` (see Header/BaseLayout comments — do not change this without reading why). |
 | `Sidebar.tsx` | none | `client:idle` | Base UI `Dialog`, mobile/tablet nav drawer (`lg:hidden`). Also portals into `#base-ui-portal-root`. |
 | `ContactForm.tsx` | none | `client:visible` (used in `src/pages/contact.astro`) | Posts to `PUBLIC_API_BASE_URL/contact` if configured, else simulates success. Has a honeypot field (`_gotcha`). |
+
+## `src/components/blog/*.astro` — reading UI (also reused by projects)
+
+| Component | Props | Notes |
+| --- | --- | --- |
+| `ViewTracker.astro` | `slug: string, endpoint?: string (default '/api/views')` | Fires one *qualified* view (dwell ≥10s + scroll ≥25%), then paints the total into every `[data-view-count]` element. Project pages pass `endpoint="/api/project-views"` so posts and projects never share a dedup namespace. Zero visible output. |
 
 ## `src/components/sections/*.astro` — page sections
 
