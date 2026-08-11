@@ -4,9 +4,16 @@ Linked from [`CLAUDE.md`](../../CLAUDE.md). Read this before styling anything �
 
 **Source of truth**: [`src/styles/themes.css`](../../src/styles/themes.css) defines the raw CSS variables per theme; [`src/styles/global.css`](../../src/styles/global.css)'s `@theme inline` block maps them to the Tailwind utility names below. If a value here ever looks stale, those two files win — re-read them, don't trust this cache.
 
-## A theme is a personality, not a palette
+## A theme is a LAYOUT, not a palette
 
-As of the theme overhaul, a `[data-theme]` block re-binds **eight groups** of tokens, not just colors. That's what lets Latte read editorial and Mono read brutalist without a single component knowing which theme is active:
+Two things changed in the layout overhaul, and both matter before you touch anything:
+
+1. **The theme is resolved server-side.** A `theme` cookie is read by `withLocals` in [`src/middleware.ts`](../../src/middleware.ts) into `Astro.locals.theme`, and `THEMES` in [`src/config.ts`](../../src/config.ts) carries a `layout` profile per theme (`{ hero, nav, card, loader, lanyard }`). Components call `getThemeLayout(Astro.locals.theme)` and render a *different component*, not just different colors. Changing theme triggers a full `location.reload()` — there is no way to swap layouts in place.
+2. **The cookie is the single source of truth.** The zustand store is deliberately **not** persisted; a second copy in `localStorage` could disagree with the cookie, which would mean one theme's markup wearing another's tokens. If you add a theme, its id must be in `THEMES` or middleware rejects the cookie and falls back to `DEFAULT_THEME`.
+
+**Don't read the cookie in an island's initial state.** React islands are server-rendered too, so a client-side cookie read at init makes the first client render disagree with the server's and trips React hydration error #418. The store initialises to `DEFAULT_THEME` and `ThemeSwitcher` adopts the real value from `<html data-theme>` in a mount effect — after hydration is safe. This was a real regression during the overhaul.
+
+Everything below still applies — a `[data-theme]` block re-binds **eight groups** of tokens, and that's what carries the look *within* a chosen layout:
 
 | Group | Tokens |
 | --- | --- |
@@ -18,23 +25,31 @@ As of the theme overhaul, a `[data-theme]` block re-binds **eight groups** of to
 | Backdrop | `--backdrop-image`, `--backdrop-size`, `--backdrop-mask`, `--bg-gradient`, `--grid-line`, `--scanline-opacity` |
 | Motion | `--ease-out-expo`, `--dur` |
 | Cursor | `--cursor-size`, `--cursor-radius`, `--cursor-blend` |
+| Layout metrics | `--header-h`, `--section-y`, `--corner-cut`, `--label-transform`, `--label-tracking` |
 
-**Adding a theme = copy a block in `themes.css`, set all eight groups, register it in `src/config.ts` → `THEMES`.** No component changes. If you add a *new* token, add it to **every** theme block or callers get the `var()` fallback silently.
+**Adding a theme = copy a block in `themes.css`, set all groups, register it in `src/config.ts` → `THEMES` with a `layout` profile.** If the profile names a variant that doesn't exist yet, build it. If you add a *new* token, add it to **every** theme block or callers get the `var()` fallback silently.
 
-## The eight themes
+`--header-h` is the highest-value one: the hero's viewport math (`calc(100dvh - var(--header-h))`) and the fixed-nav spacer both read it, so a taller nav variant can't desync them. It used to be a hardcoded `4rem` in three places.
 
-| id | Mood | Radius | Display face | Glow | Backdrop | Cursor |
+## The five themes and their layouts
+
+| id | Look | Hero | Nav | Card | Loader | Lanyard |
 | --- | --- | --- | --- | --- | --- | --- |
-| `cyberpunk` (default) | Neon on void, hard edges | 4px | Inter | `0 0 24px` | magenta grid lines | 2.5rem circle |
-| `aurora` | Glassy modern dark, light-leaks | 14px | Space Grotesk | `0 0 32px` | radial aurora blobs | 3rem circle |
-| `nord` | Muted arctic, calm | 8px | Inter | `0 0 14px` | dot grid | 2.4rem circle |
-| `mono` | Brutalist black/white | **0px** | Space Grotesk | `0 0 0` | **none** | 2rem square, `mix-blend-mode: difference` |
-| `matrix` | Terminal green | 2px | **JetBrains Mono** (body too) | `0 0 22px` | tight green grid | 2.2rem square |
-| `synthwave` | Sunset retro-future | 6px | Space Grotesk | `0 0 26px` | grid + sunset `--bg-gradient` | 2.6rem circle |
-| `latte` | Warm editorial light | 12px | **Fraunces** (serif) | `0 0 0` | dot grid + warm gradient | 2.2rem circle |
-| `paper` | Light, print-like | 4px | Inter | `0 0 0` | grey grid | 2.2rem circle |
+| `cyberpunk` (default) | Terminal HUD, neon on void | `terminal` | fixed blurred bar | standard + bracket | `boot` | **yes** |
+| `matrix` | Dense mono readout | `datagrid` | **left vertical rail** | standard + bracket | `stream` | no |
+| `latte` | Editorial magazine | `editorial` (drop-cap) | **centred serif masthead** | standard, no bracket | `fade` | no |
+| `paper` | Swiss print grid | `swiss` (12-col) | minimal bar | standard, no bracket | `fade` | no |
+| `broadcast` | Bauhaus poster (was `/v2`) | `broadcast` (ProfileCard) | flat opaque block | **clipped panel** | `signal` | no |
 
-Fonts are loaded once in `BaseLayout.astro` (Inter, JetBrains Mono, Space Grotesk, Fraunces, all `display=swap`). **A theme may only use a face from that list** — adding a new family means editing that `<link>`, which costs every visitor.
+Variant components live in `src/components/themed/{hero,nav,card}/`. **The Lanyard is imported by `HeroTerminal.astro` and nowhere else** — `Lanyard.tsx` calls `useGLTF.preload()` at module scope, so a runtime `null` return would still download the 2.4 MB GLB. Gating = not importing.
+
+Fonts are loaded once in `BaseLayout.astro` (Inter, JetBrains Mono, Fraunces, Archivo Black — all `display=swap`). **A theme may only use a face from that list.**
+
+## Why the variant set is small
+
+Astro collects scoped CSS and hoists `<script>` tags from the **static module graph**, not from what actually renders — so every variant a dispatcher imports ships its CSS to every visitor regardless of their theme. `await import()` doesn't help: the styles fall out of the graph and the `<link>` is never emitted.
+
+Hence the rule: **structural difference → variant component; everything else → `[data-theme='x']` CSS.** Five heroes earn it (genuinely different documents). Navs collapse to three (one bar serves cyberpunk/paper/broadcast via a `mode` prop). Cards collapse to two. The loader is one component driven by the `LOADERS` data table in `config.ts`. Resist adding more.
 
 ## Color tokens
 

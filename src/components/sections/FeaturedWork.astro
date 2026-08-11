@@ -18,7 +18,7 @@ const projects = await getFeaturedProjects(3);
     {
       projects.map((p, i) => (
         <Reveal delay={i * 0.08} class="h-full">
-          <ProjectCard project={p} />
+          <ProjectCard project={p} index={i} />
         </Reveal>
       ))
     }

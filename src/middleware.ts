@@ -9,7 +9,9 @@
  * `sequence(...)` so each stays single-responsibility (SRP).
  */
 import { defineMiddleware, sequence } from 'astro:middleware';
-import { SITE } from '@/config';
+import { SITE, THEMES, DEFAULT_THEME, type ThemeId } from '@/config';
+
+const THEME_IDS = new Set<string>(THEMES.map((t) => t.id));
 
 /**
  * Admin guard (defense-in-depth). `/admin` and `/api/admin` are meant to sit
@@ -34,7 +36,14 @@ const withAdminGuard = defineMiddleware(async (context, next) => {
 const withLocals = defineMiddleware(async (context, next) => {
   context.locals.requestId = crypto.randomUUID();
   context.locals.startedAt = Date.now();
-  // Example seam: context.locals.user = await getUserFromSession(context.cookies);
+
+  // Theme drives the server-rendered LAYOUT (which hero/nav/card variant to
+  // render), so it has to be resolved per request. Validate against the real
+  // registry — an unknown or tampered cookie must never reach a component
+  // lookup, or the dispatcher would fall through to nothing.
+  const cookie = context.cookies.get('theme')?.value;
+  context.locals.theme = cookie && THEME_IDS.has(cookie) ? (cookie as ThemeId) : DEFAULT_THEME;
+
   return next();
 });
 
@@ -49,6 +58,15 @@ const withSecurityHeaders = defineMiddleware(async (_context, next) => {
     'Permissions-Policy',
     'camera=(), microphone=(), geolocation=(), interest-cohort=()'
   );
+  // HTML now renders different markup per theme, keyed on a cookie — so a
+  // shared cache must never hand one visitor's layout to another. Scoped to
+  // HTML on purpose: this middleware also wraps /api/* and sitemap.xml, and
+  // the sitemap deliberately sets its own s-maxage that a blanket no-store
+  // would silently destroy.
+  if (response.headers.get('content-type')?.includes('text/html')) {
+    response.headers.append('Vary', 'Cookie');
+    response.headers.set('Cache-Control', 'private, no-store');
+  }
 
   return response;
 });

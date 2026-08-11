@@ -65,6 +65,17 @@
     }
   }
 
+  /* The rail nav (Matrix) is `fixed`, so it takes no flow space — inset the
+     whole page past it. Done on <body> rather than <main> deliberately: main
+     carries Tailwind's `mx-auto`, and a competing margin-left there is decided
+     by utility source order rather than intent. Only above the nav breakpoint,
+     where the rail actually exists. */
+  @media (min-width: 1024px) {
+    [data-nav='rail'] body {
+      padding-left: var(--rail-w, 13rem);
+    }
+  }
+
   body {
     background-color: var(--color-bg);
     /* Per-theme wash layered over the flat background — `none` in themes that
@@ -180,6 +191,27 @@
      glassy/light ones where a border alone doesn't separate the surface. */
   .shadow-card {
     box-shadow: var(--shadow-card, none);
+  }
+
+  /* Nav link active state lives in CSS, keyed off `aria-current` — the
+     accessible state and the visual state are then the same fact. The sync
+     script used to toggle hardcoded Tailwind classes (`text-accent`,
+     `text-fg-muted`), which silently broke the moment a nav variant restyled
+     its links. */
+  .nav-link {
+    color: var(--color-fg-muted);
+    transition: color var(--dur) var(--ease-out-expo);
+  }
+  .nav-link:hover {
+    color: var(--color-fg);
+  }
+  .nav-link[aria-current='page'] {
+    color: var(--color-accent);
+  }
+  /* Broadcast fills the active link instead of tinting it — a poster would. */
+  [data-theme='broadcast'] .nav-link[aria-current='page'] {
+    background: var(--color-accent);
+    color: var(--color-accent-contrast);
   }
 
   /* Mono "kicker" label used above section headings. */

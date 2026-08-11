@@ -1,15 +1,16 @@
 ---
 /**
- * ProfileCard — a faithful structural match to the Haron reference card:
- * a two-layer construction (cream outer frame + black inner panel), a
- * diagonal notch cut into the top edge, a photo well with a vertical
- * rotated name running beside it, a circular glowing icon accent, a quote
- * block, a bottom-right badge/stamp, a top pill label bar, and a bottom
- * watermark strip with registration-mark dots.
+ * ProfileCard — the Broadcast theme's hero centrepiece, ported from the former
+ * /v2 mini-site.
  *
- * This is deliberately its own component rather than a Panel variant —
- * Panel stays simple (project cards, CTAs); this is the one place in v2
- * that needs the full reference composition.
+ * Two-layer construction: a cream outer frame with a clipped bottom-right
+ * corner, wrapping a dark inner panel whose top edge carries a diagonal notch.
+ * Inside: a photo well, the surname set vertically, and a quote block with a
+ * radial spark. Registration dots and a hazard-striped stat badge finish it.
+ *
+ * Every colour here is a semantic token (`--color-fg`, `--color-accent`, …)
+ * rather than the old bespoke `--color-v2-*` names — that's what makes this a
+ * theme rather than a second site bolted on.
  */
 interface Props {
   name: string;
@@ -19,11 +20,12 @@ interface Props {
   statValue: string;
   version: string;
 }
-
 const { name, tag, quote, statLabel, statValue, version } = Astro.props;
 
-const PORTRAIT_PATH = '/v2/portrait.png';
-const hasPortrait = Object.keys(import.meta.glob('/public/v2/portrait.png')).length > 0;
+// Reuses the same portrait the cyberpunk lanyard uses, so one photo serves
+// both themes instead of each shipping its own asset.
+const PORTRAIT_PATH = '/lanyard/photo.jpg';
+const hasPortrait = Object.keys(import.meta.glob('/public/lanyard/photo.jpg')).length > 0;
 const [firstName, ...rest] = name.split(' ');
 const lastName = rest.join(' ') || firstName;
 ---
@@ -31,9 +33,7 @@ const lastName = rest.join(' ') || firstName;
 <div class="profile-card">
   <div class="profile-card__topbar font-mono">
     <span class="profile-card__pill">{tag}</span>
-    <span class="profile-card__stamp">
-      NEW<br />PRACTICE
-    </span>
+    <span class="profile-card__stamp">ON<br />AIR</span>
   </div>
 
   <div class="profile-card__outer">
@@ -43,11 +43,7 @@ const lastName = rest.join(' ') || firstName;
           hasPortrait ? (
             <img src={PORTRAIT_PATH} alt={name} />
           ) : (
-            <div class="profile-card__no-signal font-mono">
-              NO
-              <br />
-              SIGNAL
-            </div>
+            <div class="profile-card__no-signal font-mono">NO<br />SIGNAL</div>
           )
         }
       </div>
@@ -83,10 +79,9 @@ const lastName = rest.join(' ') || firstName;
 <style>
   .profile-card {
     position: relative;
-    color: var(--color-v2-black);
+    color: var(--color-bg);
   }
 
-  /* ---------- top bar ---------- */
   .profile-card__topbar {
     display: flex;
     align-items: center;
@@ -94,60 +89,44 @@ const lastName = rest.join(' ') || firstName;
     padding: 0 0.5rem 0.6rem;
   }
   .profile-card__pill {
-    border: 2px solid var(--color-v2-cream);
+    border: 2px solid var(--color-fg);
     border-radius: 999px;
     padding: 0.35rem 1rem;
     font-size: 0.65rem;
-    letter-spacing: 0.15em;
+    letter-spacing: var(--label-tracking);
     text-transform: uppercase;
-    color: var(--color-v2-cream);
+    color: var(--color-fg);
   }
   .profile-card__stamp {
     font-size: 0.6rem;
     line-height: 1.2;
     letter-spacing: 0.1em;
     text-align: right;
-    color: color-mix(in srgb, var(--color-v2-cream) 55%, transparent);
+    color: color-mix(in srgb, var(--color-fg) 55%, transparent);
   }
 
-  /* ---------- outer (cream) frame ---------- */
+  /* Outer cream frame — clipped bottom-right corner. */
   .profile-card__outer {
     position: relative;
-    background: var(--color-v2-cream);
+    background: var(--color-fg);
     padding: 1.1rem;
-    clip-path: polygon(
-      0 0,
-      100% 0,
-      100% calc(100% - 40px),
-      calc(100% - 40px) 100%,
-      0 100%
-    );
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%);
   }
 
-  /* ---------- inner (black) panel ---------- */
+  /* Inner panel — diagonal notch cut into the top edge. */
   .profile-card__inner {
     position: relative;
     display: grid;
     grid-template-columns: minmax(120px, 0.9fr) auto 1.3fr;
-    gap: 0;
-    background: var(--color-v2-ink);
+    background: var(--color-surface);
     min-height: 320px;
-    clip-path: polygon(
-      0 0,
-      40% 0,
-      46% 22px,
-      58% 22px,
-      64% 0,
-      100% 0,
-      100% 100%,
-      0 100%
-    );
+    clip-path: polygon(0 0, 40% 0, 46% 22px, 58% 22px, 64% 0, 100% 0, 100% 100%, 0 100%);
   }
 
   .profile-card__photo {
     position: relative;
     overflow: hidden;
-    background: var(--color-v2-black);
+    background: var(--color-bg);
   }
   .profile-card__photo img {
     width: 100%;
@@ -166,11 +145,11 @@ const lastName = rest.join(' ') || firstName;
     text-align: center;
     font-size: 0.65rem;
     letter-spacing: 0.2em;
-    color: color-mix(in srgb, var(--color-v2-cream) 35%, transparent);
+    color: color-mix(in srgb, var(--color-fg) 35%, transparent);
     background: repeating-linear-gradient(
       45deg,
       transparent 0 8px,
-      color-mix(in srgb, var(--color-v2-cream) 4%, transparent) 8px 16px
+      color-mix(in srgb, var(--color-fg) 4%, transparent) 8px 16px
     );
   }
 
@@ -184,21 +163,19 @@ const lastName = rest.join(' ') || firstName;
     font-size: 1.4rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-v2-red);
-    border-left: 3px solid var(--color-v2-cream);
-    border-right: 3px solid var(--color-v2-cream);
+    color: var(--color-accent);
+    border-left: var(--border-w) solid var(--color-fg);
+    border-right: var(--border-w) solid var(--color-fg);
   }
 
-  /* Owns the glow icon + quote + bar as one unit, so the glow's position is
-     always relative to the quote text itself — not the outer grid — and
-     can't drift out of alignment when the grid reflows on narrow screens. */
+  /* Owns glow + quote + bar as one unit so the glow tracks the quote text on
+     reflow instead of the outer grid. */
   .profile-card__quote-wrap {
     position: relative;
     grid-column: 3;
     align-self: center;
     padding: 1.5rem;
   }
-
   .profile-card__glow {
     position: absolute;
     top: 0;
@@ -210,44 +187,52 @@ const lastName = rest.join(' ') || firstName;
     border-radius: 999px;
     background: radial-gradient(
       circle,
-      var(--color-v2-red) 0%,
-      color-mix(in srgb, var(--color-v2-red) 60%, transparent) 55%,
+      var(--color-accent) 0%,
+      color-mix(in srgb, var(--color-accent) 60%, transparent) 55%,
       transparent 75%
     );
   }
   .profile-card__spark {
     font-size: 1.4rem;
-    color: var(--color-v2-cream);
+    color: var(--color-fg);
   }
-
   .profile-card__quote {
     padding-top: 3rem;
     font-size: 0.78rem;
     line-height: 1.9;
     letter-spacing: 0.04em;
-    color: var(--color-v2-cream);
+    color: var(--color-fg);
   }
-
   .profile-card__bar {
     display: block;
     margin-top: 1.5rem;
     height: 4px;
-    background: var(--color-v2-red);
+    background: var(--color-accent);
   }
 
-  /* ---------- registration dots ---------- */
   .reg-dot {
     position: absolute;
     height: 6px;
     width: 6px;
-    background: var(--color-v2-black);
+    background: var(--color-bg);
   }
-  .reg-dot--1 { top: 0.5rem; left: 0.5rem; }
-  .reg-dot--2 { top: 0.5rem; right: 0.5rem; }
-  .reg-dot--3 { bottom: 0.5rem; left: 0.5rem; }
-  .reg-dot--4 { bottom: 3.2rem; right: 3.5rem; }
+  .reg-dot--1 {
+    top: 0.5rem;
+    left: 0.5rem;
+  }
+  .reg-dot--2 {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+  .reg-dot--3 {
+    bottom: 0.5rem;
+    left: 0.5rem;
+  }
+  .reg-dot--4 {
+    bottom: 3.2rem;
+    right: 3.5rem;
+  }
 
-  /* ---------- bottom-right badge ---------- */
   .profile-card__badge {
     position: absolute;
     right: 0;
@@ -257,41 +242,38 @@ const lastName = rest.join(' ') || firstName;
     gap: 0.15rem;
     background: repeating-linear-gradient(
       -45deg,
-      var(--color-v2-red) 0 8px,
-      var(--color-v2-black) 8px 16px
+      var(--color-accent) 0 8px,
+      var(--color-bg) 8px 16px
     );
     padding: 0.6rem 1.6rem 0.5rem 0.9rem;
     clip-path: polygon(20px 0, 100% 0, 100% 100%, 0 100%);
   }
   .profile-card__badge-label {
     font-size: 0.55rem;
-    letter-spacing: 0.15em;
-    color: var(--color-v2-cream);
+    letter-spacing: var(--label-tracking);
+    color: var(--color-fg);
     text-transform: uppercase;
   }
   .profile-card__badge-value {
     font-size: 0.95rem;
     font-weight: 700;
     letter-spacing: 0.05em;
-    color: var(--color-v2-cream);
+    color: var(--color-fg);
   }
 
-  /* ---------- bottom watermark strip ---------- */
   .profile-card__footer {
     display: flex;
     justify-content: space-between;
     padding: 0.6rem 0.5rem 0;
     font-size: 0.6rem;
-    letter-spacing: 0.15em;
+    letter-spacing: var(--label-tracking);
     text-transform: uppercase;
-    color: color-mix(in srgb, var(--color-v2-cream) 40%, transparent);
+    color: color-mix(in srgb, var(--color-fg) 40%, transparent);
   }
 
-  /* Below 640px the 3-column layout compresses the photo/name/quote too far
-     to stay legible — stack into rows instead: photo, a horizontal name
-     bar, then the quote. The glow stays correctly placed automatically
-     since it's positioned relative to .profile-card__quote-wrap, not the
-     overall grid. */
+  /* Below 640px the 3-column split compresses past legibility — stack to
+     photo / horizontal name bar / quote. The glow stays correct because it's
+     positioned against the quote wrapper, not the grid. */
   @media (max-width: 640px) {
     .profile-card__inner {
       grid-template-columns: 1fr;
@@ -308,8 +290,8 @@ const lastName = rest.join(' ') || firstName;
       transform: none;
       border-left: none;
       border-right: none;
-      border-top: 3px solid var(--color-v2-cream);
-      border-bottom: 3px solid var(--color-v2-cream);
+      border-top: var(--border-w) solid var(--color-fg);
+      border-bottom: var(--border-w) solid var(--color-fg);
       padding: 0.6rem;
       text-align: center;
       font-size: 1.25rem;

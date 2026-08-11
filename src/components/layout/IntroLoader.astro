@@ -18,22 +18,41 @@
  * reliably from a persistent script than from a re-mounting island.
  *
  * Persisted across navigations via `transition:persist` so it never unmounts.
+ *
+ * Per-theme personality is DATA, not five cloned overlays: the structure is
+ * fixed and `LOADERS[theme]` supplies the log lines and whether the progress
+ * bar appears. Latte/Paper deliberately have no lines at all — an editorial
+ * page shouldn't pretend to boot a kernel.
  */
-import { SITE } from '@/config';
+import { SITE, LOADERS, getThemeLayout, type LoaderId } from '@/config';
+
+const layout = getThemeLayout(Astro.locals?.theme);
+const loader = LOADERS[layout.loader as LoaderId] ?? LOADERS.boot;
 ---
 
 <div id="boot" class="boot" data-state="boot" transition:persist aria-hidden="true">
   <div class="boot__inner scanlines">
-    <pre class="boot__log font-mono"><span data-line>▓ initializing kernel...</span>
-<span data-line>▓ mounting /{SITE.handle}</span>
-<span data-line>▓ syncing content collections...</span>
-<span data-line>▓ decrypting theme buffers...</span>
-<span data-line>▓ waking cursor daemon...</span>
-<span data-line>▓ establishing secure uplink ✓</span></pre>
-    <div class="boot__bar-row">
-      <div class="boot__bar"><i></i></div>
-      <span class="boot__pct font-mono" data-pct>0%</span>
-    </div>
+    {
+      loader.lines.length > 0 && (
+        <div class="boot__log font-mono">
+          {loader.lines.map((l) => (
+            <span data-line>{l}</span>
+          ))}
+        </div>
+      )
+    }
+    {
+      loader.showBar && (
+        <div class="boot__bar-row">
+          <div class="boot__bar">
+            <i />
+          </div>
+          <span class="boot__pct font-mono" data-pct>
+            0%
+          </span>
+        </div>
+      )
+    }
     <div class="boot__brand font-mono">
       <span class="text-gradient" data-brand>{SITE.name}</span><span class="boot__caret">_</span>
     </div>
@@ -153,7 +172,7 @@ import { SITE } from '@/config';
     const brandText = brand?.textContent ?? '';
 
     if (reduced) {
-      gsap.set([...lines], { opacity: 1 });
+      if (lines.length) gsap.set([...lines], { opacity: 1 });
       if (pct) pct.textContent = '100%';
       window.setTimeout(hideBoot, 180);
       return;
@@ -168,19 +187,29 @@ import { SITE } from '@/config';
         }
       },
     });
-    tl.to(
-      bar,
-      {
-        width: '100%',
-        duration: MIN_BOOT / 1000,
-        ease: 'power2.out',
-        onUpdate: function () {
-          if (pct) pct.textContent = `${Math.round(this.progress() * 100)}%`;
+    // Both the bar and the log lines are optional — a theme's loader profile
+    // can omit either (Latte/Paper show the brand alone). GSAP throws on a null
+    // target, so each tween is added only when its element actually rendered.
+    if (bar) {
+      tl.to(
+        bar,
+        {
+          width: '100%',
+          duration: MIN_BOOT / 1000,
+          ease: 'power2.out',
+          onUpdate: function () {
+            if (pct) pct.textContent = `${Math.round(this.progress() * 100)}%`;
+          },
         },
-      },
-      0
-    );
-    tl.to([...lines], { opacity: 1, stagger: MIN_BOOT / 1000 / lines.length, duration: 0.08 }, 0);
+        0
+      );
+    }
+    if (lines.length) {
+      tl.to([...lines], { opacity: 1, stagger: MIN_BOOT / 1000 / lines.length, duration: 0.08 }, 0);
+    }
+    // With neither, the timeline is empty and `onComplete` fires immediately —
+    // give it a beat so the brand scramble is still readable.
+    if (!bar && !lines.length) tl.to({}, { duration: 0.5 }, 0);
   }
 
   /** Hard, synchronous teardown — no animation, no rAF dependency. */

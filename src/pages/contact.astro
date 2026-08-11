@@ -1,4 +1,9 @@
 ---
+// On-demand rendered so the theme cookie can pick this page's layout variants.
+// A prerendered route never reaches middleware on Cloudflare, so it would
+// always render the default theme's structure.
+export const prerender = false;
+
 import BaseLayout from '@layouts/BaseLayout.astro';
 import SectionHeading from '@components/ui/SectionHeading.astro';
 import ContactForm from '@components/react/ContactForm.tsx';

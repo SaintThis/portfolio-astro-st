@@ -1,0 +1,86 @@
+---
+/**
+ * HeroEditorial — the Latte hero: a magazine opening spread.
+ *
+ * Asymmetric two-column split (text is the wide column, a standfirst rail the
+ * narrow one), a serif display headline set tight, and a drop-cap opening
+ * paragraph. No rotator scramble here on purpose — an editorial page doesn't
+ * flicker at you — so `#hero-role` is deliberately absent and the shared
+ * rotator script no-ops.
+ */
+import { SITE, AUTHOR, HERO } from '@/config';
+import Button from '@components/ui/Button.astro';
+
+const year = new Date().getFullYear();
+---
+
+<section class="py-14" data-hero-variant="editorial">
+  <!-- Issue line -->
+  <div
+    class="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3 font-mono text-[10px] uppercase tracking-[0.25em] text-fg-faint"
+    data-reveal
+    data-y="12"
+  >
+    <span>{SITE.location}</span>
+    <span>Portfolio — No. {year}</span>
+    <span>{AUTHOR.availableForWork ? 'Open to commissions' : 'Currently booked'}</span>
+  </div>
+
+  <div class="mt-10 grid gap-10 lg:grid-cols-[1.55fr_1fr] lg:gap-16">
+    <!-- Wide column: headline + drop-cap standfirst -->
+    <div data-reveal>
+      <h1 class="text-4xl leading-[1.02] sm:text-6xl lg:text-7xl">
+        {HERO.headline.lead}
+        <em class="italic text-accent">{HERO.rotatorWords[0]}</em>
+        {HERO.headline.trail}
+      </h1>
+
+      <p class="editorial-standfirst mt-8 max-w-2xl text-lg leading-relaxed text-fg-muted">
+        I'm {SITE.name}, a {SITE.role.toLowerCase()} with 2+ years {HERO.intro}
+      </p>
+
+      <div class="mt-8 flex flex-wrap gap-3">
+        {
+          HERO.actions.map((a) => (
+            <Button href={a.href} variant={a.variant} download={a.download}>
+              {a.label} {a.icon && <span aria-hidden="true">{a.icon}</span>}
+            </Button>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- Narrow rail: a contents/colophon block -->
+    <aside class="lg:border-l lg:border-border lg:pl-10" data-reveal data-delay="0.12">
+      <h2 class="font-mono text-[10px] uppercase tracking-[0.25em] text-fg-faint">In this issue</h2>
+      <ul class="mt-4 space-y-3">
+        {
+          HERO.stack.map((s, i) => (
+            <li class="flex items-baseline gap-3 border-b border-border pb-3">
+              <span class="font-mono text-[10px] text-fg-faint">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span class="text-base">{s}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </aside>
+  </div>
+</section>
+
+<style>
+  /* The drop cap is the signature of this variant. Scoped so no other theme
+     inherits it, and suppressed on small screens where a 3-line cap eats the
+     column. */
+  @media (min-width: 640px) {
+    .editorial-standfirst::first-letter {
+      float: left;
+      font-family: var(--font-display);
+      font-size: 3.6em;
+      line-height: 0.82;
+      padding-right: 0.08em;
+      color: var(--color-accent);
+    }
+  }
+</style>

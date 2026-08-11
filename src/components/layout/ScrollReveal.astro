@@ -8,9 +8,19 @@
 
   gsap.registerPlugin(ScrollTrigger);
 
+  /** Seconds from the theme's `--dur` token (authored in CSS as e.g. `0.3s`),
+   *  so a theme's reveal feel follows its motion character — Broadcast snaps,
+   *  Latte drifts — without a per-theme component. */
+  function themeDuration(fallback: number) {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue('--dur').trim();
+    const secs = raw.endsWith('ms') ? parseFloat(raw) / 1000 : parseFloat(raw);
+    return Number.isFinite(secs) && secs > 0 ? secs * 2.3 : fallback;
+  }
+
   function initReveals() {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const els = gsap.utils.toArray<HTMLElement>('[data-reveal]:not(.is-visible)');
+    const duration = themeDuration(0.7);
 
     els.forEach((el) => {
       const y = Number(el.dataset.y ?? 24);
@@ -27,7 +37,7 @@
         {
           opacity: 1,
           y: 0,
-          duration: 0.7,
+          duration,
           delay,
           ease: 'power3.out',
           scrollTrigger: { trigger: el, start: 'top 88%', once: true },

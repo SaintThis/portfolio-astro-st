@@ -16,9 +16,19 @@ import { THEMES, type ThemeId } from '@/config';
  * script (see BaseLayout); this component just syncs the store to that value
  * on mount, then drives changes.
  */
-export default function ThemeSwitcher() {
-  const theme = useThemeStore((s) => s.theme);
+interface Props {
+  /** The theme the SERVER rendered this page with (`Astro.locals.theme`).
+   *  Passed in rather than read from a cookie on mount: islands are
+   *  server-rendered too, so deriving it client-side made the first client
+   *  render disagree with the server's (React hydration error #418) and left
+   *  the trigger showing a stale label. */
+  initialTheme: ThemeId;
+}
+
+export default function ThemeSwitcher({ initialTheme }: Props) {
   const setTheme = useThemeStore((s) => s.setTheme);
+  // Local, seeded from the server value, so SSR and hydration agree exactly.
+  const [theme, setLocalTheme] = useState<ThemeId>(initialTheme);
 
   // Portal into a container that lives inside the `transition:persist`'d
   // header (see Header.astro) instead of Base UI's default (document.body,
@@ -30,10 +40,10 @@ export default function ThemeSwitcher() {
     typeof document !== 'undefined' ? document.getElementById('base-ui-portal-root') : null
   );
 
-  // Adopt whatever the no-flash script set on <html> so store === DOM.
+  // Keep the (non-persisted) store in step with the server's value once, after
+  // hydration — other islands read it, and it must not diverge from the cookie.
   useEffect(() => {
-    const current = document.documentElement.dataset.theme as ThemeId | undefined;
-    if (current && current !== theme) setTheme(current);
+    setTheme(initialTheme);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -43,7 +53,20 @@ export default function ThemeSwitcher() {
     <Select.Root
       items={items}
       value={theme}
-      onValueChange={(value) => setTheme(value as ThemeId)}
+      onValueChange={(value) => {
+        const next = value as ThemeId;
+        if (next === theme) return;
+        // Write the cookie + data-theme first…
+        setLocalTheme(next);
+        setTheme(next);
+        // …then re-render the whole document. A theme now decides the
+        // server-rendered LAYOUT (hero/nav/card variants), not just CSS
+        // variables, so swapping tokens in place would leave the old
+        // structure behind. A hard reload is the honest way to get the new
+        // markup — and it bypasses the View Transitions router, which would
+        // otherwise reuse the persisted header.
+        window.location.reload();
+      }}
     >
       <Select.Trigger
         aria-label="Change theme"

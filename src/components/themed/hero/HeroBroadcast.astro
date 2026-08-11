@@ -1,0 +1,81 @@
+---
+/**
+ * HeroBroadcast — the Broadcast theme's hero, ported from the former /v2 home.
+ *
+ * A print-poster opening: red station eyebrow, a giant uppercase display
+ * headline set on tight leading, and the ProfileCard as the dominant visual
+ * artifact (it replaces cyberpunk's 3D lanyard — flat CSS, no WebGL).
+ */
+import { SITE, AUTHOR, HERO } from '@/config';
+import Button from '@components/ui/Button.astro';
+import ProfileCard from './ProfileCard.astro';
+
+const version = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+---
+
+<section class="py-12" data-hero-variant="broadcast">
+  <p
+    class="font-mono text-[11px] uppercase tracking-[var(--label-tracking)] text-accent"
+    data-reveal
+    data-y="12"
+  >
+    {HERO.broadcast.eyebrow} — {SITE.location}
+  </p>
+
+  <h1
+    class="mt-4 font-display text-5xl uppercase leading-[0.95] sm:text-6xl lg:text-7xl"
+    data-reveal
+  >
+    {HERO.headline.lead}
+    <span class="text-accent">{HERO.rotatorWords[0]}</span>
+    <span class="text-accent-2">on air.</span>
+  </h1>
+
+  <div class="mt-10 grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+    <div data-reveal data-delay="0.1">
+      <p class="max-w-xl font-mono text-sm leading-relaxed text-fg-muted">
+        {SITE.name} — {SITE.role}. 2+ years {HERO.intro}
+      </p>
+
+      <div class="mt-6 flex flex-wrap gap-2">
+        {
+          HERO.stack.map((s) => (
+            <span class="border-2 border-border px-2 py-1 font-mono text-[10px] uppercase tracking-[var(--label-tracking)]">
+              {s}
+            </span>
+          ))
+        }
+      </div>
+
+      {
+        AUTHOR.availableForWork && (
+          <p class="mt-6 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[var(--label-tracking)]">
+            <span class="inline-block h-2 w-2 bg-accent animate-[blink_1s_step-end_infinite]" />
+            Currently open to opportunities
+          </p>
+        )
+      }
+
+      <div class="mt-8 flex flex-wrap gap-3">
+        {
+          HERO.actions.map((a) => (
+            <Button href={a.href} variant={a.variant} download={a.download}>
+              {a.label} {a.icon && <span aria-hidden="true">{a.icon}</span>}
+            </Button>
+          ))
+        }
+      </div>
+    </div>
+
+    <div data-reveal data-delay="0.18">
+      <ProfileCard
+        name={SITE.name}
+        tag={SITE.role}
+        quote={HERO.broadcast.quote}
+        statLabel={HERO.broadcast.statLabel}
+        statValue={HERO.broadcast.statValue}
+        version={version}
+      />
+    </div>
+  </div>
+</section>

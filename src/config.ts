@@ -60,18 +60,156 @@ export const SOCIALS = [
  * src/styles/themes.css and it just works — no code changes needed.
  */
 export const THEMES = [
-  { id: 'cyberpunk', label: 'Cyberpunk', hint: 'Neon magenta + cyan, hard edges' },
-  { id: 'aurora', label: 'Aurora', hint: 'Glassy indigo, soft light-leaks' },
-  { id: 'nord', label: 'Nord', hint: 'Muted arctic blue, dot grid' },
-  { id: 'mono', label: 'Mono', hint: 'Brutalist black + white, no radius' },
-  { id: 'matrix', label: 'Matrix', hint: 'Terminal green, monospace display' },
-  { id: 'synthwave', label: 'Synthwave', hint: 'Sunset purple + orange wash' },
-  { id: 'latte', label: 'Latte', hint: 'Warm editorial light, serif display' },
-  { id: 'paper', label: 'Paper', hint: 'Light, high-contrast day mode' },
+  {
+    id: 'cyberpunk',
+    label: 'Cyberpunk',
+    hint: 'Terminal HUD — neon on void, 3D lanyard',
+    layout: { hero: 'terminal', nav: 'bar', card: 'standard', loader: 'boot', lanyard: true },
+  },
+  {
+    id: 'matrix',
+    label: 'Matrix',
+    hint: 'Dense mono data-grid, vertical rail nav',
+    layout: { hero: 'datagrid', nav: 'rail', card: 'standard', loader: 'stream', lanyard: false },
+  },
+  {
+    id: 'latte',
+    label: 'Latte',
+    hint: 'Editorial magazine — serif masthead, drop-cap',
+    layout: {
+      hero: 'editorial',
+      nav: 'masthead',
+      card: 'standard',
+      loader: 'fade',
+      lanyard: false,
+    },
+  },
+  {
+    id: 'paper',
+    label: 'Paper',
+    hint: 'Swiss print grid — numbered, hairline rules',
+    layout: { hero: 'swiss', nav: 'bar', card: 'standard', loader: 'fade', lanyard: false },
+  },
+  {
+    id: 'broadcast',
+    label: 'Broadcast',
+    hint: 'Bauhaus poster — clipped panels, signal red',
+    layout: { hero: 'broadcast', nav: 'block', card: 'panel', loader: 'signal', lanyard: false },
+  },
 ] as const;
 
 export type ThemeId = (typeof THEMES)[number]['id'];
 export const DEFAULT_THEME: ThemeId = 'cyberpunk';
+
+/** The layout profile for a theme — which structural variant each surface uses. */
+export type ThemeLayout = (typeof THEMES)[number]['layout'];
+
+/**
+ * Resolve a theme's layout profile.
+ *
+ * Deliberately total: an unknown id (a stale cookie, a removed theme) falls
+ * back to the default rather than returning undefined, because callers use the
+ * result to pick a component — `undefined` there would render nothing at all.
+ */
+export function getThemeLayout(id: string | undefined): ThemeLayout {
+  const found = THEMES.find((t) => t.id === id);
+  return (found ?? THEMES.find((t) => t.id === DEFAULT_THEME)!).layout;
+}
+
+/**
+ * Breakpoint at which the desktop nav replaces the mobile drawer. Exported so
+ * `Header` variants and `Sidebar.tsx` can never disagree — they used to hold
+ * `lg:flex` and `lg:hidden` independently, and v2's header used `sm:` instead,
+ * which would have shown both at once.
+ */
+export const NAV_BREAKPOINT = 'lg' as const;
+
+/**
+ * Hero content, lifted out of the component so every theme's hero variant
+ * renders the SAME words in a different structure. Five variants each holding
+ * their own copy would be five forks of the homepage, drifting apart the first
+ * time a headline changed.
+ */
+/** One call-to-action in the hero. `icon`/`download` are optional on every
+ *  action so a variant can map the list without narrowing per-member. */
+export interface HeroAction {
+  label: string;
+  href: string;
+  variant: 'primary' | 'outline' | 'ghost';
+  icon?: string;
+  download?: string;
+}
+
+export const HERO = {
+  /** Rendered as three parts so a variant can stack, inline, or split them. */
+  headline: { lead: 'Building', trail: 'that ship & scale.' },
+  /** Cycled by the scramble effect in the hero's shared script. */
+  rotatorWords: ['fullstack systems', 'microfrontends', 'Rust services', 'clean interfaces'],
+  intro:
+    'turning messy requirements into fast, maintainable products. Frontend craft, backend depth, clean architecture.',
+  stack: ['React', 'Next.js', 'TypeScript', 'Django', 'Node.js', 'Flutter'],
+  actions: [
+    { label: 'View Work', href: '/projects', variant: 'primary', icon: '→' },
+    { label: 'Get in touch', href: '/contact', variant: 'outline' },
+    {
+      label: 'Resume',
+      href: '/resume.pdf',
+      variant: 'ghost',
+      icon: '↓',
+      download: 'Saint-Rabor-Resume.pdf',
+    },
+  ] as HeroAction[],
+  /** Broadcast's poster hero uses these; kept here for the same reason. */
+  broadcast: {
+    eyebrow: 'New Eridu Broadcasting',
+    quote: 'Ship the thing. Then make it fast.',
+    statLabel: 'EXPERIENCE',
+    statValue: '2+ / YRS',
+  },
+} as const;
+
+/** Longest rotator word — reserved as a `ch` min-width so the scramble can't
+ *  resize its own box mid-animation and nudge the paragraph below it. */
+export const ROTATOR_MAX_CH = Math.max(...HERO.rotatorWords.map((w) => w.length));
+
+/**
+ * Boot-loader personality per theme. Data, not five cloned overlay components —
+ * the overlay is one structure whose *content* and pacing change.
+ */
+export const LOADERS = {
+  boot: {
+    lines: [
+      '▓ initializing kernel...',
+      '▓ mounting /@saintrabor',
+      '▓ syncing content collections...',
+      '▓ decrypting theme buffers...',
+      '▓ waking cursor daemon...',
+      '▓ establishing secure uplink ✓',
+    ],
+    showBar: true,
+    showBrand: true,
+  },
+  stream: {
+    lines: [
+      '$ ./connect --host saintrabor',
+      '$ handshake ok',
+      '$ streaming payload',
+      '$ 0x1F3A verified',
+      '$ ready',
+    ],
+    showBar: true,
+    showBrand: true,
+  },
+  /** Editorial/print themes don't perform a boot sequence — just a name. */
+  fade: { lines: [] as string[], showBar: false, showBrand: true },
+  signal: {
+    lines: ['◼ CH.01 — SIGNAL ACQUIRED', '◼ ON AIR'],
+    showBar: true,
+    showBrand: true,
+  },
+} as const;
+
+export type LoaderId = keyof typeof LOADERS;
 
 /** Feature flags — flip animations/effects off globally for debugging or a11y. */
 export const FEATURES = {

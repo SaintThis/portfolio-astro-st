@@ -1,0 +1,79 @@
+---
+/**
+ * HeroSwiss — the Paper hero: an International-Style grid.
+ *
+ * A visible 12-column grid, numbered sections, hairline rules, and type doing
+ * all the work — no glow, no gradient, no ornament. The headline is set very
+ * large and flush-left across 8 columns; metadata occupies the remaining 4 as
+ * a numbered index.
+ */
+import { SITE, AUTHOR, HERO } from '@/config';
+import Button from '@components/ui/Button.astro';
+
+const meta = [
+  { n: '01', k: 'Role', v: SITE.role },
+  { n: '02', k: 'Based', v: SITE.location },
+  { n: '03', k: 'Status', v: AUTHOR.availableForWork ? 'Available' : 'Booked' },
+];
+---
+
+<section class="py-16" data-hero-variant="swiss">
+  <div class="border-t border-border pt-6" data-reveal data-y="12">
+    <span class="font-mono text-[10px] uppercase tracking-[0.3em] text-fg-faint">
+      {SITE.name} — Portfolio
+    </span>
+  </div>
+
+  <div class="mt-10 grid gap-x-6 gap-y-12 lg:grid-cols-12">
+    <!-- Headline: 8 of 12 -->
+    <div class="lg:col-span-8" data-reveal>
+      <h1 class="text-5xl leading-[0.95] tracking-[-0.03em] sm:text-7xl lg:text-8xl">
+        {HERO.headline.lead}<br />
+        <span class="text-accent">{HERO.rotatorWords[0]}</span><br />
+        {HERO.headline.trail}
+      </h1>
+    </div>
+
+    <!-- Numbered index: 4 of 12 -->
+    <div class="lg:col-span-4" data-reveal data-delay="0.12">
+      <dl class="space-y-0">
+        {
+          meta.map((m) => (
+            <div class="grid grid-cols-[2rem_1fr] gap-3 border-t border-border py-3">
+              <dt class="font-mono text-[10px] text-fg-faint">{m.n}</dt>
+              <dd>
+                <span class="block font-mono text-[10px] uppercase tracking-[0.2em] text-fg-faint">
+                  {m.k}
+                </span>
+                <span class="mt-0.5 block text-sm">{m.v}</span>
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+
+    <!-- Body: offset into the grid, classic Swiss asymmetry -->
+    <div class="lg:col-span-6 lg:col-start-1" data-reveal data-delay="0.18">
+      <p class="max-w-prose text-lg leading-relaxed text-fg-muted">
+        2+ years {HERO.intro}
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        {
+          HERO.actions.map((a) => (
+            <Button href={a.href} variant={a.variant} download={a.download}>
+              {a.label} {a.icon && <span aria-hidden="true">{a.icon}</span>}
+            </Button>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="lg:col-span-4 lg:col-start-9" data-reveal data-delay="0.24">
+      <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-fg-faint">Stack</span>
+      <ul class="mt-3 space-y-1.5">
+        {HERO.stack.map((s) => <li class="border-b border-border pb-1.5 text-sm">{s}</li>)}
+      </ul>
+    </div>
+  </div>
+</section>

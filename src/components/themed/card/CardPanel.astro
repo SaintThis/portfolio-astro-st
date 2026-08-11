@@ -1,0 +1,165 @@
+---
+/**
+ * CardPanel — the Broadcast project card, ported from the former /v2 `Panel`.
+ *
+ * Structurally different from the standard card (which is why it earns its own
+ * file rather than a class table): a thick flat border with one corner CUT via
+ * clip-path, a protruding tab label straddling the top edge, and a
+ * cursor-following spotlight instead of an ambient glow.
+ *
+ * Colours are semantic tokens now, not the old `--color-v2-*` names.
+ */
+import type { Project } from '@lib/api/types';
+import { formatDate } from '@lib/utils';
+
+interface Props {
+  project: Project;
+  /** Rotated by the caller so a grid of panels doesn't cut the same corner. */
+  corner?: 'tl' | 'tr' | 'bl' | 'br';
+}
+const { project, corner = 'tr' } = Astro.props;
+const href = project.links.caseStudy ?? `/projects/${project.slug}`;
+---
+
+<a
+  href={href}
+  data-cursor="hover"
+  data-cursor-label="View"
+  class:list={['panel', `panel--corner-${corner}`, 'group block h-full']}
+>
+  <span class="panel__tab font-mono">{project.category}</span>
+  <div class="panel__spotlight" aria-hidden="true"></div>
+
+  <div class="panel__body flex h-full flex-col">
+    <div class="flex items-center justify-between font-mono text-[10px] uppercase tracking-[var(--label-tracking)]">
+      <span class="text-accent-2">{project.status}</span>
+      <span class="text-fg-faint">{formatDate(project.date, { year: 'numeric', month: 'short' })}</span>
+    </div>
+
+    <h3 class="mt-3 font-display text-lg uppercase leading-tight">{project.title}</h3>
+    <p class="mt-2 font-mono text-xs leading-relaxed text-fg-muted">{project.summary}</p>
+
+    <div class="mt-auto flex flex-wrap gap-1.5 pt-4">
+      {
+        project.tags.slice(0, 3).map((t) => (
+          <span class="border-2 border-border px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[var(--label-tracking)]">
+            {t}
+          </span>
+        ))
+      }
+    </div>
+  </div>
+</a>
+
+<style>
+  .panel {
+    position: relative;
+    border: var(--border-w) solid var(--color-border);
+    background: var(--color-surface);
+    --spotlight-x: 50%;
+    --spotlight-y: 50%;
+    transition:
+      box-shadow var(--dur),
+      border-color var(--dur);
+  }
+  .panel:hover,
+  .panel:focus-within {
+    border-color: var(--color-accent);
+    box-shadow:
+      0 0 0 1px var(--color-accent),
+      0 0 22px -4px var(--color-accent);
+  }
+
+  /* Tight cursor-following spotlight — a restrained echo of a backlit poster,
+     deliberately not the ambient neon haze the cyberpunk theme uses. */
+  .panel__spotlight {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    background: radial-gradient(
+      circle 200px at var(--spotlight-x) var(--spotlight-y),
+      color-mix(in srgb, var(--color-accent) 18%, transparent),
+      transparent 70%
+    );
+  }
+  .panel:hover .panel__spotlight {
+    opacity: 1;
+  }
+
+  .panel--corner-tr {
+    clip-path: polygon(
+      0 0,
+      calc(100% - var(--corner-cut)) 0,
+      100% var(--corner-cut),
+      100% 100%,
+      0 100%
+    );
+  }
+  .panel--corner-tl {
+    clip-path: polygon(var(--corner-cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--corner-cut));
+  }
+  .panel--corner-br {
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - var(--corner-cut)),
+      calc(100% - var(--corner-cut)) 100%,
+      0 100%
+    );
+  }
+  .panel--corner-bl {
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% 100%,
+      var(--corner-cut) 100%,
+      0 calc(100% - var(--corner-cut))
+    );
+  }
+
+  .panel__tab {
+    position: absolute;
+    top: -1px;
+    left: 20px;
+    transform: translateY(-100%);
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: var(--label-tracking);
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border: var(--border-w) solid var(--color-border);
+    border-bottom: none;
+    white-space: nowrap;
+  }
+
+  .panel__body {
+    padding: 1.5rem;
+  }
+</style>
+
+<script>
+  // Cursor-tracking spotlight. Reduced-motion users keep the static border
+  // glow (a state change, not motion); only the cursor-follow is skipped.
+  function initPanelSpotlights() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    document.querySelectorAll<HTMLElement>('.panel').forEach((panel) => {
+      if (panel.dataset.spotlightBound) return;
+      panel.dataset.spotlightBound = 'true';
+      panel.addEventListener(
+        'pointermove',
+        (e) => {
+          const r = panel.getBoundingClientRect();
+          panel.style.setProperty('--spotlight-x', `${e.clientX - r.left}px`);
+          panel.style.setProperty('--spotlight-y', `${e.clientY - r.top}px`);
+        },
+        { passive: true }
+      );
+    });
+  }
+  document.addEventListener('astro:page-load', initPanelSpotlights);
+</script>

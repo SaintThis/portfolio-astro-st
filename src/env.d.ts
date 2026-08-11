@@ -18,6 +18,9 @@ declare namespace App {
   interface Locals {
     requestId: string;
     startedAt: number;
+    /** Active theme for THIS request, resolved from the `theme` cookie and
+     *  validated against the registry. Drives which layout variants render. */
+    theme: import('@/config').ThemeId;
     // user?: { id: string; name: string } | null;
   }
 }

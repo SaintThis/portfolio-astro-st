@@ -1,0 +1,93 @@
+---
+/**
+ * NavBar — horizontal bar: wordmark left, links right.
+ *
+ * Serves three themes through a class table rather than three near-identical
+ * files (the same pattern `Button.astro` uses for its variants):
+ *   cyberpunk → translucent blurred bar, hairline rule
+ *   paper     → opaque, hairline rule, no blur
+ *   broadcast → opaque, thick cream rule, NOT fixed (a poster doesn't float)
+ *
+ * Height comes from `--header-h` so a taller bar can't desync from the hero's
+ * viewport math (that used to be a hardcoded `4rem` in two files).
+ */
+import { NAV_LINKS, SITE, NAV_BREAKPOINT } from '@/config';
+import ThemeSwitcher from '@components/react/ThemeSwitcher.tsx';
+import Sidebar from '@components/react/Sidebar.tsx';
+import { DEFAULT_THEME } from '@/config';
+
+// Server-resolved theme, handed to the switcher so its SSR and hydrated
+// renders agree (see the Props comment in ThemeSwitcher).
+const activeTheme = Astro.locals?.theme ?? DEFAULT_THEME;
+
+interface Props {
+  /** 'bar' = floating translucent chrome; 'block' = flat opaque poster bar. */
+  mode?: 'bar' | 'block';
+}
+const { mode = 'bar' } = Astro.props;
+
+const pathname = Astro.url.pathname;
+const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
+
+const shell =
+  mode === 'block'
+    ? 'sticky top-0 z-40 border-b-[var(--border-w)] border-border bg-bg'
+    : 'nav-blur fixed inset-x-0 top-0 z-40 border-b border-border/60 bg-bg/70';
+---
+
+<header class={shell} transition:persist>
+  <div
+    class="mx-auto flex max-w-6xl items-center justify-between px-5"
+    style="height: var(--header-h)"
+  >
+    <a href="/" class="group flex items-center gap-2 font-mono font-bold" data-cursor="hover">
+      {
+        mode === 'block' ? (
+          <span class="font-display text-lg uppercase tracking-tight">
+            {SITE.name.split(' ')[0]}
+            <span class="text-accent">.</span>
+          </span>
+        ) : (
+          <>
+            <span class="text-accent-2">&gt;</span>
+            <span class="tracking-tight">{SITE.name.split(' ')[0]}</span>
+            <span class="text-accent animate-[blink_1.2s_step-end_infinite]">_</span>
+          </>
+        )
+      }
+    </a>
+
+    <nav class:list={['hidden items-center gap-1', `${NAV_BREAKPOINT}:flex`]} aria-label="Primary">
+      {
+        NAV_LINKS.map((link) => (
+          <a
+            href={link.href}
+            data-cursor="hover"
+            data-nav-link
+            aria-current={isActive(link.href) ? 'page' : undefined}
+            class:list={[
+              'nav-link rounded-(--radius-box) px-3 py-1.5 font-mono text-sm',
+              mode === 'block' && 'uppercase tracking-[var(--label-tracking)] text-xs',
+            ]}
+          >
+            {mode === 'block' ? (
+              link.label
+            ) : (
+              <>
+                <span class="text-fg-faint">/</span>
+                {link.label.toLowerCase()}
+              </>
+            )}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="flex items-center gap-3">
+      <ThemeSwitcher client:idle initialTheme={activeTheme} />
+      <Sidebar client:idle />
+    </div>
+  </div>
+</header>
+{/* Spacer only for the fixed variant — a sticky/static bar takes its own space. */}
+{mode === 'bar' && <div style="height: var(--header-h)" aria-hidden="true" />}

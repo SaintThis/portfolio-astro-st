@@ -1,0 +1,99 @@
+---
+/**
+ * NavRail — the Matrix nav: a fixed vertical rail down the left edge.
+ *
+ * The genuinely structural variant. Above the nav breakpoint it's a column
+ * pinned to the viewport's left side with the wordmark rotated up its length,
+ * reading like a terminal's gutter. Below that breakpoint it degrades to a
+ * normal top bar, because a 200px rail on a phone is just a wall.
+ *
+ * `BaseLayout` insets `<main>` by `--rail-w` for this variant only (see the
+ * `nav === 'rail'` branch there) — the rail is `fixed`, so it takes no flow
+ * space of its own.
+ */
+import { NAV_LINKS, SITE, NAV_BREAKPOINT } from '@/config';
+import ThemeSwitcher from '@components/react/ThemeSwitcher.tsx';
+import Sidebar from '@components/react/Sidebar.tsx';
+import { DEFAULT_THEME } from '@/config';
+
+// Server-resolved theme, handed to the switcher so its SSR and hydrated
+// renders agree (see the Props comment in ThemeSwitcher).
+const activeTheme = Astro.locals?.theme ?? DEFAULT_THEME;
+
+const pathname = Astro.url.pathname;
+const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
+---
+
+<!-- Desktop: vertical rail -->
+<header
+  class:list={['nav-rail hidden', `${NAV_BREAKPOINT}:flex`]}
+  transition:persist
+  aria-label="Primary"
+>
+  <a href="/" class="nav-rail__mark" data-cursor="hover">
+    <span class="text-accent">&gt;</span>{SITE.name.split(' ')[0]}<span class="text-accent">_</span>
+  </a>
+
+  <nav class="flex flex-1 flex-col gap-1" aria-label="Primary">
+    {
+      NAV_LINKS.map((link, i) => (
+        <a
+          href={link.href}
+          data-cursor="hover"
+          data-nav-link
+          aria-current={isActive(link.href) ? 'page' : undefined}
+          class="nav-link flex items-baseline gap-2 px-3 py-1.5 font-mono text-sm"
+        >
+          <span class="text-fg-faint text-[10px]">{String(i).padStart(2, '0')}</span>
+          {link.label.toLowerCase()}
+        </a>
+      ))
+    }
+  </nav>
+
+  <div class="flex flex-col gap-3 px-3">
+    <ThemeSwitcher client:idle initialTheme={activeTheme} />
+  </div>
+</header>
+
+<!-- Mobile: the rail collapses to a conventional bar -->
+<header
+  class:list={[
+    'sticky top-0 z-40 border-b border-border bg-bg',
+    `${NAV_BREAKPOINT}:hidden`,
+  ]}
+  transition:persist
+>
+  <div
+    class="mx-auto flex max-w-6xl items-center justify-between px-5"
+    style="height: var(--header-h)"
+  >
+    <a href="/" class="font-mono font-bold" data-cursor="hover">
+      <span class="text-accent">&gt;</span>{SITE.name.split(' ')[0]}<span class="text-accent">_</span>
+    </a>
+    <div class="flex items-center gap-3">
+      <ThemeSwitcher client:idle initialTheme={activeTheme} />
+      <Sidebar client:idle />
+    </div>
+  </div>
+</header>
+
+<style>
+  .nav-rail {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: var(--rail-w, 13rem);
+    z-index: 40;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    border-right: var(--border-w) solid var(--color-border);
+    background: var(--color-bg);
+  }
+  .nav-rail__mark {
+    padding: 0 0.75rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+</style>

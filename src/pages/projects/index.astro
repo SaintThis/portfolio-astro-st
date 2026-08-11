@@ -96,7 +96,7 @@ const pageDescription = activeCategory
       {
         projects.map((p, i) => (
           <Reveal delay={(i % 3) * 0.06} class="h-full" data-category={p.category}>
-            <ProjectCard project={p} />
+            <ProjectCard project={p} index={i} />
           </Reveal>
         ))
       }

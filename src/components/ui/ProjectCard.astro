@@ -1,68 +1,40 @@
 ---
+/**
+ * ProjectCard — a dispatcher, not a component.
+ *
+ * Keeps its original `project: Project` prop and its original path, so every
+ * call site (`FeaturedWork`, `projects/index`, the "More work" rail) is
+ * untouched by the variant system.
+ *
+ * Only two card structures exist on purpose: the standard card (themed by
+ * tokens) and Broadcast's clipped panel. Cyberpunk/matrix/latte/paper differ
+ * in border weight, radius, glow, type and label case — all token work, none
+ * of which justifies its own file or the CSS every extra import would ship to
+ * every page.
+ */
 import type { Project } from '@lib/api/types';
-import Tag from '@components/ui/Tag.astro';
-import { formatDate } from '@lib/utils';
+import { getThemeLayout } from '@/config';
+import CardStandard from '@components/themed/card/CardStandard.astro';
+import CardPanel from '@components/themed/card/CardPanel.astro';
 
 interface Props {
   project: Project;
+  /** Index in a grid — Broadcast rotates which corner each panel cuts. */
+  index?: number;
 }
-const { project } = Astro.props;
-const href = project.links.caseStudy ?? `/projects/${project.slug}`;
+const { project, index = 0 } = Astro.props;
 
-const statusMap = {
-  live: { label: 'LIVE', color: 'text-success' },
-  wip: { label: 'WIP', color: 'text-warning' },
-  archived: { label: 'ARCHIVED', color: 'text-fg-faint' },
-};
-const status = statusMap[project.status];
+const layout = getThemeLayout(Astro.locals?.theme);
+const CORNERS = ['tr', 'tl', 'br', 'bl'] as const;
+// The bracket flourish suits the technical themes; an editorial/print card
+// wants a clean corner.
+const bracket = layout.hero === 'terminal' || layout.hero === 'datagrid';
 ---
 
-<a
-  href={href}
-  data-cursor="hover"
-  data-cursor-label="View"
-  class="group relative flex h-full flex-col overflow-hidden rounded-[var(--radius-box)] border border-border bg-surface p-4 transition-all duration-300 hover:border-accent/60 hover:box-glow sm:p-5"
->
-  <!-- accent corner bracket -->
-  <span
-    class="absolute right-0 top-0 h-6 w-6 border-r-2 border-t-2 border-accent/0 transition-colors duration-300 group-hover:border-accent"
-  ></span>
-
-  <div class="mb-3 flex items-center justify-between">
-    <span class="font-mono text-[11px] tracking-widest text-fg-faint">
-      {project.category.toUpperCase()}
-    </span>
-    <span class:list={['font-mono text-[11px] tracking-widest', status.color]}>
-      ● {status.label}
-    </span>
-  </div>
-
-  <h3 class="text-lg font-bold transition-colors group-hover:text-accent sm:text-xl">
-    {project.title}
-  </h3>
-  <p class="mt-2 text-sm text-fg-muted">{project.summary}</p>
-
-  {
-    project.metrics && (
-      <div class="mt-4 flex gap-4 sm:gap-5">
-        {project.metrics.map((m) => (
-          <div>
-            <div class="font-mono text-base font-bold text-accent-2 sm:text-lg">{m.value}</div>
-            <div class="text-[11px] text-fg-faint">{m.label}</div>
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  <div class="mt-4 flex flex-wrap gap-1.5">
-    {project.tags.slice(0, 4).map((t) => <Tag>{t}</Tag>)}
-  </div>
-
-  <div
-    class="mt-auto flex items-center justify-between border-t border-border pt-3 font-mono text-[11px] text-fg-faint"
-  >
-    <span>{formatDate(project.date, { year: 'numeric', month: 'short' })}</span>
-    <span class="text-accent-2 transition-transform group-hover:translate-x-1">→</span>
-  </div>
-</a>
+{
+  layout.card === 'panel' ? (
+    <CardPanel project={project} corner={CORNERS[index % CORNERS.length]} />
+  ) : (
+    <CardStandard project={project} bracket={bracket} />
+  )
+}

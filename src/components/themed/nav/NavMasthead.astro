@@ -1,0 +1,67 @@
+---
+/**
+ * NavMasthead — the editorial (Latte) nav.
+ *
+ * Structurally different from a bar, not just restyled: the wordmark is a
+ * centred serif masthead on its own line, with the links centred beneath it
+ * and a hairline rule closing the block — the way a magazine sets its
+ * front-matter. Static (scrolls away) because a masthead that follows you
+ * down the page reads as an app, not a publication.
+ */
+import { NAV_LINKS, SITE, NAV_BREAKPOINT } from '@/config';
+import ThemeSwitcher from '@components/react/ThemeSwitcher.tsx';
+import Sidebar from '@components/react/Sidebar.tsx';
+import { DEFAULT_THEME } from '@/config';
+
+// Server-resolved theme, handed to the switcher so its SSR and hydrated
+// renders agree (see the Props comment in ThemeSwitcher).
+const activeTheme = Astro.locals?.theme ?? DEFAULT_THEME;
+
+const pathname = Astro.url.pathname;
+const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
+---
+
+<header class="border-b border-border bg-bg" transition:persist>
+  <div class="mx-auto max-w-6xl px-5">
+    <!-- Row 1: controls float right of a centred masthead. -->
+    <div class="relative flex items-center justify-center" style="height: var(--header-h)">
+      <a href="/" class="text-center" data-cursor="hover">
+        <span class="block font-display text-2xl leading-none tracking-[-0.02em] sm:text-3xl">
+          {SITE.name}
+        </span>
+        <span
+          class="mt-1 block font-mono text-[10px] uppercase tracking-[0.3em] text-fg-faint"
+          >{SITE.role}</span
+        >
+      </a>
+
+      <div class="absolute right-0 flex items-center gap-3">
+        <ThemeSwitcher client:idle initialTheme={activeTheme} />
+        <Sidebar client:idle />
+      </div>
+    </div>
+
+    <!-- Row 2: centred link rail, hairline above. -->
+    <nav
+      class:list={[
+        'hidden justify-center gap-8 border-t border-border py-3',
+        `${NAV_BREAKPOINT}:flex`,
+      ]}
+      aria-label="Primary"
+    >
+      {
+        NAV_LINKS.map((link) => (
+          <a
+            href={link.href}
+            data-cursor="hover"
+            data-nav-link
+            aria-current={isActive(link.href) ? 'page' : undefined}
+            class="nav-link font-mono text-[11px] uppercase tracking-[0.2em]"
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>

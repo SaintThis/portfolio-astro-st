@@ -1,0 +1,97 @@
+---
+/**
+ * HeroTerminal — the Cyberpunk hero: a terminal HUD.
+ *
+ * Left-aligned, near-full-viewport, with the scrambling role rotator and the
+ * 3D lanyard hanging in the top-right.
+ *
+ * This is the ONLY file that imports `Lanyard`. That's the gate: `Lanyard.tsx`
+ * calls `useGLTF.preload()` at module scope, so the 2.4 MB `card.glb` starts
+ * downloading the moment its chunk evaluates — a runtime `null` return would
+ * still pay for it. Astro only emits hydration scripts for islands it actually
+ * renders, so a theme whose hero variant never imports this genuinely never
+ * requests three.js.
+ */
+import { SITE, AUTHOR, HERO, ROTATOR_MAX_CH, FEATURES } from '@/config';
+import Button from '@components/ui/Button.astro';
+import Tag from '@components/ui/Tag.astro';
+import Lanyard from '@components/react/Lanyard.tsx';
+import Skeleton from '@components/ui/Skeleton.astro';
+
+const PHOTO_PATH = '/lanyard/photo.jpg';
+const hasPhoto = Object.keys(import.meta.glob('/public/lanyard/photo.jpg')).length > 0;
+---
+
+<section
+  class="relative flex flex-col justify-center py-16"
+  style="min-height: calc(100dvh - var(--header-h))"
+  data-hero-variant="terminal"
+>
+  <p class="kicker mb-5 flex items-center gap-2" data-reveal data-y="12">
+    <span class="inline-block h-1.5 w-1.5 rounded-full bg-success animate-pulse"></span>
+    {AUTHOR.availableForWork ? 'Open to opportunities' : 'Currently heads-down'} · {SITE.location}
+  </p>
+
+  <h1
+    class="max-w-4xl text-4xl font-extrabold leading-[1.05] sm:text-5xl md:text-7xl xl:text-8xl"
+    data-reveal
+  >
+    <span class="block">{HERO.headline.lead}</span>
+    <span
+      class="inline-block whitespace-nowrap font-mono text-gradient text-glow"
+      id="hero-role"
+      style={`min-width: ${ROTATOR_MAX_CH}ch`}
+    >
+      {HERO.rotatorWords[0]}
+    </span>
+    <span class="block">{HERO.headline.trail}</span>
+  </h1>
+
+  <p
+    class="mt-7 max-w-xl text-base text-fg-muted sm:text-lg lg:max-w-2xl lg:text-xl"
+    data-reveal
+    data-delay="0.1"
+  >
+    I'm <span class="font-semibold text-fg">{SITE.name}</span> — a {SITE.role.toLowerCase()} with 2+
+    years {HERO.intro}
+  </p>
+
+  <div class="mt-8 flex flex-wrap gap-3" data-reveal data-delay="0.2">
+    {
+      HERO.actions.map((a) => (
+        <Button href={a.href} variant={a.variant} download={a.download}>
+          {a.label} {a.icon && <span aria-hidden="true">{a.icon}</span>}
+        </Button>
+      ))
+    }
+  </div>
+
+  <div class="mt-10 flex flex-wrap items-center gap-2" data-reveal data-delay="0.3">
+    <span class="font-mono text-xs text-fg-faint">stack:</span>
+    {HERO.stack.map((s) => <Tag>{s}</Tag>)}
+  </div>
+
+  {
+    FEATURES.heroLanyard && (
+      <div
+        class="pointer-events-none absolute inset-x-0 top-0 z-10 hidden h-[600px] lg:block"
+        data-lanyard-slot
+      >
+        <div
+          class="lanyard-skeleton absolute right-[12%] top-[46%] w-[190px] -translate-y-1/2"
+          data-lanyard-skeleton
+        >
+          <Skeleton class="h-[260px] w-full opacity-40" />
+        </div>
+        <Lanyard
+          client:media="(min-width: 1024px)"
+          className="h-full w-full"
+          frontImage={hasPhoto ? PHOTO_PATH : null}
+          position={[0, 0, 18]}
+          anchorPosition={[3.4, 4.5, 2]}
+          ropeLength={1}
+        />
+      </div>
+    )
+  }
+</section>

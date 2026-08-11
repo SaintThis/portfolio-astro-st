@@ -1,148 +1,48 @@
 ---
-import { SITE, AUTHOR, FEATURES } from '@/config';
-import Button from '@components/ui/Button.astro';
-import Tag from '@components/ui/Tag.astro';
-import Lanyard from '@components/react/Lanyard.tsx';
-import Skeleton from '@components/ui/Skeleton.astro';
+/**
+ * Hero — a dispatcher, not a component.
+ *
+ * Picks the hero variant for the active theme. Stays at this path so
+ * `src/pages/index.astro` never changes.
+ *
+ * The rotator's client script lives HERE rather than in each variant: Astro
+ * hoists a component's `<script>` into the page bundle from the static module
+ * graph, so five variants with five copies would ship five scripts to every
+ * visitor. One script that no-ops when `#hero-role` is absent costs nothing on
+ * the themes that don't animate a headline (editorial, swiss, broadcast).
+ */
+import { getThemeLayout } from '@/config';
+import HeroTerminal from '@components/themed/hero/HeroTerminal.astro';
+import HeroDataGrid from '@components/themed/hero/HeroDataGrid.astro';
+import HeroEditorial from '@components/themed/hero/HeroEditorial.astro';
+import HeroSwiss from '@components/themed/hero/HeroSwiss.astro';
+import HeroBroadcast from '@components/themed/hero/HeroBroadcast.astro';
 
-const stack = ['React', 'Next.js', 'TypeScript', 'Django', 'Node.js', 'Flutter'];
-
-// Drop a photo at public/lanyard/photo.jpg to have it appear on the lanyard's
-// front face — no code change needed, same build-time import.meta.glob pattern
-// as v2's ProfileCard portrait. Falls back to the model's built-in blank-card
-// texture until then. Uses Vite's glob (resolved at build time, not a runtime
-// node:fs call) so it also works under the Cloudflare Workers prerenderer.
-const PHOTO_PATH = '/lanyard/photo.jpg';
-const hasPhoto = Object.keys(import.meta.glob('/public/lanyard/photo.jpg')).length > 0;
-
-// Longest word in the rotator below — reserved as a `ch`-based min-width on
-// the span so switching words never changes its box size mid-scramble. The
-// old version had no reserved width: as the scramble replaced e.g.
-// "fullstack systems" (18 chars) with "microfrontends" (14) the span's
-// rendered width kept changing every frame, which nudged the following
-// paragraph/buttons up and down — the "jumping" line the reveal was
-// supposed to look clean, not disruptive.
-const ROTATOR_WORDS = ['fullstack systems', 'microfrontends', 'Rust services', 'clean interfaces'];
-const ROTATOR_MAX_CH = Math.max(...ROTATOR_WORDS.map((w) => w.length));
+const layout = getThemeLayout(Astro.locals?.theme);
 ---
 
-<section class="relative flex min-h-[calc(100dvh-4rem)] flex-col justify-center py-16">
-  <p class="kicker mb-5 flex items-center gap-2" data-reveal data-y="12">
-    <span class="inline-block h-1.5 w-1.5 rounded-full bg-success animate-pulse"></span>
-    {AUTHOR.availableForWork ? 'Open to opportunities' : 'Currently heads-down'} · {SITE.location}
-  </p>
-
-  <h1
-    class="max-w-4xl text-4xl font-extrabold leading-[1.05] sm:text-5xl md:text-7xl xl:text-8xl"
-    data-reveal
-  >
-    <span class="block">Building</span>
-    <span
-      class="inline-block whitespace-nowrap font-mono text-gradient text-glow"
-      id="hero-role"
-      style={`min-width: ${ROTATOR_MAX_CH}ch`}
-    >
-      fullstack systems
-    </span>
-    <span class="block">that ship &amp; scale.</span>
-  </h1>
-
-  <p
-    class="mt-7 max-w-xl text-base text-fg-muted sm:text-lg lg:max-w-2xl lg:text-xl"
-    data-reveal
-    data-delay="0.1"
-  >
-    I'm <span class="font-semibold text-fg">{SITE.name}</span> — a {SITE.role.toLowerCase()} with
-    2+ years turning messy requirements into fast, maintainable products. Frontend craft, backend
-    depth, clean architecture.
-  </p>
-
-  <div class="mt-8 flex flex-wrap gap-3" data-reveal data-delay="0.2">
-    <Button href="/projects" variant="primary">View Work <span aria-hidden="true">→</span></Button>
-    <Button href="/contact" variant="outline">Get in touch</Button>
-    <Button href="/resume.pdf" variant="ghost" download="Saint-Rabor-Resume.pdf">
-      Resume <span aria-hidden="true">↓</span>
-    </Button>
-  </div>
-
-  <div class="mt-10 flex flex-wrap items-center gap-2" data-reveal data-delay="0.3">
-    <span class="font-mono text-xs text-fg-faint">stack:</span>
-    {stack.map((s) => <Tag>{s}</Tag>)}
-  </div>
-
-  {
-    FEATURES.heroLanyard && (
-      // `absolute` within this (already `relative`) section — not `fixed` —
-      // so it scrolls away with the rest of the hero instead of staying
-      // pinned over whatever's below once you scroll past it, and is
-      // bounded to a fixed height near the top instead of stretching to the
-      // section's own full (near-viewport-height) size. Homepage-only by
-      // construction: Hero.astro is only ever rendered from
-      // src/pages/index.astro, unlike the old Header.astro placement which
-      // showed it on every page. This div stays pointer-events:none itself;
-      // Lanyard.tsx toggles the *canvas element's* own pointer-events
-      // per-frame based on proximity to the card, so the rest of the page
-      // underneath stays fully clickable.
-      <div
-        class="pointer-events-none absolute inset-x-0 top-0 z-10 hidden h-[600px] lg:block"
-        data-lanyard-slot
-      >
-        {/* Skeleton placeholder for the heaviest island on the site (three.js +
-            rapier WASM, loaded via client:media). It occupies the card's
-            footprint so the hero doesn't have a hole while that downloads, and
-            removes itself the moment the canvas actually mounts — see the
-            observer script at the bottom of this file. */}
-        <div
-          class="lanyard-skeleton absolute right-[12%] top-[46%] w-[190px] -translate-y-1/2"
-          data-lanyard-skeleton
-        >
-          <Skeleton class="h-[260px] w-full opacity-40" />
-        </div>
-        {/*
-          Tuning knobs, all on Lanyard itself:
-          - `position`: camera distance (3rd number) — bigger = more zoomed
-            out, shows more cord/context.
-          - `anchorPosition`: where the clip attaches, in the same 3D space
-            the camera looks at. X moves it left/right, Y moves it up/down.
-            Y needs to stay near the top of the camera's view for the cord
-            to reach the top of this box with no gap — if you change the
-            camera distance above, or the box's own height, re-check this
-            doesn't leave a gap or push the badge out of view.
-          - `ropeLength`: cord length multiplier — 1 is the original
-            component's own (long) proportions. Safe to tune freely: it
-            scales the rope segments and the card's attachment offset
-            together, so it can't fall out of physics sync the way tuning
-            them separately once did.
-        */}
-        <Lanyard
-          client:media="(min-width: 1024px)"
-          className="h-full w-full"
-          frontImage={hasPhoto ? PHOTO_PATH : null}
-          position={[0, 0, 18]}
-          anchorPosition={[3.4, 4.5, 2]}
-          ropeLength={1}
-        />
-      </div>
-    )
-  }
-</section>
+{layout.hero === 'terminal' && <HeroTerminal />}
+{layout.hero === 'datagrid' && <HeroDataGrid />}
+{layout.hero === 'editorial' && <HeroEditorial />}
+{layout.hero === 'swiss' && <HeroSwiss />}
+{layout.hero === 'broadcast' && <HeroBroadcast />}
 
 <script>
-  // Rotating role words in the hero headline, decrypt/hacker-style reveal.
   import { scrambleText } from '@lib/utils/scramble';
+  import { HERO } from '@/config';
 
+  /** Cycles the role word with a decrypt effect. No-ops on hero variants that
+   *  don't render `#hero-role` — an editorial or poster hero shouldn't flicker. */
   function initHeroRotator() {
     const el = document.getElementById('hero-role');
     if (!el || el.dataset.bound) return;
     el.dataset.bound = 'true';
 
-    const words = ['fullstack systems', 'microfrontends', 'Rust services', 'clean interfaces'];
+    const words = HERO.rotatorWords;
     let i = 0;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    // Welcoming first-impression decrypt, timed just after the h1's own
-    // scroll-reveal fade so the two don't visually compete.
+    // Timed just after the h1's own scroll-reveal fade so the two don't compete.
     window.setTimeout(() => scrambleText(el, words[0], { duration: 1 }), 350);
 
     setInterval(() => {
@@ -151,14 +51,7 @@ const ROTATOR_MAX_CH = Math.max(...ROTATOR_WORDS.map((w) => w.length));
     }, 3200);
   }
 
-  document.addEventListener('astro:page-load', initHeroRotator);
-
-  /**
-   * Retire the lanyard skeleton once the 3D canvas actually exists. The island
-   * is `client:media`, so on a narrow viewport it never mounts — the skeleton
-   * lives inside a `lg:block` container that's display:none there, so nothing
-   * shows either way. The observer disconnects on first hit.
-   */
+  /** Retire the lanyard skeleton once the 3D canvas exists (cyberpunk only). */
   function initLanyardSkeleton() {
     const slot = document.querySelector<HTMLElement>('[data-lanyard-slot]');
     const skeleton = slot?.querySelector<HTMLElement>('[data-lanyard-skeleton]');
@@ -178,5 +71,8 @@ const ROTATOR_MAX_CH = Math.max(...ROTATOR_WORDS.map((w) => w.length));
     observer.observe(slot, { childList: true, subtree: true });
   }
 
-  document.addEventListener('astro:page-load', initLanyardSkeleton);
+  document.addEventListener('astro:page-load', () => {
+    initHeroRotator();
+    initLanyardSkeleton();
+  });
 </script>

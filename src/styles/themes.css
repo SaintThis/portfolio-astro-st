@@ -57,6 +57,13 @@
 
   --radius-box: 4px;
   --border-w: 1px;
+  /* Layout metrics — a nav variant can be taller/shorter without
+     breaking the hero's viewport math, which used to hardcode 4rem. */
+  --header-h: 4rem;
+  --section-y: 5rem;
+  --corner-cut: 0px;
+  --label-transform: none;
+  --label-tracking: 0.02em;
 
   --glow: 0 0 24px;
   --shadow-card: none;
@@ -113,6 +120,13 @@
 
   --radius-box: 2px;
   --border-w: 1px;
+  /* Layout metrics — a nav variant can be taller/shorter without
+     breaking the hero's viewport math, which used to hardcode 4rem. */
+  --header-h: 4rem;
+  --section-y: 4rem;
+  --corner-cut: 0px;
+  --label-transform: uppercase;
+  --label-tracking: 0.1em;
 
   --glow: 0 0 22px;
   --shadow-card: none;
@@ -132,64 +146,6 @@
 
   --cursor-size: 2.2rem;
   --cursor-radius: 2px;
-  --cursor-blend: normal;
-}
-
-/* ================================================================== */
-/* Synthwave — sunset gradient, soft glow, retro-future.               */
-/* ================================================================== */
-[data-theme='synthwave'] {
-  color-scheme: dark;
-
-  --color-bg: #150a24;
-  --color-bg-soft: #1d0f30;
-  --color-surface: #241238;
-  --color-surface-2: #2e1745;
-  --color-border: #3d2059;
-
-  --color-fg: #ffe9f5;
-  --color-fg-muted: #c79ad6;
-  --color-fg-faint: #7d5a94;
-
-  --color-accent: #ff6ac1; /* pink */
-  --color-accent-2: #ffb457; /* sunset orange */
-  --color-accent-3: #7a5cff; /* indigo */
-  --color-accent-contrast: #150a24;
-
-  --color-success: #4dffd2;
-  --color-warning: #ffd166;
-  --color-danger: #ff5d73;
-
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Space Grotesk', 'Inter', ui-sans-serif, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --heading-weight: 700;
-  --heading-tracking: -0.02em;
-
-  --radius-box: 6px;
-  --border-w: 1px;
-
-  --glow: 0 0 26px;
-  --shadow-card: 0 8px 30px rgba(122, 92, 255, 0.16);
-  --nav-blur: 14px;
-
-  --grid-line: rgba(255, 106, 193, 0.08);
-  --backdrop-image:
-    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  --backdrop-size: 48px 48px;
-  --backdrop-mask: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
-  /* A real sunset wash behind everything. */
-  --bg-gradient:
-    radial-gradient(70% 50% at 50% 100%, rgba(255, 106, 193, 0.14), transparent 70%),
-    radial-gradient(60% 40% at 15% 0%, rgba(122, 92, 255, 0.16), transparent 70%);
-  --scanline-opacity: 0.35;
-
-  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
-  --dur: 0.34s;
-
-  --cursor-size: 2.6rem;
-  --cursor-radius: 9999px;
   --cursor-blend: normal;
 }
 
@@ -226,6 +182,13 @@
 
   --radius-box: 4px;
   --border-w: 1px;
+  /* Layout metrics — a nav variant can be taller/shorter without
+     breaking the hero's viewport math, which used to hardcode 4rem. */
+  --header-h: 4.5rem;
+  --section-y: 6rem;
+  --corner-cut: 0px;
+  --label-transform: none;
+  --label-tracking: 0.02em;
 
   --glow: 0 0 0; /* no glow in day mode */
   --shadow-card: 0 1px 2px rgba(20, 20, 26, 0.06);
@@ -244,118 +207,6 @@
   --dur: 0.25s;
 
   --cursor-size: 2.2rem;
-  --cursor-radius: 9999px;
-  --cursor-blend: normal;
-}
-
-/* ================================================================== */
-/* Aurora — modern glassy dark. Soft indigo/teal light-leaks, big      */
-/* radius, geometric display type. The "2026 SaaS" look.               */
-/* ================================================================== */
-[data-theme='aurora'] {
-  color-scheme: dark;
-
-  --color-bg: #0a0f1a;
-  --color-bg-soft: #0e1524;
-  --color-surface: #131c2e;
-  --color-surface-2: #1a2540;
-  --color-border: #24304d;
-
-  --color-fg: #eaf0ff;
-  --color-fg-muted: #9aa8c7;
-  --color-fg-faint: #5c6b8a;
-
-  --color-accent: #6d8cff; /* periwinkle */
-  --color-accent-2: #45e0c8; /* aurora teal */
-  --color-accent-3: #a97bff; /* soft violet */
-  --color-accent-contrast: #0a0f1a;
-
-  --color-success: #3ddc97;
-  --color-warning: #ffc857;
-  --color-danger: #ff6b81;
-
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Space Grotesk', 'Inter', ui-sans-serif, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --heading-weight: 600;
-  --heading-tracking: -0.03em;
-
-  --radius-box: 14px;
-  --border-w: 1px;
-
-  --glow: 0 0 32px;
-  --shadow-card: 0 10px 40px rgba(9, 14, 26, 0.55);
-  --nav-blur: 20px;
-
-  --grid-line: rgba(109, 140, 255, 0.05);
-  /* No grid — soft aurora light-leaks instead. */
-  --backdrop-image:
-    radial-gradient(45% 35% at 15% 10%, rgba(109, 140, 255, 0.22), transparent 70%),
-    radial-gradient(40% 32% at 85% 5%, rgba(69, 224, 200, 0.16), transparent 70%),
-    radial-gradient(50% 40% at 60% 40%, rgba(169, 123, 255, 0.12), transparent 70%);
-  --backdrop-size: cover;
-  --backdrop-mask: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
-  --bg-gradient: linear-gradient(180deg, rgba(109, 140, 255, 0.06), transparent 40%);
-  --scanline-opacity: 0;
-
-  --ease-out-expo: cubic-bezier(0.34, 1.2, 0.4, 1);
-  --dur: 0.4s;
-
-  --cursor-size: 3rem;
-  --cursor-radius: 9999px;
-  --cursor-blend: normal;
-}
-
-/* ================================================================== */
-/* Nord — muted arctic. Calm, low-contrast-but-legible, dot grid.      */
-/* ================================================================== */
-[data-theme='nord'] {
-  color-scheme: dark;
-
-  --color-bg: #2e3440;
-  --color-bg-soft: #333b48;
-  --color-surface: #3b4252;
-  --color-surface-2: #434c5e;
-  --color-border: #4c566a;
-
-  --color-fg: #eceff4;
-  --color-fg-muted: #b9c1d0;
-  --color-fg-faint: #7b869c;
-
-  --color-accent: #88c0d0; /* frost cyan */
-  --color-accent-2: #81a1c1; /* frost blue */
-  --color-accent-3: #b48ead; /* aurora purple */
-  --color-accent-contrast: #2e3440;
-
-  --color-success: #a3be8c;
-  --color-warning: #ebcb8b;
-  --color-danger: #bf616a;
-
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --heading-weight: 600;
-  --heading-tracking: -0.015em;
-
-  --radius-box: 8px;
-  --border-w: 1px;
-
-  --glow: 0 0 14px; /* whisper, not neon */
-  --shadow-card: 0 6px 24px rgba(23, 28, 38, 0.4);
-  --nav-blur: 16px;
-
-  --grid-line: rgba(136, 192, 208, 0.1);
-  /* Dot grid rather than lines — quieter, more "editor chrome". */
-  --backdrop-image: radial-gradient(var(--grid-line) 1px, transparent 1px);
-  --backdrop-size: 22px 22px;
-  --backdrop-mask: radial-gradient(ellipse 85% 65% at 50% 0%, #000 40%, transparent 100%);
-  --bg-gradient: none;
-  --scanline-opacity: 0;
-
-  --ease-out-expo: cubic-bezier(0.25, 0.8, 0.3, 1);
-  --dur: 0.28s;
-
-  --cursor-size: 2.4rem;
   --cursor-radius: 9999px;
   --cursor-blend: normal;
 }
@@ -394,6 +245,13 @@
 
   --radius-box: 12px;
   --border-w: 1px;
+  /* Layout metrics — a nav variant can be taller/shorter without
+     breaking the hero's viewport math, which used to hardcode 4rem. */
+  --header-h: 5rem;
+  --section-y: 7rem;
+  --corner-cut: 0px;
+  --label-transform: none;
+  --label-tracking: 0.02em;
 
   --glow: 0 0 0;
   --shadow-card: 0 2px 12px rgba(42, 35, 32, 0.07);
@@ -415,56 +273,66 @@
 }
 
 /* ================================================================== */
-/* Mono — brutalist. Pure black/white, zero radius, zero glow, and a   */
-/* difference-blend cursor that inverts whatever it crosses.           */
+/* Broadcast — flat Bauhaus/constructivist print poster. Absorbed from */
+/* the former /v2 "Broadcast Edition" mini-site. Matte print-black on  */
+/* paper cream, flat signal red, thick rules, clipped corners, and     */
+/* deliberately ZERO glow or blur — the anti-neon theme.               */
 /* ================================================================== */
-[data-theme='mono'] {
+[data-theme='broadcast'] {
   color-scheme: dark;
 
-  --color-bg: #000000;
-  --color-bg-soft: #0a0a0a;
-  --color-surface: #101010;
-  --color-surface-2: #181818;
-  --color-border: #2e2e2e;
+  --color-bg: #111110; /* matte print-black, not void-black */
+  --color-bg-soft: #16150f;
+  --color-surface: #1c1b19; /* slightly lifted, for panel surfaces */
+  --color-surface-2: #232220;
+  --color-border: #f2efe6; /* cream rules — the border IS the design */
 
-  --color-fg: #fafafa;
-  --color-fg-muted: #a1a1a1;
-  --color-fg-faint: #6b6b6b;
+  --color-fg: #f2efe6; /* paper white, not pure #fff */
+  --color-fg-muted: #a8a498;
+  --color-fg-faint: #6f6c63;
 
-  --color-accent: #ffffff;
-  --color-accent-2: #d4d4d4;
-  --color-accent-3: #8a8a8a;
-  --color-accent-contrast: #000000;
+  --color-accent: #e8342a; /* flat signal red — no glow */
+  --color-accent-2: #f2c14e; /* caution/hazard yellow */
+  --color-accent-3: #e8342a;
+  --color-accent-contrast: #111110;
 
-  --color-success: #d4d4d4;
-  --color-warning: #e5e5e5;
-  --color-danger: #ffffff;
+  --color-success: #f2c14e;
+  --color-warning: #f2c14e;
+  --color-danger: #e8342a;
 
-  --font-sans: 'Space Grotesk', 'Inter', ui-sans-serif, sans-serif;
-  --font-display: 'Space Grotesk', 'Inter', ui-sans-serif, sans-serif;
+  /* Heavy poster display face; labels are mono, uppercase, wide-tracked. */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Archivo Black', 'Arial Black', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  --heading-weight: 700;
-  --heading-tracking: -0.045em;
+  --heading-weight: 400; /* Archivo Black is already heavy */
+  --heading-tracking: -0.01em;
 
-  --radius-box: 0px; /* the whole point */
-  --border-w: 1px;
+  --radius-box: 0px; /* nothing is rounded; corners get CUT instead */
+  --border-w: 3px;
+  /* Layout metrics — a nav variant can be taller/shorter without
+     breaking the hero's viewport math, which used to hardcode 4rem. */
+  --header-h: 4rem;
+  --section-y: 3.5rem;
+  --corner-cut: 28px;
+  --label-transform: uppercase;
+  --label-tracking: 0.15em;
 
   --glow: 0 0 0;
   --shadow-card: none;
   --nav-blur: 0px;
 
-  --grid-line: rgba(255, 255, 255, 0.05);
-  --backdrop-image: none;
-  --backdrop-size: auto;
-  --backdrop-mask: none;
+  /* Halftone dot texture — the print-poster answer to a scanline grid. */
+  --grid-line: rgba(242, 239, 230, 0.5);
+  --backdrop-image: radial-gradient(var(--grid-line) 1px, transparent 1.5px);
+  --backdrop-size: 10px 10px;
+  --backdrop-mask: linear-gradient(to bottom, #000 0%, #000 60%, transparent 100%);
   --bg-gradient: none;
   --scanline-opacity: 0;
 
-  /* Snappy, no overshoot — brutalism doesn't bounce. */
-  --ease-out-expo: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out-expo: cubic-bezier(0.2, 0, 0, 1); /* snappy, no overshoot */
   --dur: 0.16s;
 
   --cursor-size: 2rem;
   --cursor-radius: 0px;
-  --cursor-blend: difference;
+  --cursor-blend: normal;
 }

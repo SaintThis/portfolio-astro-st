@@ -1,5 +1,24 @@
 # Component inventory
 
+## Dispatchers (read this first)
+
+Four components at long-standing paths are now **dispatchers**: they read `Astro.locals.theme`, look up `getThemeLayout()`, and render a per-theme variant from `src/components/themed/`. Their props and paths are unchanged, so call sites never had to move.
+
+| Dispatcher | Picks from | Variants |
+| --- | --- | --- |
+| `sections/Hero.astro` | `layout.hero` | `themed/hero/Hero{Terminal,DataGrid,Editorial,Swiss,Broadcast}.astro` |
+| `layout/Header.astro` | `layout.nav` | `themed/nav/Nav{Bar,Masthead,Rail}.astro` (`NavBar` serves bar + block via `mode`) |
+| `ui/ProjectCard.astro` | `layout.card` | `themed/card/Card{Standard,Panel}.astro` |
+| `layout/IntroLoader.astro` | `layout.loader` | one component, content from the `LOADERS` table in `config.ts` |
+
+Two rules when touching these:
+
+- **Import variants statically.** `await import()` drops their scoped CSS out of the static module graph and Astro never emits the `<link>`.
+- **Keep the variant set small.** Every imported variant's CSS ships on every page. Structural difference earns a component; anything else belongs in `[data-theme='x']` CSS. See [`theme-tokens.md`](theme-tokens.md).
+
+`HeroTerminal.astro` is the **only** file that imports `Lanyard.tsx` — that's how the 3D island stays cyberpunk-only, since `useGLTF.preload()` at module scope would download 2.4 MB regardless of what the component returns.
+
+
 Linked from [`CLAUDE.md`](../../CLAUDE.md). Check this before building something new — it exists so an agent reuses what's already here instead of re-implementing it, and never passes a prop that doesn't actually exist.
 
 Every `Props` interface below is copied from the component's actual source — if it's not listed here, the component takes no props (reads from `@/config` / `@lib/api` / `@lib/stores` directly instead).

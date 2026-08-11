@@ -11,7 +11,7 @@
  */
 import '@styles/global.css';
 import { ClientRouter } from 'astro:transitions';
-import { SITE, DEFAULT_THEME, FEATURES } from '@/config';
+import { SITE, THEMES, DEFAULT_THEME, FEATURES, getThemeLayout } from '@/config';
 import SEO from '@components/seo/SEO.astro';
 import Analytics from '@components/seo/Analytics.astro';
 import Header from '@components/layout/Header.astro';
@@ -48,10 +48,46 @@ interface Props {
 }
 
 const { backdrop = true, wide = false, ...seo } = Astro.props;
+
+// Resolved per request by `withLocals` in src/middleware.ts. On statically
+// prerendered routes (404) middleware never runs, so fall back to the default
+// and let the inline script below correct it client-side.
+const theme = Astro.locals?.theme ?? DEFAULT_THEME;
+const layout = getThemeLayout(theme);
+
+/**
+ * Pre-paint theme correction, built as a string because `is:inline` scripts are
+ * emitted verbatim — Astro does NOT process `define:vars` on them, so the only
+ * way to get a build-time value in is to interpolate it here.
+ *
+ * Only matters on prerendered routes (404), where middleware never ran and the
+ * server therefore emitted the default theme. It reads the same cookie the
+ * server reads — never localStorage — so the two can't disagree about which
+ * theme is active now that markup, not just color, depends on it.
+ */
+const themeBootScript = `
+(() => {
+  const VALID = ${JSON.stringify(THEMES.map((t) => t.id))};
+  const read = () => {
+    const m = document.cookie.match(/(?:^|;\\s*)theme=([^;]*)/);
+    const v = m ? decodeURIComponent(m[1]) : null;
+    return v && VALID.includes(v) ? v : ${JSON.stringify(DEFAULT_THEME)};
+  };
+  const apply = () => {
+    const next = read();
+    if (document.documentElement.dataset.theme !== next) {
+      document.documentElement.dataset.theme = next;
+    }
+  };
+  apply();
+  document.documentElement.classList.remove('no-js');
+  document.addEventListener('astro:after-swap', apply);
+})();
+`.trim();
 ---
 
 <!doctype html>
-<html lang="en" class="no-js" data-theme={DEFAULT_THEME}>
+<html lang="en" class="no-js" data-theme={theme} data-nav={layout.nav}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -64,37 +100,28 @@ const { backdrop = true, wide = false, ...seo } = Astro.props;
     <!-- Fonts: preconnect + swap. Swap to @fontsource for full self-hosting (see DESIGN.md).
          Four families because typography is theme-owned (see themes.css):
          Inter (body), JetBrains Mono (code/labels + Matrix's display face),
-         Space Grotesk (Aurora/Mono/Synthwave display), Fraunces (Latte's
-         editorial serif). All `display=swap`, so a theme the visitor never
-         selects costs a stylesheet entry, not a render block. -->
+         Fraunces (Latte's editorial serif), Archivo Black (Broadcast's poster
+         face). Space Grotesk was dropped with the themes that used it. All
+         `display=swap`, so a theme the visitor never selects costs a
+         stylesheet entry, not a render block. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Archivo+Black&display=swap"
       rel="stylesheet"
     />
 
     <SEO {...seo} />
     <Analytics />
 
-    <!-- No-flash theme: apply persisted theme BEFORE paint. `is:inline` keeps it
-         un-bundled so it runs synchronously in <head>. -->
-    <script is:inline>
-      (() => {
-        const applyTheme = () => {
-          try {
-            const stored = JSON.parse(localStorage.getItem('theme-store') || 'null');
-            document.documentElement.dataset.theme = stored?.state?.theme || 'cyberpunk';
-          } catch {}
-        };
-        applyTheme();
-        document.documentElement.classList.remove('no-js');
-        // View Transitions reset <html> attributes to the server-rendered default
-        // on each swap, so re-apply the saved theme after every navigation.
-        // Registered once here; the document (and this listener) persist across swaps.
-        document.addEventListener('astro:after-swap', applyTheme);
-      })();
-    </script>
+    <!-- Theme correction for STATIC routes only.
+         SSR routes already carry the right `data-theme` from the server (see
+         `withLocals`), so this is a no-op there. On a prerendered route (404)
+         middleware never runs, so read the same cookie the server would have
+         and fix the colours before paint. Reads the cookie — not localStorage —
+         so client and server can never disagree about which theme is active.
+         `is:inline` keeps it un-bundled so it runs synchronously in <head>. -->
+    <script is:inline set:html={themeBootScript} />
 
     <ClientRouter />
   </head>

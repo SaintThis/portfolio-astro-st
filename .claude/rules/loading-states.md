@@ -6,9 +6,15 @@ Linked from [`CLAUDE.md`](../../CLAUDE.md). Read this before adding, moving, or 
 
 | Tier | Component | Fires when | Looks like |
 | --- | --- | --- | --- |
-| Global | [`layout/IntroLoader.astro`](../../src/components/layout/IntroLoader.astro) | **Cold document only** — first visit, hard refresh, direct URL hit | Full-viewport terminal boot sequence |
+| Global | [`layout/IntroLoader.astro`](../../src/components/layout/IntroLoader.astro) | **Cold document only** — first visit, hard refresh, direct URL hit | Full-viewport overlay; content is **per theme** (see below) |
 | Navigation | [`layout/NavProgress.astro`](../../src/components/layout/NavProgress.astro) | Client-side navigation (View Transitions) that takes **> 180 ms** | 2px accent bar pinned to the top edge |
 | Async region | [`ui/Skeleton.astro`](../../src/components/ui/Skeleton.astro) | Content that arrives *after* first paint (a client fetch, a heavy island) | Shimmer block sized to the content it replaces |
+
+## The loader's personality is data, not five components
+
+`LOADERS` in [`src/config.ts`](../../src/config.ts) maps a loader id → `{ lines, showBar, showBrand }`, and each theme's `layout.loader` names one. The overlay markup stays single-source; only its content and pacing change (`boot` for cyberpunk, `stream` for matrix, `signal` for broadcast, `fade` for latte/paper).
+
+`fade` has **no lines and no bar** — an editorial theme shouldn't pretend to boot a kernel. Both elements are therefore optional in the DOM, and GSAP throws on a null target, so `runBoot()` adds each tween only when its element rendered and pads an otherwise-empty timeline so the brand scramble stays readable. If you add a loader profile, check that branch.
 
 ## Why the boot loader must not run on navigation
 

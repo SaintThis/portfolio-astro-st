@@ -1,0 +1,75 @@
+---
+/**
+ * HeroDataGrid — the Matrix hero: a dense monospace readout.
+ *
+ * Structurally the opposite of the terminal hero: no giant display headline
+ * and no negative space. A bordered table-like grid of labelled rows fills the
+ * width, the way a system status page would, with the role rotator sitting in
+ * one cell rather than dominating the page.
+ */
+import { SITE, AUTHOR, HERO, ROTATOR_MAX_CH } from '@/config';
+import Button from '@components/ui/Button.astro';
+
+const rows = [
+  { k: 'operator', v: SITE.name },
+  { k: 'role', v: SITE.role },
+  { k: 'location', v: SITE.location },
+  { k: 'status', v: AUTHOR.availableForWork ? 'OPEN TO WORK' : 'HEADS-DOWN' },
+];
+---
+
+<section class="py-12" data-hero-variant="datagrid">
+  <div class="border border-border" data-reveal>
+    <!-- Readout header -->
+    <div class="flex items-center justify-between border-b border-border px-4 py-2">
+      <span class="font-mono text-[11px] uppercase tracking-[0.25em] text-accent">
+        ./{SITE.handle.replace('@', '')} —— session
+      </span>
+      <span class="font-mono text-[11px] text-fg-faint">
+        {new Date().getFullYear()}
+      </span>
+    </div>
+
+    <!-- Labelled rows -->
+    <dl class="divide-y divide-border">
+      {
+        rows.map((r) => (
+          <div class="grid grid-cols-[7rem_1fr] gap-4 px-4 py-2.5 sm:grid-cols-[10rem_1fr]">
+            <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-fg-faint">{r.k}</dt>
+            <dd class="font-mono text-sm text-fg">{r.v}</dd>
+          </div>
+        ))
+      }
+      <div class="grid grid-cols-[7rem_1fr] gap-4 px-4 py-2.5 sm:grid-cols-[10rem_1fr]">
+        <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-fg-faint">building</dt>
+        <dd>
+          <span
+            class="inline-block whitespace-nowrap font-mono text-sm text-accent text-glow"
+            id="hero-role"
+            style={`min-width: ${ROTATOR_MAX_CH}ch`}>{HERO.rotatorWords[0]}</span
+          >
+        </dd>
+      </div>
+      <div class="grid grid-cols-[7rem_1fr] gap-4 px-4 py-2.5 sm:grid-cols-[10rem_1fr]">
+        <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-fg-faint">stack</dt>
+        <dd class="font-mono text-sm text-fg-muted">{HERO.stack.join(' · ')}</dd>
+      </div>
+    </dl>
+
+    <!-- Payload -->
+    <div class="border-t border-border px-4 py-4">
+      <p class="max-w-3xl font-mono text-sm leading-relaxed text-fg-muted">
+        <span class="text-accent">&gt;</span> {HERO.intro}
+      </p>
+      <div class="mt-5 flex flex-wrap gap-3">
+        {
+          HERO.actions.map((a) => (
+            <Button href={a.href} variant={a.variant} size="sm" download={a.download}>
+              {a.label} {a.icon && <span aria-hidden="true">{a.icon}</span>}
+            </Button>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
