@@ -22,11 +22,14 @@ const version = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     {HERO.broadcast.eyebrow} — {SITE.location}
   </p>
 
+  <!-- Each word is its own span with an explicit gap: Astro strips the
+       whitespace between an expression and an adjacent element, which ran the
+       headline together as "BUILDINGFULLSTACK SYSTEMSON AIR." -->
   <h1
-    class="mt-4 font-display text-5xl uppercase leading-[0.95] sm:text-6xl lg:text-7xl"
+    class="mt-4 flex flex-wrap gap-x-[0.3em] font-display text-5xl uppercase leading-[0.95] sm:text-6xl lg:text-7xl"
     data-reveal
   >
-    {HERO.headline.lead}
+    <span>{HERO.headline.lead}</span>
     <span class="text-accent">{HERO.rotatorWords[0]}</span>
     <span class="text-accent-2">on air.</span>
   </h1>

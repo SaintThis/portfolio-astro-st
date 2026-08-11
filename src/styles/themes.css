@@ -288,12 +288,19 @@
   --color-border: #f2efe6; /* cream rules — the border IS the design */
 
   --color-fg: #f2efe6; /* paper white, not pure #fff */
-  --color-fg-muted: #a8a498;
-  --color-fg-faint: #6f6c63;
+  /* Lifted from the ported values: body copy sits on near-black with a dot
+     texture behind it, and mono type at 12–14px needs more separation than a
+     serif would. Both now clear AA against --color-bg. */
+  --color-fg-muted: #cbc7ba;
+  --color-fg-faint: #8f8b80;
 
-  --color-accent: #e8342a; /* flat signal red — no glow */
+  /* Nudged up from v2's #e8342a, which measured 4.46:1 on this background —
+     fine for the poster headline but under AA for the small mono eyebrow and
+     for black text on the filled button. #ef4136 clears it at 4.93:1 and is
+     visually the same signal red. */
+  --color-accent: #ef4136; /* flat signal red — no glow */
   --color-accent-2: #f2c14e; /* caution/hazard yellow */
-  --color-accent-3: #e8342a;
+  --color-accent-3: #ef4136;
   --color-accent-contrast: #111110;
 
   --color-success: #f2c14e;
@@ -322,10 +329,15 @@
   --nav-blur: 0px;
 
   /* Halftone dot texture — the print-poster answer to a scanline grid. */
-  --grid-line: rgba(242, 239, 230, 0.5);
+  /* Halftone dot texture. The alpha carries the whole effect: v2 drew opaque
+     cream dots and faded the entire layer with `opacity: 0.06`, and porting the
+     pattern without that fade left a dense grid fighting every line of body
+     copy. Baked into the colour instead, and loosened to 14px so the dots read
+     as paper grain rather than a screen door. */
+  --grid-line: rgba(242, 239, 230, 0.07);
   --backdrop-image: radial-gradient(var(--grid-line) 1px, transparent 1.5px);
-  --backdrop-size: 10px 10px;
-  --backdrop-mask: linear-gradient(to bottom, #000 0%, #000 60%, transparent 100%);
+  --backdrop-size: 14px 14px;
+  --backdrop-mask: linear-gradient(to bottom, #000 0%, #000 45%, transparent 92%);
   --bg-gradient: none;
   --scanline-opacity: 0;
 

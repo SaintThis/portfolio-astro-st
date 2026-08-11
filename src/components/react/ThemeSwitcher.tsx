@@ -23,9 +23,14 @@ interface Props {
    *  render disagree with the server's (React hydration error #418) and left
    *  the trigger showing a stale label. */
   initialTheme: ThemeId;
+  /** Which edge the menu opens from. The vertical rail nav (Matrix) passes
+   *  `right` so the menu sits beside the rail instead of on top of its own
+   *  links — the trigger there is pinned to the bottom of a full-height
+   *  column, where a downward menu has nowhere to go. */
+  side?: 'bottom' | 'right';
 }
 
-export default function ThemeSwitcher({ initialTheme }: Props) {
+export default function ThemeSwitcher({ initialTheme, side = 'bottom' }: Props) {
   const setTheme = useThemeStore((s) => s.setTheme);
   // Local, seeded from the server value, so SSR and hydration agree exactly.
   const [theme, setLocalTheme] = useState<ThemeId>(initialTheme);
@@ -85,7 +90,7 @@ export default function ThemeSwitcher({ initialTheme }: Props) {
       </Select.Trigger>
 
       <Select.Portal container={portalContainer}>
-        <Select.Positioner sideOffset={8} align="end" className="z-20 outline-none">
+        <Select.Positioner side={side} sideOffset={8} align="end" className="z-20 outline-none">
           <Select.Popup className="theme-popup w-52 overflow-hidden rounded-[var(--radius-box)] border border-border bg-surface-2 p-1 shadow-2xl outline-none">
             <Select.List>
               {THEMES.map((t) => (

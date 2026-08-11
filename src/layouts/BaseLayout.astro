@@ -159,8 +159,13 @@ const themeBootScript = `
       the spec's literal text for `filter` alone) — nesting the portal here
       once constrained the sidebar's `fixed inset-y-0` to Header's own ~112px
       height instead of the viewport.
+
+      It carries its own stacking context ABOVE the nav (see `.portal-root` in
+      global.css): every nav variant is z-40, and popups portalled here sit in
+      the root stacking context, so without this the Matrix rail — a full-height
+      opaque `fixed` column — painted straight over the open theme menu.
     -->
-    <div id="base-ui-portal-root" transition:persist aria-hidden="true"></div>
+    <div id="base-ui-portal-root" class="portal-root" transition:persist aria-hidden="true"></div>
 
     <main id="main" class:list={['mx-auto w-full px-5', wide ? 'max-w-7xl' : 'max-w-6xl']}>
       <slot />

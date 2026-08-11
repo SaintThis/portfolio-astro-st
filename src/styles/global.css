@@ -180,6 +180,16 @@
     opacity: var(--scanline-opacity, 0.4);
   }
 
+  /* Base UI popup container (theme select, mobile drawer). Positioned so it
+     forms a stacking context, and above every nav variant's z-40 — the Matrix
+     rail is an opaque full-height fixed column, so a popup left in the root
+     stacking context rendered *behind* it. Zero-size, so it never affects
+     layout despite being positioned. */
+  .portal-root {
+    position: relative;
+    z-index: 60;
+  }
+
   /* Chrome surfaces (header, sidebar) — blur strength is a theme token, so
      Aurora reads as heavy glass and Mono as a hard opaque bar. */
   .nav-blur {

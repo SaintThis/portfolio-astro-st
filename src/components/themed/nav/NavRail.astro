@@ -52,7 +52,10 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
   </nav>
 
   <div class="flex flex-col gap-3 px-3">
-    <ThemeSwitcher client:idle initialTheme={activeTheme} />
+    {/* Opens to the RIGHT: this trigger is pinned to the bottom of a
+        full-height column, so a downward menu would have nowhere to go and a
+        menu over the rail would cover the nav links themselves. */}
+    <ThemeSwitcher client:idle initialTheme={activeTheme} side="right" />
   </div>
 </header>
 
