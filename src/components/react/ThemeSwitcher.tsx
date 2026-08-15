@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Select } from '@base-ui/react/select';
 import { useThemeStore } from '@stores/index';
+import { switchThemeWithReload } from '@stores/theme.store';
 import { THEMES, type ThemeId } from '@/config';
 
 /**
@@ -61,16 +62,19 @@ export default function ThemeSwitcher({ initialTheme, side = 'bottom' }: Props) 
       onValueChange={(value) => {
         const next = value as ThemeId;
         if (next === theme) return;
-        // Write the cookie + data-theme first…
+        // Update the trigger's own label immediately (harmless — pure local
+        // component state, not a document-wide mutation) …
         setLocalTheme(next);
-        setTheme(next);
-        // …then re-render the whole document. A theme now decides the
-        // server-rendered LAYOUT (hero/nav/card variants), not just CSS
-        // variables, so swapping tokens in place would leave the old
-        // structure behind. A hard reload is the honest way to get the new
-        // markup — and it bypasses the View Transitions router, which would
-        // otherwise reuse the persisted header.
-        window.location.reload();
+        // …then hand off to the reload path. Deliberately NOT `setTheme(next)`
+        // here: a theme now decides the server-rendered LAYOUT (hero/nav/card
+        // variants), not just CSS variables, so mutating `<html data-theme>`
+        // before the reload would paint the OLD layout's still-mounted markup
+        // in the NEW theme's colors for the instant before the reload lands —
+        // a visible flash-then-reload. `switchThemeWithReload` writes only the
+        // cookie, covers the viewport with the already-current-theme-styled
+        // boot overlay, and reloads — colors and layout change together,
+        // exactly once, when the fresh document paints in.
+        switchThemeWithReload(next);
       }}
     >
       <Select.Trigger
