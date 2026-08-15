@@ -12,9 +12,19 @@ Linked from [`CLAUDE.md`](../../CLAUDE.md). Read this before adding, moving, or 
 
 ## The loader's personality is data, not five components
 
-`LOADERS` in [`src/config.ts`](../../src/config.ts) maps a loader id → `{ lines, showBar, showBrand }`, and each theme's `layout.loader` names one. The overlay markup stays single-source; only its content and pacing change (`boot` for cyberpunk, `stream` for matrix, `signal` for broadcast, `fade` for latte/paper).
+`LOADERS` in [`src/config.ts`](../../src/config.ts) maps a loader id → `{ lines, showBar, showBrand, motif }`, and each theme's `layout.loader` names one: `boot`/cyberpunk, `stream`/matrix, `latte`, `paper`, `signal`/broadcast — five distinct ids now, not four sharing a generic `fade`. The overlay is still **one component/one file** (`IntroLoader.astro`) — resist forking this into five — but `motif` picks a small theme-specific visual the component renders conditionally:
 
-`fade` has **no lines and no bar** — an editorial theme shouldn't pretend to boot a kernel. Both elements are therefore optional in the DOM, and GSAP throws on a null target, so `runBoot()` adds each tween only when its element rendered and pads an otherwise-empty timeline so the brand scramble stays readable. If you add a loader profile, check that branch.
+| motif | theme | what it is |
+| --- | --- | --- |
+| `hud` | cyberpunk | 4 CSS corner brackets around the panel + a looping scan-line sweep |
+| `rain` | matrix | 16 columns of falling mono glyphs behind the panel, populated at runtime (`fillRainColumns`) from a fixed glyph pool — never real Katakana, just visual texture |
+| `masthead` | latte | an italic serif `kicker` line + a rule that draws itself (`scaleX` 0→1) under the brand |
+| `index` | paper | a large ticking Swiss-poster numeral (`00`→`100`, tabular-nums) that doubles as the progress indicator — paper has no `showBar` |
+| `broadcast` | broadcast | 6 CSS color-bar stripes (TV test-pattern) + a blinking red "on air" dot next to the brand |
+
+`latte` and `paper` still have **no lines and no bar** — an editorial/Swiss theme shouldn't pretend to boot a kernel; their motif carries the visual interest instead of boot-sequence text. Every optional element (`bar`, `lines`, `rule`, `count`) is therefore optional in the DOM, and GSAP throws on a null target, so `runBoot()` adds each tween only when its element rendered, and pads an otherwise-empty timeline so the brand scramble stays readable. **If you add a loader profile or a new motif, extend that same `if (el) tl.to(...)` list** — both in the main timeline and in the `reduced`-motion branch just above it, which sets every optional element straight to its finished state instead of animating.
+
+New CSS-only motifs (`hud`'s scan sweep, `rain`'s fall animation, `broadcast`'s flicker/blink) rely on the global `@media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration: 0.001ms !important; ... } }` rule in `global.css` to go static for free — confirmed it covers `animation-duration` (not just `transition-duration`), so a plain `@keyframes` loop doesn't need its own reduced-motion guard. JS-driven motion (rain population, the GSAP tweens above) still needs the explicit `reduced` branch, since that rule can't reach inline JS timing.
 
 ## Why the boot loader must not run on navigation
 

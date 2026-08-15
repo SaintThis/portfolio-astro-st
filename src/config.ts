@@ -80,7 +80,7 @@ export const THEMES = [
       hero: 'editorial',
       nav: 'masthead',
       card: 'standard',
-      loader: 'fade',
+      loader: 'latte',
       lanyard: false,
     },
   },
@@ -88,7 +88,7 @@ export const THEMES = [
     id: 'paper',
     label: 'Paper',
     hint: 'Swiss print grid — numbered, hairline rules',
-    layout: { hero: 'swiss', nav: 'bar', card: 'standard', loader: 'fade', lanyard: false },
+    layout: { hero: 'swiss', nav: 'bar', card: 'standard', loader: 'paper', lanyard: false },
   },
   {
     id: 'broadcast',
@@ -173,8 +173,13 @@ export const HERO = {
 export const ROTATOR_MAX_CH = Math.max(...HERO.rotatorWords.map((w) => w.length));
 
 /**
- * Boot-loader personality per theme. Data, not five cloned overlay components —
- * the overlay is one structure whose *content* and pacing change.
+ * Boot-loader personality per theme. Still ONE component/structure (see
+ * `IntroLoader.astro` — resist forking this into five components), but each
+ * profile now also names a `motif`: a small theme-specific visual (HUD corner
+ * reticle, matrix rain, a self-drawing rule, a ticking Swiss numeral, broadcast
+ * color bars) that the component renders conditionally and the shared CSS/JS
+ * drives, instead of five themes reusing one identical box with only the log
+ * text swapped out.
  */
 export const LOADERS = {
   boot: {
@@ -188,6 +193,7 @@ export const LOADERS = {
     ],
     showBar: true,
     showBrand: true,
+    motif: 'hud',
   },
   stream: {
     lines: [
@@ -199,13 +205,29 @@ export const LOADERS = {
     ],
     showBar: true,
     showBrand: true,
+    motif: 'rain',
   },
-  /** Editorial/print themes don't perform a boot sequence — just a name. */
-  fade: { lines: [] as string[], showBar: false, showBrand: true },
+  /** Editorial magazine — no fake boot sequence, a masthead-style reveal instead. */
+  latte: {
+    lines: [] as string[],
+    showBar: false,
+    showBrand: true,
+    motif: 'masthead',
+    kicker: 'Now reading',
+  },
+  /** Swiss print grid — no boot sequence either; a ticking numeral IS the
+   *  progress indicator, styled like a poster page number, not a percentage. */
+  paper: {
+    lines: [] as string[],
+    showBar: false,
+    showBrand: true,
+    motif: 'index',
+  },
   signal: {
     lines: ['◼ CH.01 — SIGNAL ACQUIRED', '◼ ON AIR'],
     showBar: true,
     showBrand: true,
+    motif: 'broadcast',
   },
 } as const;
 
