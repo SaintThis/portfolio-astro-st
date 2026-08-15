@@ -161,14 +161,19 @@ const status = statusMap[project.status];
         <div class="mt-16">
           <h2 class="kicker">Screenshots</h2>
           <div class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
-            {project.screenshots.map((src, i) => (
-              <img
-                src={src}
-                alt={`${project.title} — screenshot ${i + 1}`}
-                class="w-full rounded-[var(--radius-box)] border border-border"
-                loading="lazy"
-                decoding="async"
-              />
+            {project.screenshots.map((s, i) => (
+              <figure class="m-0">
+                <img
+                  src={s.url}
+                  alt={s.caption || `${project.title} — screenshot ${i + 1}`}
+                  class="w-full rounded-[var(--radius-box)] border border-border"
+                  loading="lazy"
+                  decoding="async"
+                />
+                {s.caption && (
+                  <figcaption class="mt-2 text-sm text-fg-muted">{s.caption}</figcaption>
+                )}
+              </figure>
             ))}
           </div>
         </div>

@@ -10,8 +10,19 @@ import type { ProjectRow, PostRow, ExperienceRow } from './schema';
 const iso = (d: Date | string): string =>
   (typeof d === 'string' ? new Date(d) : d).toISOString();
 
+type RawScreenshot = string | { url: string; caption?: string };
+
+/** Normalizes older bare-URL entries (pre-caption schema) alongside the
+ *  current `{ url, caption }` shape, so a read never breaks mid-migration. */
+function normalizeScreenshots(raw: RawScreenshot[] | undefined): Project['screenshots'] {
+  if (!raw) return undefined;
+  return raw.map((s) => (typeof s === 'string' ? { url: s, caption: '' } : { url: s.url, caption: s.caption ?? '' }));
+}
+
 export function rowToProject(r: ProjectRow): Project {
-  const screenshots = (r.meta as { screenshots?: string[] } | null)?.screenshots;
+  const screenshots = normalizeScreenshots(
+    (r.meta as { screenshots?: RawScreenshot[] } | null)?.screenshots
+  );
   return {
     slug: r.slug,
     title: r.title,

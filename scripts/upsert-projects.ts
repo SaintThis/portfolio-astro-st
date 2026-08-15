@@ -29,7 +29,7 @@ type Entry = {
   date: string;
   featured: boolean;
   cover: string;
-  screenshots?: string[];
+  screenshots?: { url: string; caption: string }[];
   metrics?: { label: string; value: string }[];
   links?: Record<string, string>;
 };
@@ -45,7 +45,13 @@ const ENTRIES: Entry[] = [
     date: '2026-08-05',
     featured: true,
     cover: '/uploads/marlowe/dashboard-dark.png',
-    screenshots: ['/uploads/marlowe/dashboard-light.png'],
+    screenshots: [
+      {
+        url: '/uploads/marlowe/dashboard-light.png',
+        caption:
+          'The same dashboard bento in light — all twelve screens ship both themes authored separately, not one palette inverted and hoped for.',
+      },
+    ],
     tags: [
       'Flutter',
       'Dart',
@@ -102,7 +108,13 @@ Flutter developers and small studios building an internal HR, people-ops, or wor
     date: '2026-07-23',
     featured: true,
     cover: '/uploads/nocturne-desktop.png',
-    screenshots: ['/uploads/nocturne-mobile.png'],
+    screenshots: [
+      {
+        url: '/uploads/nocturne-mobile.png',
+        caption:
+          'The marketplace home on mobile — a native-feeling floating pill bottom nav below 768px; the same screen reflows into the three-column desktop grid above it.',
+      },
+    ],
     tags: [
       'Flutter',
       'Dart',
@@ -153,6 +165,94 @@ Zero analyzer issues. The suite covers unit tests (formatters, validators, cart 
 Freelancers and agencies who need a marketplace-grade dark UI fast, indie teams prototyping a digital-collectibles product, and anyone tired of retrofitting a generic admin template into something meant to feel premium.`,
   },
   {
+    slug: 'carillon',
+    title: 'Carillon',
+    summary:
+      'A tablet-first Flutter finance dashboard kit for student money — tuition, grants, stipends, and term budgets — whose board fills the viewport and never scrolls.',
+    category: 'mobile',
+    status: 'live',
+    date: '2026-08-14',
+    featured: true,
+    cover: '/uploads/carillon/dashboard-light.png',
+    screenshots: [
+      {
+        url: '/uploads/carillon/dashboard-dark.png',
+        caption:
+          'The dashboard in dark — funding sources as a swipeable deck, Term Goals and Savings as tuned tube runs, and the Split Circle card, all on the reworked rimless glass.',
+      },
+      {
+        url: '/uploads/carillon/analytics.png',
+        caption:
+          'Analytics, showing the newest chart form in the chime language — the Spend Rhythm heatmap (ChimeGrid), which answers "which day costs the most" the way a column of tubes structurally cannot.',
+      },
+      {
+        url: '/uploads/carillon/profile.png',
+        caption:
+          'Profile — enrolment with its new term-progress strip, an appearance control wired to the same theme provider as the chrome toggle, and the split groups you belong to.',
+      },
+      {
+        url: '/uploads/carillon/wallet.png',
+        caption:
+          'Wallet, showing "Where the month goes" — ChimeFlow, a tube laid on its side and divided into shares, the chart form built to answer composition rather than magnitude.',
+      },
+    ],
+    tags: [
+      'Flutter',
+      'Dart',
+      'Riverpod 3',
+      'go_router',
+      'Freezed',
+      'Material 3',
+      'UI kit',
+      'Responsive',
+      'Golden tests',
+    ],
+    metrics: [
+      { label: 'Screens', value: '5' },
+      { label: 'Tests passing', value: '118' },
+      { label: 'Breakpoints', value: '4' },
+      { label: 'Analyzer issues', value: '0' },
+    ],
+    description: `Carillon is a tablet-first Flutter UI kit for student money — tuition, grants, stipends, term budgets, and shared housing costs. The main screen is a board that fills the viewport and never scrolls. No admin sidebar. No data grid. A single dense bento designed for the screen a nineteen-year-old opens to know whether they can afford next month.
+
+The category's common failure is a beautiful overview and four dead links. Carillon ships five complete, wired-together destinations — Dashboard, Analytics, Aid, Wallet, and Profile, every one built to the same contract, not just the hero screen — sitting behind a real sign-in flow, not a stub.
+
+## The chime language
+
+Carillon's signature element is a run of tuned vertical tubes — capsule tracks with capsule fills rising inside them, named for the bell tower on a university campus. What started as one primitive is now a small language of three forms, because a column of tubes can only answer one question. \`ChimeColumn\` compares magnitude — spend by month, funding by source. \`ChimeFlow\` lays a tube on its side and divides it into shares, for "what is this made of" — the composition question separate bars structurally cannot answer. \`ChimeGrid\` turns the tubes end-on into a small grid, for "when, and how regularly" — the shape an average hides. The savings tile, the term chart, the funding mix, the monthly commitments, the spend-rhythm heatmap, the loading skeleton, and the brand mark are all the same visual family at different sizes and orientations.
+
+## Sign-in, with a floor under it
+
+A complete \`features/auth\`: an \`AuthRepository\` interface, a mock implementation with real failure outcomes — a locked account, a wrong password, a provider that refuses — and client-side validation, because a kit whose auth always succeeds ships an error state nobody has ever seen. Provider buttons carry lettermarks, not brand logos; the marks are trademarks and aren't redistributable inside a kit sold to a third party. Deep links survive the trip through sign-in — the attempted destination rides along in a query parameter and gets restored afterward. And \`AuthPhase\` has three states, not two, so "we don't know yet" is never collapsed into "signed out," which is what makes an app flash its sign-in screen for a frame on every cold start.
+
+## What's on the board
+
+- Full-width stat band with live balance, grant total, and term spend.
+- Ten cards: funding deck, action triad, term ledger, goal tile, savings tile, earn prompt, term overview, payment history, split circle (the one inverse card), and literacy guides.
+- Three columns at 1024+, two at 768, one scrolling column below — the board never scrolls above the breakpoint, and the breakpoint reads height as well as width.
+- All three states, on every screen: a skeleton that mirrors the composition card-for-card, a designed empty state, and an error surface that says what happened — governed by one \`LoadingPolicy\`, so nothing flashes a skeleton under 120ms or redraws one over a screen the reader is already looking at during a refetch.
+
+## Design
+
+Obsidian-iris and citron — no gold, no brown, no Material defaults. Cards no longer cast a shadow; a translucent card with a blur pooled under it says the card is paper hovering above the page, and glass doesn't hover. Depth is now a painted rim — lit along the top, shaded along the bottom — and each card samples the page's own gradient at its position and tints itself with the answer, so a card in the iris corner reads iris and one in the citron corner reads citron, continuously, without anyone assigning a colour per card. Type is Bricolage Grotesque for headings, Plus Jakarta Sans for body, IBM Plex Mono for data — all under SIL OFL 1.1, no licence to chase.
+
+## Architecture
+
+- Riverpod 3 with riverpod_annotation code generation — one provider per question, no god object.
+- go_router with typed, deep-linkable routes and an auth-aware redirect guard.
+- Freezed domain models — immutable, type-safe, no raw JSON maps drifting through the widget tree.
+- No backend by design, but the seam is documented, not just declared: \`docs/data/\` has the schema, an ERD, the REST contract, a field-to-widget map, a runnable PostgreSQL migration with row-level security, and the four steps from mock to live. The bundled fixtures are the exact payloads the docs describe — a server that matches the contract needs no other change.
+- All painted assets — no stock images, no font licences beyond OFL. Every colour traces to \`AppTokens\`, a \`ThemeExtension\` that is the single source for the whole kit.
+
+## The quality bar
+
+Zero analyzer issues. 118 tests: a screen × breakpoint × theme matrix, an auth guard suite covering every failure mode the mock repository can produce, chrome and board geometry assertions, primitive widget tests, formatter unit tests, and golden baselines across every screen — sign-in included. Responsiveness and the auth flow are both verified by the suite, not by eye.
+
+## Built for
+
+Flutter developers and small teams building a student-finance or campus-life app who can already write a ListView — and who don't want to spend three weeks on the bento layout, the chart language, a real sign-in flow, and a token system that holds together in both themes.`,
+  },
+  {
     slug: 'sundry',
     title: 'Sundry',
     summary:
@@ -163,9 +263,21 @@ Freelancers and agencies who need a marketplace-grade dark UI fast, indie teams 
     featured: true,
     cover: '/uploads/sundry/home-light.png',
     screenshots: [
-      '/uploads/sundry/home-dark.png',
-      '/uploads/sundry/browse-light.png',
-      '/uploads/sundry/product-light.png',
+      {
+        url: '/uploads/sundry/home-dark.png',
+        caption:
+          'Home in dark — the same server-rendered marketplace page; only three components on the whole site hydrate as islands.',
+      },
+      {
+        url: '/uploads/sundry/browse-light.png',
+        caption:
+          'Browse, with the sort/filter controls — one of the three islands. The product grid itself is plain server-rendered HTML with zero client JS.',
+      },
+      {
+        url: '/uploads/sundry/product-light.png',
+        caption:
+          'A product detail page showing the Pixel Price Tag\'s "boosted" state — the same tag component that marks a listing for sale or sold.',
+      },
     ],
     tags: [
       'Deno',

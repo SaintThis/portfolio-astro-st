@@ -28,8 +28,11 @@ export interface Project {
   cover?: string;
   /** Optional headline metrics for the case study. */
   metrics?: { label: string; value: string }[];
-  /** Additional real screenshots shown as a gallery on the case-study page. */
-  screenshots?: string[];
+  /** Additional real screenshots shown as a gallery on the case-study page.
+   *  `caption` explains what screen/state it is — required, not decorative;
+   *  a screenshot with only a generic "screenshot 3" alt tells a visitor
+   *  nothing they couldn't see themselves. */
+  screenshots?: { url: string; caption: string }[];
   /** Lifetime view count (0 until the view-tracking backend records one). */
   views?: number;
 }
