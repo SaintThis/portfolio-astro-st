@@ -1,0 +1,45 @@
+---
+/**
+ * TimelineRail — the dotted rail (Cyberpunk, Broadcast).
+ *
+ * A vertical border with a node per role; the current role's node carries the
+ * accent glow (which is `0 0 0` in flat themes, so it degrades on its own —
+ * see theme-tokens.md).
+ */
+import type { ExperienceItem } from '@lib/api/types';
+
+interface Props {
+  experience: ExperienceItem[];
+}
+const { experience } = Astro.props;
+---
+
+<div class="border-border mt-10 space-y-3 border-l pl-6">
+  {
+    experience.map((job, i) => (
+      <div data-reveal data-delay={i * 0.05}>
+        <div class="border-border bg-surface relative rounded-[var(--radius-box)] border p-4 sm:p-5">
+          <span
+            class:list={[
+              'border-bg absolute top-6 -left-[31px] h-3 w-3 rounded-full border-2',
+              job.current ? 'bg-accent box-glow' : 'bg-fg-faint',
+            ]}
+          />
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 class="text-lg font-bold">{job.role}</h3>
+            <span class="text-accent-2 font-mono text-xs">{job.period}</span>
+          </div>
+          <p class="text-fg-muted mt-0.5 text-sm">{job.company}</p>
+          <ul class="text-fg-muted mt-3 space-y-1.5 text-sm">
+            {job.highlights.map((h) => (
+              <li class="flex gap-2">
+                <span class="text-accent">▹</span>
+                {h}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    ))
+  }
+</div>

@@ -1,0 +1,70 @@
+---
+/**
+ * SkillsBars — meter bars (Cyberpunk, Broadcast).
+ *
+ * The fill is a plain CSS transition to `--target`, switched on by an
+ * `.is-filled` class that the IntersectionObserver in `AboutSkills.astro` adds
+ * on scroll-in. Deliberately NOT a GSAP tween: `ScrollReveal.astro` calls
+ * `ScrollTrigger.getAll().forEach(t => t.kill())` on every `astro:page-load`,
+ * so any ScrollTrigger created by another script on the same event is at the
+ * mercy of listener-registration order — and silently dies if it registered
+ * first. CSS + IntersectionObserver has no such coupling.
+ *
+ * It also inherits reduced-motion for free: the global rule in `global.css`
+ * forces `transition-duration: 0.001ms`, so the bar lands on its final width
+ * instantly rather than needing its own guard.
+ */
+import type { Skill } from '@lib/api/types';
+import { SKILL_GROUPS } from '@/config';
+
+interface Props {
+  skills: Skill[];
+}
+const { skills } = Astro.props;
+---
+
+<div class="mt-8 grid gap-8 lg:grid-cols-2">
+  {
+    SKILL_GROUPS.map((g) => (
+      <div data-reveal>
+        <h3 class="text-accent-2 mb-4 font-mono text-sm">{g.label}</h3>
+        <ul class="space-y-3">
+          {skills
+            .filter((s) => s.category === g.id)
+            .map((s) => (
+              <li>
+                <div class="mb-1 flex justify-between text-sm">
+                  <span>{s.name}</span>
+                  <span class="text-fg-faint font-mono text-xs">{s.level}%</span>
+                </div>
+                <div class="bg-surface-2 h-1.5 overflow-hidden rounded-full">
+                  <div
+                    class="skill-bar h-full rounded-full"
+                    style={`--target:${s.level}%;background:linear-gradient(90deg,var(--color-accent),var(--color-accent-2))`}
+                    data-skill
+                  />
+                </div>
+              </li>
+            ))}
+        </ul>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .skill-bar {
+    width: 0;
+    /* Eased over a fixed 1s rather than `--dur`: `--dur` is the theme's
+       micro-interaction duration (~0.2s), far too quick to read as a meter
+       filling. The easing still comes from the theme token. */
+    transition: width 1s var(--ease-out-expo, cubic-bezier(0.16, 1, 0.3, 1));
+  }
+  .skill-bar.is-filled {
+    width: var(--target);
+  }
+  /* No-JS: never leave every meter reading zero. */
+  :global(html.no-js) .skill-bar {
+    width: var(--target);
+  }
+</style>

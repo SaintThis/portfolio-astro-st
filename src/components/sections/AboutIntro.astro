@@ -1,0 +1,36 @@
+---
+/**
+ * AboutIntro — a dispatcher, not a component.
+ *
+ * Picks the /about intro variant for the active theme, exactly the way
+ * `sections/Hero.astro` picks a hero. Five variants because the about intro is
+ * this page's signature surface, the same argument that earned the hero five:
+ * a terminal printing `profile.json`, a system readout, a magazine feature, a
+ * Swiss grid and a poster are genuinely different documents, not one document
+ * in five palettes.
+ *
+ * Variants are statically imported for the reason recorded in
+ * `.claude/rules/component-inventory.md`: `await import()` drops their scoped
+ * CSS out of the static module graph and Astro never emits the <link>. The cost
+ * is bounded here — these five ship only on /about, not site-wide.
+ *
+ * All five render the SAME copy, from `ABOUT` in src/config.ts. That's a
+ * content-parity requirement, not a style preference: the theme comes from a
+ * cookie, so a crawler always sees the default variant while a returning
+ * visitor may see another.
+ */
+import { getThemeLayout } from '@/config';
+import AboutTerminal from '@components/themed/about/AboutTerminal.astro';
+import AboutDataGrid from '@components/themed/about/AboutDataGrid.astro';
+import AboutEditorial from '@components/themed/about/AboutEditorial.astro';
+import AboutSwiss from '@components/themed/about/AboutSwiss.astro';
+import AboutBroadcast from '@components/themed/about/AboutBroadcast.astro';
+
+const layout = getThemeLayout(Astro.locals?.theme);
+---
+
+{layout.about === 'terminal' && <AboutTerminal />}
+{layout.about === 'datagrid' && <AboutDataGrid />}
+{layout.about === 'editorial' && <AboutEditorial />}
+{layout.about === 'swiss' && <AboutSwiss />}
+{layout.about === 'broadcast' && <AboutBroadcast />}

@@ -1,0 +1,46 @@
+---
+/**
+ * AboutDataGrid — the Matrix intro: a system readout, not a bio.
+ *
+ * Mirrors `HeroDataGrid`'s shape so the two pages read as one machine: a
+ * bordered frame, labelled `dl` rows for the facts, and the prose demoted to a
+ * `>` payload at the bottom. No display type, no negative space, everything
+ * mono.
+ */
+import { SITE, ABOUT } from '@/config';
+import AboutBody from './AboutBody.astro';
+---
+
+<div class="border-border mt-8 border" data-reveal>
+  <div class="border-border flex items-center justify-between border-b px-4 py-2">
+    <span class="text-accent font-mono text-[11px] tracking-[0.25em] uppercase">
+      ./{SITE.handle.replace('@', '')} —— profile
+    </span>
+    <span class="text-fg-faint font-mono text-[11px]">0x00</span>
+  </div>
+
+  <dl class="divide-border divide-y">
+    {
+      ABOUT.profile.map((r) => (
+        <div class="grid grid-cols-[7rem_1fr] gap-4 px-4 py-2.5 sm:grid-cols-[10rem_1fr]">
+          <dt class="text-fg-faint font-mono text-[11px] tracking-[0.2em] uppercase">{r.k}</dt>
+          <dd class="text-fg font-mono text-sm">{r.v}</dd>
+        </div>
+      ))
+    }
+    <div class="grid grid-cols-[7rem_1fr] gap-4 px-4 py-2.5 sm:grid-cols-[10rem_1fr]">
+      <dt class="text-fg-faint font-mono text-[11px] tracking-[0.2em] uppercase">traits</dt>
+      <dd class="text-accent-2 flex flex-wrap gap-x-3 gap-y-1 font-mono text-sm">
+        {ABOUT.traits.map((t) => <span>[{t}]</span>)}
+      </dd>
+    </div>
+  </dl>
+
+  <div class="border-border space-y-3 border-t px-4 py-4 font-mono text-sm leading-relaxed">
+    <p class="text-fg-muted max-w-3xl">
+      <span class="text-accent">&gt;</span>
+      {ABOUT.lead}
+    </p>
+    <AboutBody class="text-fg-muted max-w-3xl" />
+  </div>
+</div>

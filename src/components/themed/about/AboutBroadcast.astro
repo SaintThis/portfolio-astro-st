@@ -1,0 +1,53 @@
+---
+/**
+ * AboutBroadcast — the Broadcast intro: a print poster, in blocks.
+ *
+ * Mirrors `HeroBroadcast`: a station eyebrow, heavy 2px rules, uppercase
+ * display type, and facts set as a bordered strip the way a poster prints its
+ * credits. Nothing rounded — `--radius-box` is 0 in this theme, so borders do
+ * the shaping.
+ */
+import { HERO, ABOUT } from '@/config';
+import AboutBody from './AboutBody.astro';
+---
+
+<div class="mt-8">
+  <p
+    class="text-accent font-mono text-[11px] tracking-[var(--label-tracking)] uppercase"
+    data-reveal
+    data-y="12"
+  >
+    {HERO.broadcast.eyebrow} — Profile
+  </p>
+
+  <div class="mt-6 grid gap-8 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
+    <div class="border-border border-t-2 pt-6" data-reveal>
+      <p class="text-fg-muted text-lg leading-relaxed">{ABOUT.lead}</p>
+      <AboutBody class="text-fg-muted mt-5 text-lg leading-relaxed" />
+
+      <div class="mt-8 flex flex-wrap gap-2">
+        {
+          ABOUT.traits.map((t) => (
+            <span class="border-border border-2 px-2 py-1 font-mono text-[10px] tracking-[var(--label-tracking)] uppercase">
+              {t}
+            </span>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- Credits strip: heavy rules, label above value, poster-style. -->
+    <dl class="border-border border-2" data-reveal data-delay="0.12">
+      {
+        ABOUT.profile.map((r, i) => (
+          <div class:list={['px-4 py-3', i > 0 && 'border-border border-t-2']}>
+            <dt class="text-fg-faint font-mono text-[10px] tracking-[var(--label-tracking)] uppercase">
+              {r.k}
+            </dt>
+            <dd class="font-display mt-1 text-lg leading-tight uppercase">{r.v}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</div>

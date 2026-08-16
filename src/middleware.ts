@@ -61,11 +61,28 @@ const withSecurityHeaders = defineMiddleware(async (_context, next) => {
   // HTML now renders different markup per theme, keyed on a cookie — so a
   // shared cache must never hand one visitor's layout to another. Scoped to
   // HTML on purpose: this middleware also wraps /api/* and sitemap.xml, and
-  // the sitemap deliberately sets its own s-maxage that a blanket no-store
-  // would silently destroy.
+  // the sitemap deliberately sets its own s-maxage that a blanket directive
+  // here would silently destroy.
+  //
+  // `private` is the directive that does the actual isolating: it forbids any
+  // shared cache (CDN, proxy) from storing the response at all, so one
+  // visitor's theme can never be served to another. `no-cache` then forces the
+  // *browser's own* cache to revalidate before reuse, so a DB edit is never
+  // served stale.
+  //
+  // This used to say `no-store`, which is strictly stronger than the isolation
+  // actually required and cost three things for no extra safety:
+  //   1. `no-store` is the one directive that disables the back/forward cache
+  //      in Chrome and Firefox — every Back press re-ran a full worker +
+  //      Postgres render instead of restoring instantly.
+  //   2. It made `prefetch` results unstorable, so Astro's link prefetching
+  //      (see astro.config.mjs) threw away every response it fetched.
+  //   3. It ruled out conditional revalidation entirely.
+  // `private` alone already prevents cross-visitor leakage — that was always
+  // the requirement. See `.claude/rules/theme-performance.md`.
   if (response.headers.get('content-type')?.includes('text/html')) {
     response.headers.append('Vary', 'Cookie');
-    response.headers.set('Cache-Control', 'private, no-store');
+    response.headers.set('Cache-Control', 'private, no-cache, must-revalidate');
   }
 
   return response;

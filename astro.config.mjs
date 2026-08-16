@@ -69,9 +69,21 @@ export default defineConfig({
 
   // Cross-page smoothness + drives the intro loader on navigation.
   // (Astro's View Transitions are enabled per-layout via <ClientRouter />.)
+  // `prefetchAll` keeps every internal link eligible, but the strategy is
+  // `hover` (intent-based), not `viewport`.
+  //
+  // Every page on this site is on-demand SSR — a theme picks server-rendered
+  // markup, so nothing can be prerendered — and each render costs a Worker
+  // invocation plus a Postgres round-trip. `viewport` fired one of those for
+  // *every* link that scrolled into view: on the blog index that's ~8 posts
+  // plus the nav and footer, so a single page view triggered a dozen full
+  // renders the visitor never navigated to. Because the HTML is `private`
+  // (see src/middleware.ts), none of it was reusable by a shared cache either.
+  // `hover`/focus fires on real intent, milliseconds before the click, which is
+  // where prefetching actually buys perceived speed.
   prefetch: {
     prefetchAll: true,
-    defaultStrategy: 'viewport',
+    defaultStrategy: 'hover',
   },
 
   image: {

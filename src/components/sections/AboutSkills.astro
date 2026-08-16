@@ -1,0 +1,75 @@
+---
+/**
+ * AboutSkills — a dispatcher, not a component.
+ *
+ * Three variants, not five: a skill list only has so many honest shapes.
+ * Cyberpunk and Broadcast both want a meter (`bars`), Matrix wants the meter
+ * spelled in characters (`readout`), and the two print themes want no meter at
+ * all (`index`). Everything else that separates Latte from Paper here — serif
+ * vs sans, rule weight, radius — is already token work, which is the line
+ * `.claude/rules/theme-tokens.md` draws for adding a variant.
+ *
+ * The bar-fill script lives HERE rather than in `SkillsBars.astro` for the same
+ * reason the rotator lives in `Hero.astro`: Astro hoists a component's <script>
+ * from the static module graph regardless of what renders, so one script that
+ * finds no `[data-skill]` and returns costs the other two variants nothing.
+ */
+import { getThemeLayout } from '@/config';
+import type { Skill } from '@lib/api/types';
+import SkillsBars from '@components/themed/about/SkillsBars.astro';
+import SkillsReadout from '@components/themed/about/SkillsReadout.astro';
+import SkillsIndex from '@components/themed/about/SkillsIndex.astro';
+
+interface Props {
+  skills: Skill[];
+}
+const { skills } = Astro.props;
+const layout = getThemeLayout(Astro.locals?.theme);
+---
+
+{layout.skills === 'bars' && <SkillsBars skills={skills} />}
+{layout.skills === 'readout' && <SkillsReadout skills={skills} />}
+{layout.skills === 'index' && <SkillsIndex skills={skills} />}
+
+<script>
+  /**
+   * Fill the meter bars when they scroll into view, by adding `.is-filled` —
+   * the width transition itself is CSS (see `SkillsBars.astro`).
+   *
+   * Deliberately an IntersectionObserver, not a GSAP ScrollTrigger.
+   * `ScrollReveal.astro` kills every existing ScrollTrigger on each
+   * `astro:page-load` before rebuilding its own, so a trigger created here
+   * survives only if this listener happens to be registered *after* that one —
+   * a silent, order-dependent failure. An observer is immune, needs no
+   * reduced-motion branch (the global CSS rule flattens the transition), and
+   * replaces 17 scroll triggers with one observer.
+   *
+   * No-ops on the variants that draw no bar: Matrix spells its meter in block
+   * glyphs and the print index has no meter at all, so neither renders
+   * `[data-skill]`.
+   */
+  function initSkillBars() {
+    const bars = document.querySelectorAll<HTMLElement>('[data-skill]:not([data-bound])');
+    if (!bars.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-filled');
+          observer.unobserve(entry.target);
+        });
+      },
+      // Matches the 'top 92%' the reveals use — the bar starts filling just as
+      // it clears the bottom edge, not after it's already been read.
+      { rootMargin: '0px 0px -8% 0px' }
+    );
+
+    bars.forEach((bar) => {
+      bar.dataset.bound = 'true';
+      observer.observe(bar);
+    });
+  }
+
+  document.addEventListener('astro:page-load', initSkillBars);
+</script>

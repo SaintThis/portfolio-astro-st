@@ -1,0 +1,57 @@
+---
+/**
+ * AboutEditorial — the Latte intro: a magazine feature opening.
+ *
+ * Same asymmetry as `HeroEditorial` (wide text column, narrow colophon rail)
+ * and the same drop cap, so the two pages read as one publication. Emphasis is
+ * italic rather than bold — a weight bump fights Fraunces at display size.
+ */
+import { ABOUT, SITE } from '@/config';
+import AboutBody from './AboutBody.astro';
+---
+
+<div class="mt-8 grid gap-10 lg:grid-cols-[1.55fr_1fr] lg:gap-16">
+  <div data-reveal>
+    <p class="about-standfirst text-fg-muted text-lg leading-relaxed">{ABOUT.lead}</p>
+    <AboutBody class="text-fg-muted mt-6 text-lg leading-relaxed" emphasis="italic" />
+
+    <p
+      class="border-border text-fg-faint mt-8 border-t pt-4 font-mono text-[10px] tracking-[0.25em] uppercase"
+    >
+      {ABOUT.traits.join(' · ')}
+    </p>
+  </div>
+
+  <!-- Colophon rail: the same facts a masthead would print at the foot. -->
+  <aside class="lg:border-border lg:border-l lg:pl-10" data-reveal data-delay="0.12">
+    <h3 class="text-fg-faint font-mono text-[10px] tracking-[0.25em] uppercase">Colophon</h3>
+    <dl class="mt-4">
+      {
+        ABOUT.profile.map((r) => (
+          <div class="border-border border-b py-3">
+            <dt class="text-fg-faint font-mono text-[10px] tracking-[0.2em] uppercase">{r.k}</dt>
+            <dd class="mt-0.5 text-base">{r.v}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p class="text-fg-faint mt-4 font-mono text-[10px] tracking-[0.2em] uppercase">
+      Set in Fraunces &amp; Inter — {SITE.location}
+    </p>
+  </aside>
+</div>
+
+<style>
+  /* Matches the hero's drop cap so the feature opens the way the cover did.
+     Suppressed under 640px, where a 3-line cap eats a narrow column. */
+  @media (min-width: 640px) {
+    .about-standfirst::first-letter {
+      float: left;
+      font-family: var(--font-display);
+      font-size: 3.6em;
+      line-height: 0.82;
+      padding-right: 0.08em;
+      color: var(--color-accent);
+    }
+  }
+</style>

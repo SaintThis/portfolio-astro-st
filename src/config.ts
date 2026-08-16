@@ -55,46 +55,123 @@ export const SOCIALS = [
 ] as const;
 
 /**
+ * Web-font families available to themes, as Google Fonts `family=` query
+ * fragments. A theme may only reference a key from this map (see
+ * `.claude/rules/theme-tokens.md`), and BaseLayout requests **only the
+ * families the active theme actually names** — not all four.
+ *
+ * Before this, every visitor got one stylesheet declaring all four families.
+ * That stylesheet is render-blocking, and Google Fonts emits ~10-20
+ * `@font-face` blocks per family (one per unicode-range subset), so a Matrix
+ * visitor — who renders exactly one family — was parsing four families' worth
+ * of subset declarations before first paint. The theme is already resolved
+ * server-side, so scoping the request costs nothing.
+ */
+export const FONT_FAMILIES = {
+  inter: 'Inter:wght@400;500;600;700;800',
+  jetbrainsMono: 'JetBrains+Mono:wght@400;500;700',
+  fraunces: 'Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700',
+  archivoBlack: 'Archivo+Black',
+} as const;
+
+export type FontFamilyId = keyof typeof FONT_FAMILIES;
+
+/**
  * Theme registry. `data-theme` on <html> is set to one of these ids.
  * Add a new object here + a matching `[data-theme='id']` block in
  * src/styles/themes.css and it just works — no code changes needed.
+ *
+ * `fonts` must list every family the theme's `--font-sans/-display/-mono`
+ * tokens name in themes.css — a family omitted here silently degrades to the
+ * CSS fallback stack. `themeColor` is the mobile browser-chrome color and
+ * should track the theme's own `--color-bg`; a single site-wide value painted
+ * a dark address bar above Latte's and Paper's cream pages.
  */
 export const THEMES = [
   {
     id: 'cyberpunk',
     label: 'Cyberpunk',
     hint: 'Terminal HUD — neon on void, 3D lanyard',
-    layout: { hero: 'terminal', nav: 'bar', card: 'standard', loader: 'boot', lanyard: true },
+    themeColor: '#08080c',
+    fonts: ['inter', 'jetbrainsMono'],
+    layout: {
+      hero: 'terminal',
+      nav: 'bar',
+      card: 'standard',
+      loader: 'boot',
+      lanyard: true,
+      about: 'terminal',
+      skills: 'bars',
+      timeline: 'rail',
+    },
   },
   {
     id: 'matrix',
     label: 'Matrix',
     hint: 'Dense mono data-grid, vertical rail nav',
-    layout: { hero: 'datagrid', nav: 'rail', card: 'standard', loader: 'stream', lanyard: false },
+    themeColor: '#020604',
+    fonts: ['jetbrainsMono'],
+    layout: {
+      hero: 'datagrid',
+      nav: 'rail',
+      card: 'standard',
+      loader: 'stream',
+      lanyard: false,
+      about: 'datagrid',
+      skills: 'readout',
+      timeline: 'log',
+    },
   },
   {
     id: 'latte',
     label: 'Latte',
     hint: 'Editorial magazine — serif masthead, drop-cap',
+    themeColor: '#faf6f0',
+    fonts: ['inter', 'jetbrainsMono', 'fraunces'],
     layout: {
       hero: 'editorial',
       nav: 'masthead',
       card: 'standard',
       loader: 'latte',
       lanyard: false,
+      about: 'editorial',
+      skills: 'index',
+      timeline: 'dossier',
     },
   },
   {
     id: 'paper',
     label: 'Paper',
     hint: 'Swiss print grid — numbered, hairline rules',
-    layout: { hero: 'swiss', nav: 'bar', card: 'standard', loader: 'paper', lanyard: false },
+    themeColor: '#f5f4ef',
+    fonts: ['inter', 'jetbrainsMono'],
+    layout: {
+      hero: 'swiss',
+      nav: 'bar',
+      card: 'standard',
+      loader: 'paper',
+      lanyard: false,
+      about: 'swiss',
+      skills: 'index',
+      timeline: 'dossier',
+    },
   },
   {
     id: 'broadcast',
     label: 'Broadcast',
     hint: 'Bauhaus poster — clipped panels, signal red',
-    layout: { hero: 'broadcast', nav: 'block', card: 'panel', loader: 'signal', lanyard: false },
+    themeColor: '#111110',
+    fonts: ['inter', 'jetbrainsMono', 'archivoBlack'],
+    layout: {
+      hero: 'broadcast',
+      nav: 'block',
+      card: 'panel',
+      loader: 'signal',
+      lanyard: false,
+      about: 'broadcast',
+      skills: 'bars',
+      timeline: 'rail',
+    },
   },
 ] as const;
 
@@ -112,8 +189,32 @@ export type ThemeLayout = (typeof THEMES)[number]['layout'];
  * result to pick a component — `undefined` there would render nothing at all.
  */
 export function getThemeLayout(id: string | undefined): ThemeLayout {
+  return getTheme(id).layout;
+}
+
+/** Resolve a full theme entry. Total for the same reason as `getThemeLayout`:
+ *  a stale cookie must degrade to the default, never to `undefined`. */
+export function getTheme(id: string | undefined) {
   const found = THEMES.find((t) => t.id === id);
-  return (found ?? THEMES.find((t) => t.id === DEFAULT_THEME)!).layout;
+  return found ?? THEMES.find((t) => t.id === DEFAULT_THEME)!;
+}
+
+/**
+ * The Google Fonts stylesheet URL for one theme — only the families that theme
+ * actually renders. Emitted from `BaseLayout`, where `Astro.locals.theme` is
+ * already known, so nobody downloads Fraunces to read a Matrix page.
+ *
+ * `display=swap` stays on every variant: text must paint in the fallback face
+ * immediately rather than block on the web font.
+ */
+export function getThemeFontHref(id: string | undefined): string {
+  const families = getTheme(id).fonts.map((f) => `family=${FONT_FAMILIES[f]}`);
+  return `https://fonts.googleapis.com/css2?${families.join('&')}&display=swap`;
+}
+
+/** Mobile browser-chrome color for a theme. See `themeColor` in `THEMES`. */
+export function getThemeColor(id: string | undefined): string {
+  return getTheme(id).themeColor;
 }
 
 /**
@@ -171,6 +272,65 @@ export const HERO = {
 /** Longest rotator word — reserved as a `ch` min-width so the scramble can't
  *  resize its own box mid-animation and nudge the paragraph below it. */
 export const ROTATOR_MAX_CH = Math.max(...HERO.rotatorWords.map((w) => w.length));
+
+/**
+ * About-page content, lifted out of `src/pages/about.astro` for exactly the
+ * reason `HERO` was lifted out of the hero: five themed variants each holding
+ * their own copy would be five forks of the same page, drifting apart the first
+ * time a sentence changed.
+ *
+ * It also protects SEO. The theme comes from a cookie, so a crawler always sees
+ * the default variant while a returning visitor may see another — if those
+ * rendered *different words*, that's a content-parity problem. One source of
+ * copy makes every variant a re-arrangement of the same text, never a rewrite.
+ */
+export const ABOUT = {
+  /** Opening paragraph — the same summary the SEO description uses. */
+  lead: AUTHOR.summary,
+  /**
+   * Second paragraph as segments rather than a raw HTML string, so each variant
+   * can style the emphasised spans with its own tokens (Matrix wants them mono
+   * and accent-2, Latte wants them italic) without forking the sentence.
+   * `em` names the emphasis role; `AboutBody.astro` maps it to real classes.
+   */
+  body: [
+    { t: "I've worked inside enterprise client teams, led a " },
+    { t: 'Microfrontend', em: 'strong' },
+    { t: ' effort for a core product, and shipped tooling used by 50+ people. I care about ' },
+    { t: 'SOLID principles', em: 'accent' },
+    { t: ", clean code, and shipping things that don't rot." },
+  ] as { t: string; em?: 'strong' | 'accent' }[],
+  /** Soft-skill pills. */
+  traits: ['Cross-cultural teams', 'Mentoring', 'Ownership', 'B2 English'],
+  /** The `profile.json` payload cyberpunk prints in a terminal, Matrix renders
+   *  as readout rows, Paper as a numbered index — same facts, three shapes. */
+  /** `num` marks a value that is a JSON number, not a string — the terminal
+   *  variant prints it unquoted in the warning color the way a syntax
+   *  highlighter would. Other variants ignore the flag. */
+  profile: [
+    { k: 'name', v: SITE.name },
+    { k: 'role', v: SITE.role },
+    { k: 'location', v: SITE.location },
+    { k: 'years', v: '2', num: true },
+    { k: 'focus', v: 'web · backend · architecture' },
+  ] as { k: string; v: string; num?: boolean }[],
+  /** Section headings, shared so every variant labels the page identically. */
+  sections: {
+    intro: { kicker: 'whoami', title: 'About me', index: '00' },
+    skills: { kicker: 'stack', title: 'Skills', index: '01' },
+    experience: { kicker: 'history', title: 'Experience', index: '02' },
+  },
+  cta: { label: "Let's work together", href: '/contact' },
+} as const;
+
+/** Skill category → display label. Shared by every `AboutSkills` variant so a
+ *  renamed group can't say "Tools & DevOps" in one theme and "DevOps" in another. */
+export const SKILL_GROUPS = [
+  { id: 'frontend', label: 'Frontend' },
+  { id: 'backend', label: 'Backend' },
+  { id: 'architecture', label: 'Architecture' },
+  { id: 'devops', label: 'Tools & DevOps' },
+] as const;
 
 /**
  * Boot-loader personality per theme. Still ONE component/structure (see

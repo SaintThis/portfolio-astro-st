@@ -1,0 +1,53 @@
+---
+/**
+ * TimelineLog — the Matrix variant: employment history as a log tail.
+ *
+ * One bordered frame instead of floating cards, entries separated by rules, and
+ * the period promoted to a left-hand key column the way a timestamp leads a log
+ * line. The current role is marked with a blinking cursor rather than a glowing
+ * dot — this theme has no glow to spend.
+ */
+import type { ExperienceItem } from '@lib/api/types';
+
+interface Props {
+  experience: ExperienceItem[];
+}
+const { experience } = Astro.props;
+---
+
+<div class="border-border mt-8 border font-mono" data-reveal>
+  <div class="border-border flex items-center justify-between border-b px-4 py-2">
+    <span class="text-accent text-[11px] tracking-[0.25em] uppercase">tail -f history.log</span>
+    <span class="text-fg-faint text-[11px]">{experience.length} entries</span>
+  </div>
+
+  <ol class="divide-border divide-y">
+    {
+      experience.map((job, i) => (
+        <li class="px-4 py-4" data-reveal data-delay={i * 0.05} data-y="12">
+          <div class="grid gap-x-4 gap-y-1 sm:grid-cols-[10rem_1fr]">
+            <span class="text-fg-faint text-[11px] tracking-[0.2em] uppercase">{job.period}</span>
+            <div class="min-w-0">
+              <h3 class="text-fg flex flex-wrap items-baseline gap-2 text-sm">
+                <span class="text-accent">▸</span>
+                {job.role}
+                {job.current && (
+                  <span class="text-accent-2 animate-[blink_1s_step-end_infinite]">●</span>
+                )}
+              </h3>
+              <p class="text-fg-faint mt-0.5 text-xs">{job.company}</p>
+              <ul class="text-fg-muted mt-2.5 space-y-1 text-sm leading-relaxed">
+                {job.highlights.map((h) => (
+                  <li class="flex gap-2">
+                    <span class="text-fg-faint shrink-0">··</span>
+                    {h}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</div>

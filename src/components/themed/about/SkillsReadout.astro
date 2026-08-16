@@ -1,0 +1,56 @@
+---
+/**
+ * SkillsReadout — the Matrix variant: an ASCII meter, not a graphic one.
+ *
+ * The level renders as filled/empty block glyphs inside a bordered readout, so
+ * the whole page stays text — a gradient-filled bar would be the one non-mono
+ * element on a theme built entirely out of characters. Because the meter IS
+ * text, it needs no animation and no `--target`; the shared skill-bar script
+ * finds no `[data-skill]` here and no-ops.
+ */
+import type { Skill } from '@lib/api/types';
+import { SKILL_GROUPS } from '@/config';
+
+interface Props {
+  skills: Skill[];
+}
+const { skills } = Astro.props;
+
+/** 10 cells, rounded to nearest — a readout shows resolution it actually has. */
+const CELLS = 10;
+const meter = (level: number) => {
+  const filled = Math.round((level / 100) * CELLS);
+  return { filled: '█'.repeat(filled), empty: '░'.repeat(CELLS - filled) };
+};
+---
+
+<div class="border-border mt-8 border" data-reveal>
+  {
+    SKILL_GROUPS.map((g, gi) => (
+      <div class:list={[gi > 0 && 'border-border border-t']}>
+        <div class="border-border flex items-center justify-between border-b px-4 py-2">
+          <span class="text-accent font-mono text-[11px] tracking-[0.25em] uppercase">
+            {g.label}
+          </span>
+          <span class="text-fg-faint font-mono text-[11px]">{String(gi + 1).padStart(2, '0')}</span>
+        </div>
+        <ul class="divide-border divide-y">
+          {skills
+            .filter((s) => s.category === g.id)
+            .map((s) => (
+              <li class="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-2 font-mono text-sm">
+                <span class="text-fg truncate">{s.name}</span>
+                <span class="flex items-center gap-3 whitespace-nowrap">
+                  <span aria-hidden="true">
+                    <span class="text-accent">{meter(s.level).filled}</span>
+                    <span class="text-fg-faint">{meter(s.level).empty}</span>
+                  </span>
+                  <span class="text-fg-muted w-10 text-right text-xs">{s.level}%</span>
+                </span>
+              </li>
+            ))}
+        </ul>
+      </div>
+    ))
+  }
+</div>

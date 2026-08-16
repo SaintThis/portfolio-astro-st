@@ -1,0 +1,32 @@
+---
+/**
+ * Renders `ABOUT.body`'s segments as one paragraph.
+ *
+ * The segments exist so the five About variants can emphasise the same two
+ * phrases with their own tokens without each holding a copy of the sentence —
+ * the same reason `HERO` lives in config rather than inside five heroes. Change
+ * the words in `src/config.ts` and every theme changes with it.
+ */
+import { ABOUT } from '@/config';
+
+interface Props {
+  /** Classes for the <p> itself — each variant sets its own measure/leading. */
+  class?: string;
+  /** How to render an `em: 'strong'` segment. Editorial themes prefer italics
+   *  to a weight bump, which would fight a serif display face. */
+  emphasis?: 'solid' | 'italic';
+}
+
+const { class: className, emphasis = 'solid' } = Astro.props;
+
+const CLASSES = {
+  solid: { strong: 'text-fg', accent: 'text-accent' },
+  italic: { strong: 'italic text-fg', accent: 'italic text-accent' },
+} as const;
+
+const map = CLASSES[emphasis];
+---
+
+<p class={className}>
+  {ABOUT.body.map((s) => (s.em ? <span class={map[s.em]}>{s.t}</span> : s.t))}
+</p>

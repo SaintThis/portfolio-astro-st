@@ -10,6 +10,11 @@ Four components at long-standing paths are now **dispatchers**: they read `Astro
 | `layout/Header.astro` | `layout.nav` | `themed/nav/Nav{Bar,Masthead,Rail}.astro` (`NavBar` serves bar + block via `mode`) |
 | `ui/ProjectCard.astro` | `layout.card` | `themed/card/Card{Standard,Panel}.astro` |
 | `layout/IntroLoader.astro` | `layout.loader` | one component, content from the `LOADERS` table in `config.ts` |
+| `sections/AboutIntro.astro` | `layout.about` | `themed/about/About{Terminal,DataGrid,Editorial,Swiss,Broadcast}.astro` |
+| `sections/AboutSkills.astro` | `layout.skills` | `themed/about/Skills{Bars,Readout,Index}.astro` |
+| `sections/AboutExperience.astro` | `layout.timeline` | `themed/about/Timeline{Rail,Log,Dossier}.astro` |
+
+The three About dispatchers ship only on `/about`, which is why five intro variants are affordable there. `AboutSkills` and `AboutExperience` stop at **three** each — a skill list and a career history only have three honest shapes (meter / character-meter / no meter, and rail / log / printed record); Latte vs Paper is token work, not structure. `AboutIntro` variants take no props; the other two take the repository data the page already fetched.
 
 Two rules when touching these:
 
@@ -30,7 +35,7 @@ Every `Props` interface below is copied from the component's actual source — i
 | `Button.astro` | `href?, variant?: 'primary'\|'ghost'\|'outline' (default 'primary'), size?: 'sm'\|'md'\|'lg' (default 'md'), class?, type?: 'button'\|'submit', [any other attr]` | Polymorphic: renders `<a>` if `href` is set, else `<button>`. Extra props (`download`, `target`, `aria-*`, …) pass straight through via `{...rest}`. Always carries `data-cursor="hover"`. |
 | `Tag.astro` | `class?, accent?: boolean (default false)` | Small mono pill. `accent` swaps to the accent-tinted variant. |
 | `Reveal.astro` | `y?: number (default 24), delay?: number (default 0), class?, [any other attr]` | GSAP ScrollTrigger scroll-reveal wrapper. Respects reduced-motion; never leaves content hidden if JS is unavailable (`html.no-js` fallback). Extra attrs (`data-*`, `id`, `aria-*`) pass through via `{...rest}` — it silently swallowed them once, which broke the projects grid's `data-category` filter (every card hid instead of filtering). |
-| `SectionHeading.astro` | `kicker?, title: string, index?, align?: 'left'\|'center' (default 'left')` | Has a `title` named slot (overrides the `title` prop) and a default slot for extra header content. |
+| `SectionHeading.astro` | `kicker?, title: string, index?, align?: 'left'\|'center' (default 'left'), as?: 'h1'\|'h2' (default 'h2')` | Has a `title` named slot (overrides the `title` prop) and a default slot for extra header content. `as` is semantic only — the visual size is identical either way. Pages built entirely from sections (`/about`, `/projects`, `/blog`, `/contact`) had **no `h1` at all** until their first heading passed `as="h1"`; see [`theme-performance.md`](theme-performance.md). |
 | `TerminalWindow.astro` | `title?: string (default 'zsh — saint@dev'), class?` | Faux terminal chrome; content goes in the default slot. |
 | `ProjectCard.astro` | `project: Project` (from `@lib/api/types`) | Full-bleed card, `data-cursor="hover"` + `data-cursor-label="View"`. Renders `project.metrics` only if present. |
 | `Skeleton.astro` | `text?: boolean (default false), class?, [any other attr]` | Shimmer placeholder for content that arrives *after* first paint — not for server-rendered HTML. `text` makes it inline. Theme-aware (surface-2 + accent sweep); the sweep is dropped entirely under reduced-motion. See [`loading-states.md`](loading-states.md). |

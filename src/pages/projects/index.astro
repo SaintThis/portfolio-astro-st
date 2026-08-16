@@ -53,8 +53,8 @@ const pageDescription = activeCategory
 
 <BaseLayout title={pageTitle} description={pageDescription}>
   <section class="py-16">
-    <SectionHeading kicker="portfolio" title="Projects" index="//" />
-    <p class="mt-4 max-w-xl text-fg-muted">
+    <SectionHeading kicker="portfolio" title="Projects" index="//" as="h1" />
+    <p class="text-fg-muted mt-4 max-w-xl">
       Things I've architected, built, and shipped — each one with the stack, the constraints, and
       the decisions behind it. Filter by category below.
     </p>
@@ -86,10 +86,17 @@ const pageDescription = activeCategory
       )
     }
 
-    <p class="mt-6 font-mono text-xs text-fg-faint">
+    <p class="text-fg-faint mt-6 font-mono text-xs">
       {filtered.length}
       {filtered.length === 1 ? 'project' : 'projects'}
-      {activeCategory && <> in <span class="text-accent-2">{activeCategory}</span></>}
+      {
+        activeCategory && (
+          <>
+            {' '}
+            in <span class="text-accent-2">{activeCategory}</span>
+          </>
+        )
+      }
     </p>
 
     <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -104,7 +111,7 @@ const pageDescription = activeCategory
 
     {
       filtered.length === 0 && (
-        <p class="mt-10 font-mono text-fg-faint">// nothing here yet — check back soon™</p>
+        <p class="text-fg-faint mt-10 font-mono">// nothing here yet — check back soon™</p>
       )
     }
 

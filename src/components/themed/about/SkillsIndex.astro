@@ -1,0 +1,52 @@
+---
+/**
+ * SkillsIndex — the print variant (Latte, Paper): a typographic index.
+ *
+ * No meters at all. A magazine and a Swiss poster both express degree with
+ * position and type, not with a filled rectangle, so each group becomes a
+ * numbered list on hairline rules with the level as a small right-aligned
+ * figure. Tabular numerals keep the right edge of that column straight, which
+ * is the whole reason the figures are legible without a bar behind them.
+ */
+import type { Skill } from '@lib/api/types';
+import { SKILL_GROUPS } from '@/config';
+
+interface Props {
+  skills: Skill[];
+}
+const { skills } = Astro.props;
+---
+
+<div class="mt-8 grid gap-x-12 gap-y-10 lg:grid-cols-2">
+  {
+    SKILL_GROUPS.map((g, gi) => (
+      <section data-reveal data-delay={gi * 0.05}>
+        <h3 class="border-border flex items-baseline gap-3 border-b pb-2">
+          <span class="text-fg-faint font-mono text-[10px]">{String(gi + 1).padStart(2, '0')}</span>
+          <span class="text-fg-faint font-mono text-[10px] tracking-[0.25em] uppercase">
+            {g.label}
+          </span>
+        </h3>
+        <ul>
+          {skills
+            .filter((s) => s.category === g.id)
+            .map((s) => (
+              <li class="border-border flex items-baseline justify-between gap-4 border-b py-2.5">
+                <span class="text-base">{s.name}</span>
+                <span class="skill-figure text-fg-faint text-sm">{s.level}</span>
+              </li>
+            ))}
+        </ul>
+      </section>
+    ))
+  }
+</div>
+
+<style>
+  /* Tabular figures so the right column reads as a straight rule of numbers —
+     the only thing standing in for a meter here. */
+  .skill-figure {
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-mono);
+  }
+</style>

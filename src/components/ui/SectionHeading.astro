@@ -5,21 +5,32 @@ interface Props {
   title: string;
   index?: string;
   align?: 'left' | 'center';
+  /**
+   * Heading level. Defaults to `h2` because most callers are sections under a
+   * page that already has its own `h1` (a hero, a post title). Pages built
+   * entirely out of sections — /about — have no other candidate, and were
+   * shipping with NO `h1` at all; the first section there passes `as="h1"`.
+   * Purely semantic: the visual size comes from the classes below either way.
+   */
+  as?: 'h1' | 'h2';
 }
-const { kicker, title, index, align = 'left' } = Astro.props;
+const { kicker, title, index, align = 'left', as: Tag = 'h2' } = Astro.props;
 ---
 
 <header class={align === 'center' ? 'text-center' : ''}>
   {
     kicker && (
-      <p class="kicker mb-3 flex items-center gap-2" class:list={{ 'justify-center': align === 'center' }}>
+      <p
+        class="kicker mb-3 flex items-center gap-2"
+        class:list={{ 'justify-center': align === 'center' }}
+      >
         {index && <span class="text-fg-faint">{index}</span>}
         <span class="text-accent-2">//</span> {kicker}
       </p>
     )
   }
-  <h2 class="text-3xl font-bold sm:text-4xl md:text-5xl">
+  <Tag class="text-3xl font-bold sm:text-4xl md:text-5xl">
     <slot name="title">{title}</slot>
-  </h2>
+  </Tag>
   <slot />
 </header>

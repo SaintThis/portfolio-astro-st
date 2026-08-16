@@ -11,7 +11,15 @@
  */
 import '@styles/global.css';
 import { ClientRouter } from 'astro:transitions';
-import { SITE, THEMES, DEFAULT_THEME, FEATURES, getThemeLayout } from '@/config';
+import {
+  SITE,
+  THEMES,
+  DEFAULT_THEME,
+  FEATURES,
+  getThemeLayout,
+  getThemeFontHref,
+  getThemeColor,
+} from '@/config';
 import SEO from '@components/seo/SEO.astro';
 import Analytics from '@components/seo/Analytics.astro';
 import Header from '@components/layout/Header.astro';
@@ -54,6 +62,10 @@ const { backdrop = true, wide = false, ...seo } = Astro.props;
 // and let the inline script below correct it client-side.
 const theme = Astro.locals?.theme ?? DEFAULT_THEME;
 const layout = getThemeLayout(theme);
+// Only the families this theme's tokens actually name, and its own chrome
+// color — both resolved server-side, so neither costs a client round-trip.
+const fontHref = getThemeFontHref(theme);
+const themeColor = getThemeColor(theme);
 
 /**
  * Pre-paint theme correction, built as a string because `is:inline` scripts are
@@ -82,6 +94,20 @@ const themeBootScript = `
   apply();
   document.documentElement.classList.remove('no-js');
   document.addEventListener('astro:after-swap', apply);
+
+  // Back/forward-cache guard. HTML is no longer 'no-store' (see
+  // src/middleware.ts), so Chrome and Firefox can restore this document
+  // wholesale on a Back press — instantly, but exactly as it was rendered.
+  // If the visitor changed theme on the page they're coming back FROM, the
+  // restored document is a whole previous theme's markup, fonts and all, which
+  // no attribute swap can fix. Reload it — same trade the theme switcher
+  // already makes, and it only fires on a genuine mismatch, so ordinary Back
+  // navigation keeps its instant restore.
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted && document.documentElement.dataset.theme !== read()) {
+      window.location.reload();
+    }
+  });
 })();
 `.trim();
 ---
@@ -91,25 +117,24 @@ const themeBootScript = `
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content={SITE.themeColor} />
+    <meta name="theme-color" content={themeColor} />
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="sitemap" href="/sitemap.xml" />
     <link rel="alternate" type="application/rss+xml" title={SITE.name} href="/rss.xml" />
 
     <!-- Fonts: preconnect + swap. Swap to @fontsource for full self-hosting (see DESIGN.md).
-         Four families because typography is theme-owned (see themes.css):
-         Inter (body), JetBrains Mono (code/labels + Matrix's display face),
-         Fraunces (Latte's editorial serif), Archivo Black (Broadcast's poster
-         face). Space Grotesk was dropped with the themes that used it. All
-         `display=swap`, so a theme the visitor never selects costs a
-         stylesheet entry, not a render block. -->
+         Typography is theme-owned (see themes.css), so the family list is too:
+         `getThemeFontHref` emits ONLY the families the active theme's
+         --font-sans/-display/-mono tokens name. Matrix asks for one family
+         (JetBrains Mono) instead of four; Latte and Broadcast add exactly the
+         one display face they use. The request was previously a fixed
+         four-family URL for everyone — a render-blocking stylesheet carrying
+         every family's unicode-range subsets whether or not the theme could
+         ever render them. All variants keep `display=swap`. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Archivo+Black&display=swap"
-      rel="stylesheet"
-    />
+    <link href={fontHref} rel="stylesheet" />
 
     <SEO {...seo} />
     <Analytics />
@@ -128,11 +153,7 @@ const themeBootScript = `
 
   <body>
     <!-- Ambient grid + scanline backdrop -->
-    {
-      backdrop && (
-        <div class="pointer-events-none fixed inset-0 -z-10 bg-grid" aria-hidden="true" />
-      )
-    }
+    {backdrop && <div class="bg-grid pointer-events-none fixed inset-0 -z-10" aria-hidden="true" />}
 
     <!-- Three distinct loading states, three distinct jobs: IntroLoader covers
          a cold document once; NavProgress marks client-side navigation with a

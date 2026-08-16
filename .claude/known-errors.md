@@ -166,3 +166,40 @@ Result: chunk count 659 → 61, `dist/server/` 21 MiB → 9.6 MiB, **deployed gz
 **Prevention:** Any future code that needs Markdown→HTML or syntax highlighting **inside a page/route that is or could become on-demand-rendered** must not import `@astrojs/markdown-remark`'s main entry, and must not create a Shiki highlighter without an explicit `langs: [...]` array of statically-imported `@shikijs/langs/*` modules — never rely on Shiki's convenience `createHighlighter` resolving language strings from its own bundled map in server-bundled code. For any new heavy client-only visual (3D, canvas, WASM), default to `client:only="<framework>"` over `client:load`/`client:idle`/`client:visible`/`client:media` if it has no meaningful server-rendered fallback — the latter four all SSR the component (pulling its full import graph into the server bundle) before hydrating; `client:only` skips that. Run `npx wrangler deploy --dry-run` after any change that adds a real dependency to a `prerender = false` page — it's the only way to catch this before Cloudflare does, and it never publishes anything.
 
 **Files touched:** `src/lib/db/render-markdown.ts` (full rewrite), `package.json`/`package-lock.json` (added `unified`, `remark-parse`, `remark-gfm`, `remark-smartypants`, `remark-rehype`, `rehype-raw`, `rehype-stringify`, `github-slugger`, `shiki`, `@shikijs/core`, `@shikijs/engine-javascript`, `@shikijs/langs`, `@shikijs/themes` as direct deps — previously transitive/hoisted only)
+
+---
+
+## 2026-08-16 — `npm run build` while `npm run dev` is running 500s the dev server
+
+**Command:** `npm run build` (in a second shell, dev server already up on 4321)
+
+**Symptom:**
+
+Dev server that was serving fine starts returning HTTP 500 for every route immediately after an unrelated `npm run build` finishes. Log shows, in order: a burst of the *old* `Invalid hook call` / `Cannot read properties of null (reading 'useRef'/'useState'/'useCallback')` errors from `Cursor.tsx`, `ThemeSwitcher.tsx`, `Sidebar.tsx`, then a fatal that repeats for every subsequent request:
+
+```
+[ERROR] [vite] Internal server error: The file does not exist at
+"…/node_modules/.vite/deps_ssr/@astrojs_cloudflare_entrypoints_server.js?v=17d90168"
+which is in the optimize deps directory. The dependency might be incompatible
+with the dep optimizer. Try adding it to `optimizeDeps.exclude`.
+```
+
+**Diagnosis:**
+
+Not a code bug, and **not** the 2026-07-18 entry above even though the first burst looks identical. `astro build` rewrites `node_modules/.vite` (and `node_modules/.astro`) for its own optimizer pass. The running dev server is holding hashed paths (`?v=17d90168`) into the *previous* contents of that directory, so the moment the build replaces it every SSR module resolution misses. The hook errors are the same stale-module symptom one step earlier, while the swap is in progress.
+
+The message's own suggestion (`optimizeDeps.exclude`) is a red herring — `@astrojs/cloudflare/entrypoints/server` is fine, the file was simply deleted out from under a live process.
+
+**Fix:**
+
+Don't run `npm run build` and `npm run dev` against the same working tree at the same time. If it already happened, the dev server cannot recover on its own — restart it with cleared caches (the standing remedy in [`astro-vite-best-practices.md`](rules/astro-vite-best-practices.md)):
+
+```bash
+# stop the dev server first, then:
+rm -rf node_modules/.vite node_modules/.astro
+npm run dev
+```
+
+**Prevention:** During a verification pass, do all browser checks against the dev server **first**, and run the final `npm run build` last — or stop the dev server before building. A build that runs mid-session invalidates every browser observation made after it, so a 500 here is easy to misread as a regression in the change under test.
+
+**Files touched:** none (environment/process ordering, not code).

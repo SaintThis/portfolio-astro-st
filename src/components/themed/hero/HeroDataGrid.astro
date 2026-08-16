@@ -16,50 +16,68 @@ const rows = [
   { k: 'location', v: SITE.location },
   { k: 'status', v: AUTHOR.availableForWork ? 'OPEN TO WORK' : 'HEADS-DOWN' },
 ];
+
+/**
+ * The document's top-level heading, joined here rather than interpolated as
+ * three adjacent expressions in the template: Astro strips the whitespace
+ * between an expression and its neighbour, which ran this together as
+ * "Buildingfullstack systemsthat ship & scale." (the same bite recorded in
+ * HeroBroadcast, which solved it with an explicit gap instead).
+ *
+ * This variant renders no display headline on purpose — a readout doesn't have
+ * one — and was the only hero shipping a homepage with no top-level heading at
+ * all. A visually-hidden heading gives assistive tech and crawlers the same
+ * words the other four show visibly, keeping all five in content parity,
+ * without putting a banner back on a layout designed to refuse one.
+ */
+const heading = [HERO.headline.lead, HERO.rotatorWords[0], HERO.headline.trail].join(' ');
 ---
 
 <section class="py-12" data-hero-variant="datagrid">
-  <div class="border border-border" data-reveal>
+  <h1 class="sr-only">{heading}</h1>
+
+  <div class="border-border border" data-reveal>
     <!-- Readout header -->
-    <div class="flex items-center justify-between border-b border-border px-4 py-2">
-      <span class="font-mono text-[11px] uppercase tracking-[0.25em] text-accent">
+    <div class="border-border flex items-center justify-between border-b px-4 py-2">
+      <span class="text-accent font-mono text-[11px] tracking-[0.25em] uppercase">
         ./{SITE.handle.replace('@', '')} —— session
       </span>
-      <span class="font-mono text-[11px] text-fg-faint">
+      <span class="text-fg-faint font-mono text-[11px]">
         {new Date().getFullYear()}
       </span>
     </div>
 
     <!-- Labelled rows -->
-    <dl class="divide-y divide-border">
+    <dl class="divide-border divide-y">
       {
         rows.map((r) => (
           <div class="grid grid-cols-[7rem_1fr] gap-4 px-4 py-2.5 sm:grid-cols-[10rem_1fr]">
-            <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-fg-faint">{r.k}</dt>
-            <dd class="font-mono text-sm text-fg">{r.v}</dd>
+            <dt class="text-fg-faint font-mono text-[11px] tracking-[0.2em] uppercase">{r.k}</dt>
+            <dd class="text-fg font-mono text-sm">{r.v}</dd>
           </div>
         ))
       }
       <div class="grid grid-cols-[7rem_1fr] gap-4 px-4 py-2.5 sm:grid-cols-[10rem_1fr]">
-        <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-fg-faint">building</dt>
+        <dt class="text-fg-faint font-mono text-[11px] tracking-[0.2em] uppercase">building</dt>
         <dd>
           <span
-            class="inline-block whitespace-nowrap font-mono text-sm text-accent text-glow"
+            class="text-accent text-glow inline-block font-mono text-sm whitespace-nowrap"
             id="hero-role"
             style={`min-width: ${ROTATOR_MAX_CH}ch`}>{HERO.rotatorWords[0]}</span
           >
         </dd>
       </div>
       <div class="grid grid-cols-[7rem_1fr] gap-4 px-4 py-2.5 sm:grid-cols-[10rem_1fr]">
-        <dt class="font-mono text-[11px] uppercase tracking-[0.2em] text-fg-faint">stack</dt>
-        <dd class="font-mono text-sm text-fg-muted">{HERO.stack.join(' · ')}</dd>
+        <dt class="text-fg-faint font-mono text-[11px] tracking-[0.2em] uppercase">stack</dt>
+        <dd class="text-fg-muted font-mono text-sm">{HERO.stack.join(' · ')}</dd>
       </div>
     </dl>
 
     <!-- Payload -->
-    <div class="border-t border-border px-4 py-4">
-      <p class="max-w-3xl font-mono text-sm leading-relaxed text-fg-muted">
-        <span class="text-accent">&gt;</span> {HERO.intro}
+    <div class="border-border border-t px-4 py-4">
+      <p class="text-fg-muted max-w-3xl font-mono text-sm leading-relaxed">
+        <span class="text-accent">&gt;</span>
+        {HERO.intro}
       </p>
       <div class="mt-5 flex flex-wrap gap-3">
         {

@@ -1,0 +1,26 @@
+---
+/**
+ * AboutExperience — a dispatcher, not a component.
+ *
+ * Three variants for the same reason as `AboutSkills`: a career history has
+ * three honest shapes here — a dotted rail (Cyberpunk, Broadcast), a log tail
+ * (Matrix), and a printed record (Latte, Paper). Each renders the same
+ * `ExperienceItem[]` straight from the repository layer; none of them reshapes
+ * or filters the data, so the page's content is identical across themes.
+ */
+import { getThemeLayout } from '@/config';
+import type { ExperienceItem } from '@lib/api/types';
+import TimelineRail from '@components/themed/about/TimelineRail.astro';
+import TimelineLog from '@components/themed/about/TimelineLog.astro';
+import TimelineDossier from '@components/themed/about/TimelineDossier.astro';
+
+interface Props {
+  experience: ExperienceItem[];
+}
+const { experience } = Astro.props;
+const layout = getThemeLayout(Astro.locals?.theme);
+---
+
+{layout.timeline === 'rail' && <TimelineRail experience={experience} />}
+{layout.timeline === 'log' && <TimelineLog experience={experience} />}
+{layout.timeline === 'dossier' && <TimelineDossier experience={experience} />}

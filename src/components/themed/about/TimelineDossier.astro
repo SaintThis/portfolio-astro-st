@@ -1,0 +1,50 @@
+---
+/**
+ * TimelineDossier — the print variant (Latte, Paper): a CV, set properly.
+ *
+ * No cards, no rail, no dots. Each role is a two-column record — dates in a
+ * narrow left column, the entry in the wide one — separated by a hairline rule,
+ * which is how a printed résumé and an editorial timeline both do it. The
+ * heading takes the theme's display face, so Latte gets Fraunces here and Paper
+ * gets Inter without either needing its own component.
+ */
+import type { ExperienceItem } from '@lib/api/types';
+
+interface Props {
+  experience: ExperienceItem[];
+}
+const { experience } = Astro.props;
+---
+
+<div class="mt-10">
+  {
+    experience.map((job, i) => (
+      <article
+        class="border-border grid gap-x-10 gap-y-2 border-t py-7 lg:grid-cols-[12rem_1fr]"
+        data-reveal
+        data-delay={i * 0.05}
+      >
+        <div>
+          <p class="text-fg-faint font-mono text-[10px] tracking-[0.2em] uppercase">{job.period}</p>
+          {job.current && (
+            <p class="text-accent mt-1 font-mono text-[10px] tracking-[0.2em] uppercase">Present</p>
+          )}
+        </div>
+
+        <div class="min-w-0">
+          <h3 class="font-display text-2xl leading-tight">{job.role}</h3>
+          <p class="text-fg-muted mt-1 text-sm">{job.company}</p>
+          <ul class="text-fg-muted mt-4 space-y-2 text-base leading-relaxed">
+            {job.highlights.map((h) => (
+              <li class="flex gap-3">
+                <span class="bg-fg-faint mt-[0.6em] h-px w-3 shrink-0" aria-hidden="true" />
+                <span class="min-w-0">{h}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </article>
+    ))
+  }
+  <div class="border-border border-t" aria-hidden="true"></div>
+</div>

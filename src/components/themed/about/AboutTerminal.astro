@@ -1,0 +1,70 @@
+---
+/**
+ * AboutTerminal — the Cyberpunk intro: prose beside a live shell.
+ *
+ * The signature is the terminal window printing `profile.json`, so the facts
+ * arrive as a command's output rather than as a bio. Two columns split at `lg:`
+ * (not `md:`) because the code block needs real width — see CLAUDE.md's
+ * multi-column gotcha.
+ */
+import { ABOUT } from '@/config';
+import Tag from '@components/ui/Tag.astro';
+import TerminalWindow from '@components/ui/TerminalWindow.astro';
+import AboutBody from './AboutBody.astro';
+
+// Trailing commas and the literal braces are computed here, not inline in the
+// markup: `{` / `}` open a JSX expression in an Astro template (CLAUDE.md
+// gotcha), and a `<` inside one — as in `i < arr.length - 1` — reads as the
+// start of a tag. Both are parse errors, and both disappear up here.
+const OPEN = '{';
+const CLOSE = '}';
+const rows = ABOUT.profile.map((r, i) => ({
+  ...r,
+  comma: i === ABOUT.profile.length - 1 ? '' : ',',
+}));
+---
+
+<div class="mt-8 grid gap-10 lg:grid-cols-[1.4fr_1fr]">
+  <div class="text-fg-muted space-y-4 text-base leading-relaxed sm:text-lg" data-reveal>
+    <p>{ABOUT.lead}</p>
+    <AboutBody />
+    <div class="flex flex-wrap gap-2 pt-2">
+      {ABOUT.traits.map((t) => <Tag accent>{t}</Tag>)}
+    </div>
+  </div>
+
+  <div data-reveal data-delay="0.1">
+    <TerminalWindow title="saint@dev ~ %">
+      <!-- One element per line rather than a single <pre> holding literal
+           newlines: inside <pre>, source indentation is content, so the markup
+           has to be flattened to the left margin and every interpolation
+           fights the whitespace. Block rows give the same monospaced output
+           with indentation expressed as padding. -->
+      <div class="text-fg-muted font-mono text-xs leading-relaxed">
+        <div><span class="text-accent-2">$</span> cat profile.json</div>
+        <div>{OPEN}</div>
+        {
+          rows.map((r) => (
+            <div class="pl-4">
+              <span class="text-accent">"{r.k}"</span>:{' '}
+              {r.num ? (
+                <span class="text-warning">{r.v}</span>
+              ) : (
+                <span class="text-success">"{r.v}"</span>
+              )}
+              {r.comma}
+            </div>
+          ))
+        }
+        <div>{CLOSE}</div>
+        <!-- `gap-1.5` rather than a literal space: Astro strips whitespace
+             between adjacent elements in a template (the same bite documented
+             in HeroBroadcast), which ran the prompt together as `$_`. -->
+        <div class="flex gap-1.5">
+          <span class="text-accent-2">$</span>
+          <span class="animate-[blink_1s_step-end_infinite]">_</span>
+        </div>
+      </div>
+    </TerminalWindow>
+  </div>
+</div>
